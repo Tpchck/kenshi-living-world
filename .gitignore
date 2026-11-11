@@ -1,0 +1,41 @@
+# local runtime / personal
+backup/
+state/
+logs/
+*.zip
+*.kmmstate
+__pycache__/
+*.pyc
+
+# generated outputs
+out/
+build/*.json
+build/*.txt
+build/spike1/
+build/**/*.mod
+build/**/icons/
+build/**/*.dll
+build/**/*.pdb
+*.obj
+*.exp
+*.ilk
+
+# third-party code and binaries (fetched separately, see docs/TOOLCHAIN.md)
+tools/ref/
+tools/rekenshi/
+tools/cpp/deps/
+tools/cpp/lib/*.lib
+tools/cpp/kmm_native/third_party/
+build/**/character/
+build/**/leveldata/
+*.log
+tools/spike1/ref_ocs/
+data/
+docs/archive/
+*_pre_*.txt
+_bak_*
+*.pre_*.txt
+docs/HANDOFF.md
+docs/core/PROTOCOL.md
+docs/ENV.md
+START.md
