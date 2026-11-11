@@ -1,0 +1,75 @@
+{
+  "_doc": "Правила KMM_Glue (FAST_PLAN шаг 4). Все ссылки — по имени+типу в слитом контексте (ваниль+основа+WH); генератор падает, если имя не найдено или неоднозначно.",
+
+  "money_by_role": {
+    "_doc": "Каты у NPC по NPC class (CharacterTypeEnum из KenshiLib). Только повышаем: min=max(тек, правило), max=max(тек, правило). 0 OT_NONE и 6 OT_SLAVE не трогаем.",
+    "1": {"role": "OT_LAW_ENFORCEMENT", "min": 150, "max": 600},
+    "2": {"role": "OT_MILITARY",        "min": 100, "max": 500},
+    "3": {"role": "OT_TRADER",          "min": 300, "max": 1500},
+    "4": {"role": "OT_CIVILIAN",        "min": 30,  "max": 250},
+    "5": {"role": "OT_DIPLOMAT (в данных — лавочники)", "min": 300, "max": 1500},
+    "7": {"role": "OT_SLAVER",          "min": 300, "max": 1200},
+    "8": {"role": "OT_BANDIT",          "min": 20,  "max": 300},
+    "9": {"role": "OT_ADVENTURER",      "min": 20,  "max": 300},
+    "skip_name_contains": ["test", "initialisation", "generation_template"]
+  },
+
+  "weak_vs_strong": {
+    "_doc": "Слабые (фракции с fundamental type = OT_BANDIT) убегают раньше и сосуществуют с сильными; сильные сосуществуют со слабыми (не режут бедняков без причины). Пороги только повышаем.",
+    "weak_fundamental_type": 8,
+    "weak_flee": {"run away ratio of squad size": 0.5, "run away ratio relative to enemy": 1.3},
+    "strong": [
+      ["FACTION", "United Cities"], ["FACTION", "Shek Kingdom"], ["FACTION", "Tech Hunters"],
+      ["FACTION", "Astartes survivors"], ["FACTION", "The Lost Black Sanctuary"], ["FACTION", "Death Watch"],
+      ["FACTION", "Grey Knight"], ["FACTION", "Space Necromancer - Sora Dynasty"], ["KMM", "imperial_remnants"]
+    ]
+  },
+
+  "imperial_remnants": {
+    "_doc": "CORE.md §6: Империум — немногочисленная элита, остатки экспедиции. Фракция KMM + 2 бродячих патруля, редкие спавны.",
+    "faction_name": "Imperial Expedition Remnants",
+    "faction_template": ["FACTION", "Manhunters"],
+    "hostile": [["FACTION", "Greenskins", -80], ["FACTION", "Space Necromancer - Sora Dynasty", -100],
+                ["FACTION", "Lost Chaos Space Marines", -100], ["FACTION", "World Devourer War Gang", -100],
+                ["FACTION", "Midnight Lord", -100], ["FACTION", "Cannibals", -100], ["FACTION", "Dust Bandits", -40]],
+    "friendly": [["FACTION", "Astartes survivors", 60], ["FACTION", "Death Watch", 40], ["FACTION", "Grey Knight", 40]],
+    "patrol_ai": [["AI_PACKAGE", "Patrol map (short range)"]],
+    "squads": [
+      {"name": "Imperial Remnant Patrol", "leader": ["CHARACTER", "Commissar", "346-astramilitarumkit.mod"],
+       "members": [["CHARACTER", "Guardsman", "347-astramilitarumkit.mod", 3, 5]], "t0_share": true},
+      {"name": "Death Korps Remnant Patrol", "leader": ["CHARACTER", "Soldier", "5007317-Death Korps of Krieg.mod"],
+       "members": [["CHARACTER", "Soldier", "5007315-Death Korps of Krieg.mod", 3, 6]], "t0_share": true}
+    ],
+    "spawns": [["Border Zone", 1], ["Okran's Pride", 1], ["Heng", 1], ["Ashlands", 1]]
+  },
+
+  "greenskin_warband": {
+    "_doc": "CORE.md §6: орки — рейдеры/варбанды. Бродячая банда фракции Greenskins с AI рейдеров.",
+    "name": "Greenskin Warband",
+    "faction": ["FACTION", "Greenskins"],
+    "ai_from_squad": ["SQUAD_TEMPLATE", "Dust Bandit squad"],
+    "leader": ["CHARACTER", "Orc Big 'Un"],
+    "members": [["CHARACTER", "Bolt Boy", null, 2, 4], ["CHARACTER", "Orc Wanderer", null, 2, 5]],
+    "spawns": [["Stenn Desert", 2], ["Spider Plains", 2], ["Bonefields", 2]]
+  },
+
+  "t0": {
+    "_doc": "CORE.md §7: T0 «обноски» — те же модели, хуже статы и цена. Раздаём остаткам Империума и (редко) бандитам как трофей с павших.",
+    "items": [
+      {"src": ["ARMOUR", "Guardsman Armor", "146-astramilitarumkit.mod"], "suffix": " [T0 scavenged]",
+       "mult": {"blunt def bonus": 0.5, "cut def bonus": 0.5, "pierce def mult": 0.7, "hardness": 0.6, "value": 0.3, "combat def bonus": 0.5, "level bonus": 0.5}},
+      {"src": ["CROSSBOW", "Lasgun", "12-astramilitarumkit.mod"], "suffix": " [T0 failing]",
+       "mult": {"pierce damage": 0.6, "pierce damage max 0": 0.6, "pierce damage max 1": 0.6, "pierce damage min 0": 0.6,
+                "pierce damage min 1": 0.6, "accuracy perfect skill": 0.8, "value": 0.25, "value 1": 0.25}},
+      {"src": ["WEAPON", "(AM WH40k) Chainsword", "67-astramilitarumkit.mod"], "suffix": " [T0 jammed]",
+       "mult": {"cut damage multiplier": 0.65, "armour penetration": 0.4, "bleed mult": 0.6, "attack mod": 0.3, "value": 0.3}}
+    ],
+    "bandit_scavenge": {"_doc": "бандиты OT_BANDIT получают T0-броню в список одежды с малым весом", "chance": 3, "max_characters": 400}
+  },
+
+  "reassert_base_values": {
+    "_doc": "WH-моды грузятся после основы и перетирают 8 значений Pathfinding - Collection Pack у рас Necrons/Astartes (docs/WH_LAYER.md). Возвращаем значения основы.",
+    "from_mod": "Pathfinding - Collection Pack.mod",
+    "keys": ["pathfind acceleration", "water avoidance", "hull size Y"]
+  }
+}
