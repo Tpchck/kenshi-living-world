@@ -1,0 +1,12 @@
+{
+  "_doc": "Поток интегратора: правки совместимости основы.",
+  "reassert_base_values": {
+    "_doc": "WH-моды грузятся после основы и перетирают 8 значений Pathfinding - Collection Pack у рас Necrons/Astartes (docs/WH_LAYER.md). Возвращаем значения основы.",
+    "from_mod": "Pathfinding - Collection Pack.mod",
+    "keys": [
+      "pathfind acceleration",
+      "water avoidance",
+      "hull size Y"
+    ]
+  }
+}

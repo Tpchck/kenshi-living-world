@@ -1,0 +1,543 @@
+{
+ "_doc": "Поток FIX (интегратор): точечные исправления совместимости, грузится последним (KMM_Fix).",
+ "race_own_animations": {
+  "_doc": "Расе — её собственный ANIMATION_FILE как override (RACE «animation files»). Waaagh!/OrcRaceReview: файл orc_review.skeleton подключён только глобально, у расы ссылки нет → ходьба орков ломается. docs/TEST_V1.md",
+  "items": [
+   {
+    "race": [
+     "RACE",
+     "Orc",
+     "200001-OrcRaceReview.mod"
+    ],
+    "animation_file": [
+     "ANIMATION_FILE",
+     null,
+     "200003-OrcRaceReview.mod"
+    ],
+    "inherit_from": [
+     "RACE",
+     "Greenlander",
+     "17-gamedata.quack"
+    ],
+    "_why_inherit": "2026-11-13: краш при разговоре с шаманом орков (OGRE ItemIdentityException: нет 'idle_stand_normal-25'). У расы был только orc_review → прочих файлов анимаций (idle-паки) нет. Скелет орка совпадает с человеческим по костям (30/30, mesh_skel) → наследуем список Greenlander.",
+    "attach_own": false,
+    "_why_no_own": "2026-11-13 повторный краш (разговор с Prophet/Wurrzag): 'idle_stand_normal-25' снова не найден и при одном своём файле, и при 125. Общий фактор — наша ссылка расы на orc_review.skeleton, который уже базовый скелет меша орка (все orc_*.mesh -> orc_review.skeleton): самоподключение даёт дубли имён и переименованные варианты без состояний. Оригинал мода этой ссылки не имеет. Свой файл не подключаем, idle-паки людей (30/30 костей) оставляем."
+   }
+  ]
+ },
+ "test_start": {
+  "_doc": "Тестовый старт владельца (2026-11-13): все прочие NEW_GAME_STARTOFF скрыты родным флагом REMOVED (не удаляются), один свой старт — человек со статами 85, силовая броня Alarus (Gold) и топ во всех слотах, город Mongrel (Туманные острова). enabled=false вернёт обычные старты.",
+  "enabled": false,
+  "name": "KMM Test: Iron Wanderer",
+  "description": "KMM test start. A veteran in Alarus power armour arrives at Mongrel, deep in the Fog Islands. Test the living world: towns, envoys, travellers, raids.",
+  "town": [
+   "TOWN",
+   "Mongrel",
+   "18022-Newwworld.mod"
+  ],
+  "money": 20000,
+  "stat_value": 85,
+  "char_template": [
+   "CHARACTER",
+   "Naked dude",
+   null
+  ],
+  "char_name": "Iron Wanderer",
+  "stats_template": [
+   "STATS",
+   "hire medic",
+   null
+  ],
+  "clothing": [
+   [
+    "ARMOUR",
+    null,
+    "1839-TEXT TEXTURE.mod"
+   ],
+   [
+    "ARMOUR",
+    null,
+    "1840-TEXT TEXTURE.mod"
+   ],
+   [
+    "ARMOUR",
+    null,
+    "1842-TEXT TEXTURE.mod"
+   ],
+   [
+    "ARMOUR",
+    null,
+    "1837-TEXT TEXTURE.mod"
+   ],
+   [
+    "ARMOUR",
+    null,
+    "972-TEXT TEXTURE.mod"
+   ],
+   [
+    "ARMOUR",
+    null,
+    "5-KMM_Wardrobe.mod"
+   ],
+   [
+    "ARMOUR",
+    null,
+    "18-KMM_Wardrobe.mod"
+   ],
+   [
+    "ARMOUR",
+    "Holy Lords Chainmail",
+    null
+   ]
+  ],
+  "weapons": [
+   [
+    "WEAPON",
+    null,
+    "2831-TEXT TEXTURE.mod"
+   ]
+  ],
+  "weapon_level": [
+   "WEAPON_MANUFACTURER",
+   "Cross",
+   "52288-rebirth.mod"
+  ],
+  "backpack": [
+   "CONTAINER",
+   null,
+   "3602-TEXT TEXTURE.mod"
+  ],
+  "armour_grade": 5
+ },
+ "survival_start": {
+  "_doc": "Старт выживания владельца (2026-11-15): один человек, все навыки 1 (ванильный минимум), только набедренная повязка, без оружия, рюкзака и денег; точка в Великой пустыне (регион Heng) через родной force start pos (как Rock Bottom), ближайшее поселение South Stone Camp ~8 км, Heng ~14 км. Без увечья Rock Bottom.",
+  "enabled": true,
+  "name": "Castaway",
+  "description": "Left in the Great Desert with a loincloth and nothing else. No money, no weapon, no skills. Survive.",
+  "difficulty": "Hardest",
+  "style": "Survival",
+  "force_pos": [57024, -52416],
+  "money": 0,
+  "stat_value": 1,
+  "char_template": ["CHARACTER", "Naked dude", null],
+  "char_name": "Castaway",
+  "stats_template": ["STATS", "hire medic", null],
+  "clothing": [["ARMOUR", null, "2308-clothes_v1.mod"]],
+  "weapons": [],
+  "armour_grade": 0,
+  "malnourished": true
+ },
+ "crystal": {
+  "_doc": "Численность отрядов кристальных фракций x squad_factor (мин. 1). Редкость гнёзд/спавнов — поток relics (crystal_spawns): поля BIOME_GROUP принадлежат ему.",
+  "name_rx": "crystal",
+  "squad_factions": [
+   "Crystal Hive",
+   "Crystal Relics",
+   "Broken Crystal Relics",
+   "Crystal Enemys"
+  ],
+  "squad_factor": 0.5
+ },
+ "treasure": {
+  "_doc": "Тест владельца 2026-11-13: бочки в логове Fog King почти пустые. Логова главарей с наградой (уникальный лидер отряда-жителя с 'bounty factions' или с титулом король/босс/вождь) получают loot spawn из 4 списков KMM Treasure: мусор много, средних заметно, ценных редко. Предметы — ITEM (товары, инструменты, аптечки, выпивка, болты, стройматериалы, книги), по цене value.",
+  "functions": [
+   0,
+   1,
+   2,
+   7,
+   8,
+   9,
+   12,
+   16,
+   13
+  ],
+  "book_rx": "book|tome|journal|manual",
+  "exclude_rx": "wanted|head$|blueprint|research|letter|key|core|map|prosthetic|severed|test|dummy|copy|removed|placeholder",
+  "leader_rx": "king|queen|boss|lord|warlord|chief|prince|tyrant|overlord",
+  "tiers": [
+   {
+    "id": "junk",
+    "vmin": 1,
+    "vmax": 150,
+    "spawn": [
+     6,
+     14
+    ],
+    "size": 60
+   },
+   {
+    "id": "common",
+    "vmin": 151,
+    "vmax": 500,
+    "spawn": [
+     3,
+     7
+    ],
+    "size": 50
+   },
+   {
+    "id": "mid",
+    "vmin": 501,
+    "vmax": 2000,
+    "spawn": [
+     1,
+     3
+    ],
+    "size": 40
+   },
+   {
+    "id": "rare",
+    "vmin": 2001,
+    "vmax": 10000,
+    "spawn": [
+     0,
+     1
+    ],
+    "size": 25,
+    "money": [
+     0.3,
+     300,
+     2000
+    ]
+   }
+  ],
+  "seed": 1313,
+  "book_vmax": 1000,
+  "edge_lairs": {
+   "_doc": "Реликтовое оружие/броня (поздние утерянные технологии) в лут древних лабораторий, куполов Ashlands, имперских арсеналов/башен и гробниц. Один VENDOR_LIST на точку с ОДНОЙ вещью (не более 1 реликта на точку), шанс малый; вещи по точкам разные (по кругу из перемешанного пула). Точки — по именам (name_rx, без override; без баров/торговцев).",
+   "chance": 12,
+   "spawn": [
+    0,
+    1
+   ],
+   "groups": [
+    {
+     "id": "lab",
+     "name_rx": "^(Ancient Tech Lab|Lab Ruin|Empty Lab|Suspicious Lab|Ancient Labs|Crumbling Labs|Swamped Lab|Infested Lab|Post-Ancient Workshop|Poisonous Lab)$",
+     "items": [
+      "33-40K Necrons.mod",
+      "39-40K Necrons.mod",
+      "40-Metro.mod",
+      "64-Metro.mod",
+      "35-Metro.mod",
+      "2831-TEXT TEXTURE.mod",
+      "3065-TEXT TEXTURE.mod",
+      "2075-TEXT TEXTURE.mod"
+     ]
+    },
+    {
+     "id": "dome",
+     "name_rx": "^Ashland Dome( [IV]+| Ruin)?$",
+     "items": [
+      "2743-TEXT TEXTURE.mod",
+      "3068-TEXT TEXTURE.mod",
+      "190-TEXT TEXTURE.mod",
+      "953-TEXT TEXTURE.mod",
+      "949-TEXT TEXTURE.mod",
+      "437-TEXT TEXTURE.mod",
+      "700-TEXT TEXTURE.mod",
+      "39-40K Necrons.mod"
+     ]
+    },
+    {
+     "id": "armoury",
+     "name_rx": "^(Lost Armoury|Armoury Ruin|Lost Armour Store|Old Control Tower|Ruined Control Tower|Old Empire Watchtower|Old Empire Supply Outpost|Hiver-Claimed Armoury)$",
+     "items": [
+      "457-TEXT TEXTURE.mod",
+      "460-TEXT TEXTURE.mod",
+      "452-TEXT TEXTURE.mod",
+      "136-TEXT TEXTURE.mod",
+      "237-TEXT TEXTURE.mod",
+      "1723-TEXT TEXTURE.mod",
+      "1519-TEXT TEXTURE.mod",
+      "204-TEXT TEXTURE.mod"
+     ]
+    },
+    {
+     "id": "tomb",
+     "name_rx": "^(Skull Ruins|Tomb of the Dead|Horrible Ruin)$",
+     "items": [
+      "2010-TEXT TEXTURE.mod",
+      "3852-TEXT TEXTURE.mod",
+      "2017-TEXT TEXTURE.mod",
+      "2071-TEXT TEXTURE.mod",
+      "33-40K Necrons.mod"
+     ]
+    }
+   ],
+   "_excl": "2026-11-13 интегратор: The Eternal Laboratory убран — торговый город Cyborgs (type 2, лавки фракции по умолчанию), реликт там можно было бы украсть, а не добыть."
+  },
+  "ruins": {
+   "_doc": "L1 2026-11-15 (по итогам плейтеста: бочки/ящики руин пустые). Руины/лагеря/заброшенные TOWN получают ванильный «loot spawn» из списков VENDOR_LIST «KMM Ruin <тип>» по типу места (kinds: regex по имени TOWN + имени фракции, первый совпавший; без rx — запасной) + общий список materials (стройматериалы для складских ящиков: у ванильного BUILDING «Storage: X» есть 'limit inventory' -> ITEM, такой ящик примет только свой материал). Жители-бандиты/скелеты не мешают. Пропуск: REMOVED, логово с KMM Treasure, exclude_rx, skip_types (город/тюрьма/маркер), бар или торговцы (в т.ч. лавки фракции по умолчанию), гнёзда зверей (nest_types + animal_rx/animal_faction_rx), живые деревни/лагеря рабов/военные (living_types) и поселения законных фракций с жителями — если в имени нет слова руин (ruin_rx). Уже есть loot spawn (ваниль/мод): сумма max >= rich_skip — пропуск, иначе скромная добавка (spawn x addon_mult). Цены: предметы дороже item_vmax не берутся. spawn = [min,max] выборок из списка на город (как ванильные 'bandit camp loot' 2..11). Подхватится в новых зонах/новой игре.",
+   "enabled": true,
+   "ruin_rx": "ruin|abandon|fallen|ghost|dead|destroyed|empty|lost|\\bold\\b|looted|overrun|drowned|crumbl|forgotten|deserted|wreck|burn|ravaged|derelict|trashed|ancient|laborator|\\blabs?\\b|dome|armou?ry|control tower|military outpost|empire village|port south",
+   "exclude_rx": "marker|^your outpost|nowhere|test|^_|^-|^nest|nest$|^ruin-",
+   "skip_types": [2, 7, 8],
+   "living_types": [3, 5, 6],
+   "ruin_types": [4],
+   "nest_types": [0],
+   "_types": "TOWN type = enum TownType (K/Town.h:24): 0 nest, 1 outpost, 2 town, 3 village, 4 ruins, 5 slave camp, 6 military, 7 prison, 8 nest marker, 9 POI, 10 null.",
+   "animal_rx": "\\bden\\b|nest|nursery|brood|bone|graveyard|hollow|invasion|deathyard|sanctum|cage",
+   "animal_faction_rx": "wol(f|ves)|wildlife|hound|dogs|hyaen|crocuta|jackal|creatures|spider|skimmer|crab|raptor|herbivore|tyrant|fiend|bat$|gorillo|gutters",
+   "lawful_factions": ["United Cities", "The Holy Nation", "Shek Kingdom", "Empire Peasants", "Tech Hunters", "Traders Guild", "Free Traders", "Anti-Slavers", "Southern Hive", "Western Hive", "Nameless", "Cyborgs", "Guild of Surgeons"],
+   "rich_skip": 25,
+   "addon_mult": 0.5,
+   "item_vmax": 1500,
+   "kinds": [
+    {"id": "lab", "rx": "\\blabs?\\b|laborator|dome|ancient|archive|library|workshop|tech|vault|observ|scien|factory", "list": "Lab", "spawn": [2, 6], "materials": [0, 2]},
+    {"id": "military", "rx": "armou?r|fort|military|outpost|\\bpost\\b|watch ?tower|control tower|barracks|guard|bastion|garrison|supply|bunker|front|tower|\\bbase\\b|keep|stronghold|prison", "list": "Military", "spawn": [2, 5], "materials": [1, 4], "extra": [["Nest loot weapons low", 0, 1]]},
+    {"id": "village", "rx": "village|farm|hamlet|settle|house|homestead|town|mine|port|hut|shack|cabin|nomad", "list": "Village", "spawn": [3, 7], "materials": [0, 2]},
+    {"id": "bandit", "rx": "bandit|camp|hideout|\\bden\\b|raider|slaver|reaver|cannibal|smuggl|skinhouse|thie|ninja|lair|hole|hunter|brigand|outlaw|\\bhq\\b|throne|grove", "list": "Bandit", "spawn": [2, 6], "materials": [0, 2]},
+    {"id": "generic", "rx": null, "list": "Junk", "spawn": [2, 5], "materials": [1, 3]}
+   ],
+   "lists": {
+    "Materials": {"_doc": "стройматериалы и сырьё: для складских ящиков 'Storage: X' и просто для глаза", "items": [["Iron Plates", 100], ["Building Material", 100], ["Steel Bars", 60], ["Fabrics", 50], ["Leather", 30], ["Copper", 25], ["Copper Alloy Plates", 25], ["Raw Iron", 40], ["Raw Stone", 40], ["Hemp", 30], ["Cotton", 30], ["Carbon", 15], ["Chainmail Sheets", 6], ["Armour Plating", 6], ["Fuel", 10], ["Hinge", 20], ["Gears", 20]]},
+    "Lab": {"_doc": "лаборатории/купола/древние: детали, электроника, медицина, редкий древний хлам", "items": [["Electrical Components", 50], ["Gears", 50], ["Capacitor", 40], ["Motor", 30], ["Generator Core", 25], ["Copper Alloy Plates", 30], ["Robotics Components", 12], ["Old CPU Unit", 4], ["Tools", 20], ["Wrench", 15], ["Hacksaw", 15], ["Spring Steel", 20], ["Medical Supplies", 35], ["Basic First Aid Kit", 35], ["Standard First Aid Kit", 12], ["Advanced First Aid Kit", 3], ["Skeleton Muscle", 12], ["Skeleton Repair Kit", 6], ["Damaged Book", 50], ["Half-Eaten Ancient Science Book", 30], ["Book", 10]]},
+    "Military": {"_doc": "посты/арсеналы/форты/башни: металл, детали, болты, перевязка, солдатский хлам; оружие — ванильный 'Nest loot weapons low' [0,1]", "items": [["Iron Plates", 50], ["Steel Bars", 40], ["Hinge", 30], ["Spring Steel", 25], ["Gears", 20], ["Crossbow Parts", 12], ["Chainmail Sheets", 8], ["Armour Plating", 8], ["Tools", 10], ["Bolts [Regulars]", 15], ["Bolts [Toothpicks]", 15], ["Basic First Aid Kit", 25], ["Splint Kit", 8], ["Dried Meat", 25], ["Water Jug", 30], ["Cup", 30], ["Empty Rum Bottle", 30], ["Damaged Book", 25]]},
+    "Village": {"_doc": "деревни/фермы/хутора: ткань, сырьё, еда, бытовое", "items": [["Fabrics", 35], ["Cotton", 35], ["Hemp", 35], ["Wheatstraw", 25], ["Riceweed", 25], ["Greenfruit", 25], ["Cactus", 25], ["Strawflour", 20], ["Bread", 20], ["Dried Fish", 20], ["Dried Meat", 15], ["Water Jug", 40], ["Cup", 50], ["Wooden Bowl", 40], ["Ceramic Bowl", 8], ["Simple Rug", 6], ["Doll", 20], ["Sleeping Bag", 8], ["Leather", 12], ["Animal Skin", 12], ["Damaged Book", 30], ["Grog", 10], ["Empty Grog Can", 30], ["Medical Supplies", 8]], "money": [15, 5, 60]},
+    "Bandit": {"_doc": "лагеря/логова бандитов: выпивка, хлам, немного денег", "items": [["Grog", 40], ["Sake", 30], ["Bloodrum", 30], ["Cactus Rum", 12], ["Hashish", 6], ["Empty Rum Bottle", 50], ["Empty Grog Can", 50], ["Cup", 40], ["Damaged Book", 30], ["Dried Meat", 30], ["Chewsticks", 20], ["Water Jug", 30], ["Basic First Aid Kit", 12], ["Animal Teeth", 20], ["Bolts [Toothpicks]", 8], ["Hinge", 10], ["Wooden Bowl", 20]], "money": [40, 10, 150]},
+    "Junk": {"_doc": "прочие руины: бытовой хлам и обломки", "items": [["Damaged Book", 50], ["Cup", 50], ["Empty Rum Bottle", 40], ["Empty Grog Can", 30], ["Wooden Bowl", 30], ["Iron Plates", 20], ["Building Material", 25], ["Raw Stone", 20], ["Hinge", 20], ["Gears", 15], ["Fabrics", 15], ["Water Jug", 25], ["Basic First Aid Kit", 10], ["Spring Steel", 10], ["Electrical Components", 6], ["Half-Eaten Ancient Science Book", 10]], "money": [10, 5, 50]}
+   }
+  }
+ },
+ "race_anim_auto": {
+  "_doc": "2026-11-13 (audit_classes C): раса, которой пользуются персонажи, с человеческим мешем и пустым списком animation files получает список донора (Greenlander) — род краша «нет анимации idle_*-N» при разговоре.",
+  "enabled": true,
+  "donor": [
+   "RACE",
+   "Greenlander",
+   "17-gamedata.quack"
+  ],
+  "mesh_rx": "human_male.mesh"
+ },
+ "atmosphere": {
+  "_doc": "2026-11-13 плейтест: «чуть мрачнее, пустынный гримдарк, +2–13 % по настройке». Только данные погоды/сезонов (без ReShade, пыль не убирается, только чуть гуще). Солнце −5 % яркости, −8 % насыщенности, 4 % охры; небо −5 %/−6 %; цвет тумана −10 % насыщенности, 6 % охры; дальность тумана −8 % (дымка ближе); облачность +6 %; пыль +5 %. Выключение: enabled=false.",
+  "enabled": true,
+  "sunlight": {
+   "bright": 0.95,
+   "desat": 0.08,
+   "tint": [
+    1.0,
+    0.95,
+    0.84
+   ],
+   "tint_mix": 0.04
+  },
+  "sky": {
+   "bright": 0.95,
+   "desat": 0.06
+  },
+  "fog": {
+   "bright": 0.97,
+   "desat": 0.1,
+   "tint": [
+    1.0,
+    0.93,
+    0.8
+   ],
+   "tint_mix": 0.06
+  },
+  "fog_distance_mult": 0.92,
+  "clouds_mult": 1.06,
+  "dust_mult": 1.05
+ },
+ "zone_fix": {
+  "enabled": true,
+  "_doc": "2026-11-13: наложение зданий в Heng — Towns Expansion копиями ванили воскрешал 119 зданий, удалённых CATO V4 (и откатывал 9 переносов); то же в 22 зонах (6 городов TE, OrcRaceReview/Shoddy Firearm против CATO, CATO против Exile Camp). KMM_Fix/leveldata повторяет намеренное состояние; см. tools/build/zone_fix.py."
+ },
+ "race_link": {
+  "_doc": "RACE_LINK 2026-11-14 (владелец: связать модовые расы с ванильными, «как будто изначально вместе»). Модовая раса, которая живёт в мире (персонаж/отряд/фракция/старт), с ванильной основой (тот же male mesh / editor limits / набор анимаций, либо base_by_name) вписывается во все ВАНИЛЬНЫЕ списки, где стоит основа: условия диалогов (my race, my subrace, target race, no target race), вещи (races, races exclude), бонус урона (race damage), группы рас. Значения ссылки копируются с основы. Только добавления. Отдельные расы (дети, зомби, орки, некроны, трешеры) не связываются: exclude_rx.",
+  "enabled": true,
+  "cats": {
+   "DIALOGUE": [
+    "my race",
+    "my subrace",
+    "target race",
+    "no target race"
+   ],
+   "DIALOGUE_LINE": [
+    "my race",
+    "my subrace",
+    "target race",
+    "no target race"
+   ],
+   "ARMOUR": [
+    "races",
+    "races exclude"
+   ],
+   "ITEM": [
+    "races",
+    "races exclude"
+   ],
+   "WEAPON": [
+    "race damage"
+   ],
+   "CROSSBOW": [
+    "race damage"
+   ],
+   "RACE_GROUP": [
+    "races"
+   ]
+  },
+  "exclude_rx": "child|juvenile|hatchling|zombie|^dead |\bsoul\b|debug|necromancer|necron|\borc\b|thrasher|ogre|primordial|daemon|demon|astartes|marine",
+  "base_by_name": [
+   [
+    "^crystal hive prince",
+    "Hive Prince"
+   ],
+   [
+    "hive soldier mutant",
+    "Hive Soldier Drone"
+   ],
+   [
+    "hive princess",
+    "Hive Prince"
+   ],
+   [
+    "^skeleton (klr|st)-m",
+    "Skeleton"
+   ],
+   [
+    "^crystal hive soldier",
+    "Hive Soldier Drone"
+   ]
+  ]
+ },
+ "faction_merge": {
+  "enabled": true,
+  "_doc": "двойники фракций с одинаковым именем сливаются в основную (ваниль > реальная > больше ссылок); skip_names — не сливать",
+  "skip_names": []
+ },
+ "junk_unlink": {
+  "enabled": true,
+  "_doc": "аудит мусора 2026-11-14 (docs/JUNK_AUDIT.md): unlink — снять ссылки на отладочную запись (cats — только в этих категориях); rename — дать заглушке нормальное имя",
+  "unlink": [
+   {
+    "sid": "178-Sacred Trash.mod",
+    "_n": "#MAGICAL CUBE TESTER: на ванильном кожаном верстаке и в исследовании"
+   },
+   {
+    "sid": "1048-Companion Quest - Morse.mod",
+    "_n": "#Modders Resource в инвентаре MorseTest"
+   },
+   {
+    "sid": "1049-Companion Quest - Morse.mod",
+    "_n": "#Dialogue Creation Tips в инвентаре MorseTest"
+   },
+   {
+    "sid": "9620-Dialogue.mod",
+    "_n": "Gate fee --Unfinished-- --DISCARD--"
+   },
+   {
+    "sid": "7340-Dialogue.mod",
+    "_n": "Gate fee --Unfinished-- --DISCARD--"
+   },
+   {
+    "sid": "96978-Dialogue.mod",
+    "_n": "диалог 'delete' в пакете Player SHEK Warrior"
+   },
+   {
+    "sid": "5025849-Rusty Raiders FACTION.mod",
+    "cats": [
+     "races"
+    ],
+    "_n": "skeleton debug в группе рас Skeleton"
+   }
+  ],
+  "rename": [
+   {
+    "sid": "177-Sacred Trash.mod",
+    "name": "Scrap Couture",
+    "_n": "исследование '!@# sacred trash test research 01' открывает броню Sacred Trash"
+   },
+   {
+    "sid": "219-Expanded Vanilla Armor.mod",
+    "name": "Plain Cloth Pants",
+    "_n": "aaClothpants UNUSED: носят NPC (одежду ведёт гардероб), продаётся — даём имя"
+   },
+   {
+    "sid": "232-Expanded Vanilla Armor.mod",
+    "name": "Plain Cloth Pants",
+    "_n": "исследование 'Clothpants UNUSED'"
+   }
+  ]
+ },
+ "homeless_faction": {
+  "enabled": true,
+  "_doc": "B1 2026-11-15: kenshi_info.log «no faction for homeless squad» — отряд из BIOME_GROUP homeless spawns без SQUAD_TEMPLATE.faction движок не спавнит. Фракция: члены (CHARACTER.faction) -> отряды с теми же животными -> fallback по sid -> иначе снять из homeless spawns. Итог в отчёте потока (homeless_faction:*).",
+  "fallback": {
+   "5007302-Dadao.mod": {
+    "faction": "51707-rebirth.mod",
+    "_n": "Ancient Adventurer (Dadao, скелет-одиночка, Patrol map, Ashlands/Deadlands/Iron Trail): у лидера фракции нет -> ванильные Drifters — бродячие бойцы-искатели (Drifting samurai, Wandering Rival, Karate Seeker), default 0, союзны TH/Nomads/Skeletons"
+   },
+   "15581065-Old ironsides.mod": {
+    "faction": "nofac",
+    "_n": "V-One Squad [recruitable] (робот-одиночка с диалогом найма, Obedience): ванильная No Faction — как у бродяг-рекрутов Wandering Ronin / Lost Wanderer; Old Machines враждебны всем и сломали бы найм"
+   }
+  }
+ },
+ "xp_curve": {
+  "enabled": true,
+  "_doc": "P5 2026-11-15: CONSTANTS xp (fcs.def): множитель = 1 + diff/«2x bonus», если противник сильнее (до ~6x); = 1 - diff/«0x penalty», если слабее (не ниже 0.1). Ваниль 10/25; в сборке Weaklings give XP (в KMM_Merged) ставит penalty 50. Стало 5/30: противник +20 -> 5x (ваниль 3x, 1.67x), +10 -> 3x (ваниль 2x); противник -20 -> 0.33x (было 0.6x, ваниль 0.2x), -10 -> 0.67x. Владелец xp-полей CONSTANTS — только KMM_Fix (грузится после Merged).",
+  "values": {
+   "skill diff xp 2x bonus": 5.0,
+   "skill diff xp 0x penalty": 30.0
+  }
+ },
+ "rivals": {
+  "enabled": true,
+  "_doc": "Q1 2026-11-15: соперники-искатели = существующие homeless-отряды искателей (без новых фракций и спавнов). Руинные искатели: ближний патруль заменён клоном с unloaded func 3 PATROL_LONGRANGE (вне экрана ходят по карте), всем добавлен ванильный бар (v0=0). Тиры по combat stats: <40 слабые, >=65 сильные. Веса по опасности биома — в relics (владелец BIOME_GROUP.homeless spawns).",
+  "long_range_clones": {
+   "5201-gamedata.base": {
+    "name": "KMM rival prospecting (looting, long range)",
+    "unloaded func": 3,
+    "signal func": 6,
+    "_n": "Patrol map (short range) LOOTING 6/2 -> 6/3"
+   },
+   "46047-rebirth.mod": {
+    "name": "KMM rival prospecting aggressive (long range)",
+    "unloaded func": 3,
+    "signal func": 6,
+    "_n": "Patrol map aggressive (short range) LOOTING 0/0 (наследует 5201) -> 6/3"
+   },
+   "2672-gamedata.base": {
+    "name": "KMM rival roaming (long range)",
+    "unloaded func": 3,
+    "signal func": 6,
+    "_n": "Patrol map (short range) 6/2 -> 6/3"
+   }
+  },
+  "bar_package": "14499-gamedata.base",
+  "tiers": {
+   "weak_below": 40,
+   "strong_from": 65
+  },
+  "prospectors": {
+   "95750-rebirth.mod": "Treasure hunters (Drifters)",
+   "95751-rebirth.mod": "Treasure hunters aggressive (Drifters)",
+   "56003-Dialogue.mod": "Tech Hunters Ruins",
+   "5008573-HTDEnforcers.mod": "Tech Hunter Roaming Mercs",
+   "95749-rebirth.mod": "Bounty hunters (rebirth, лут-патруль)",
+   "19-Minor Faction Overhaul - Scavengers.mod": "Scavenger Small",
+   "95754-rebirth.mod": "Scavengers",
+   "39-Minor Faction Overhaul - Scavengers.mod": "Scavengers (HN)",
+   "40-Minor Faction Overhaul - Scavengers.mod": "Scavengers (UC)",
+   "62658-Dialogue.mod": "Traveller (Drifters)",
+   "5007302-Dadao.mod": "Ancient Adventurer (фракция Drifters ставит homeless_faction)"
+  },
+  "wanderers": {
+   "73-Wandering Swordmen.mod": "Hitteki Wandering Rival (сильный одиночка, без бара)",
+   "55120-Faction Caravans.mod": "Drifter solo human",
+   "55121-Faction Caravans.mod": "Drifter squad human",
+   "2206-gamedata.base": "Drifter solo (уже бар; для тира)",
+   "3950-gamedata.base": "Drifter squad TH (уже бар)",
+   "43388-rebirth.mod": "Mercenary wanderers (уже бар)",
+   "5337-gamedata.base": "Bounty hunters wandering between towns (уже бар)",
+   "16-New katanas CN.mod": "Drifting samurai squad (уже бар)",
+   "11-MysteriousWanderer.mod": "Wandering Wanted Man (уже бар, сильный)",
+   "1535106-Skeleton ILA-M MKI.mod": "Drifter solo ILA-M skeleton (уже бар, сильный)",
+   "5008234-Sailback.mod": "Samurai with Horse (уже бар, сильный)",
+   "28-Leviathan Overhaul.mod": "Leviathan Hunter (уже бар, сильный)"
+  }
+ }
+}

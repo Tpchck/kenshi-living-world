@@ -1,0 +1,389 @@
+{
+ "_doc": "Поток E BEHAVIOR: «слабые избегают сильных, но вражда остаётся». Единственный рычаг, который движок понимает на уровне фракции, — пороги бегства (fcs.def: 'run away ratio of squad size' — бежим, если от отряда осталось меньше этой доли; 'run away ratio relative to enemy' — бежим, если не превосходим врага в этом соотношении по численности; 0 = никогда не бежать). Значения только повышаются (никого не делаем смелее ванили). Отношения (relations) не трогаем — вражда по лору остаётся. coexistence больше не используется.",
+ "weak_fundamental_type": 8,
+ "tiers": {
+  "poor": {
+   "_doc": "рвань и голодные: бегут, если не превосходят врага в 1.5 раза или потеряли 40% отряда",
+   "values": {
+    "run away ratio of squad size": 0.6,
+    "run away ratio relative to enemy": 1.5
+   },
+   "factions": [
+    "Starving Bandits",
+    "Dust Bandits",
+    "Dust Raiders",
+    "Dust Reapers",
+    "Dust Lords",
+    "Dust Union",
+    "Outlaw",
+    "Rebel Farmers",
+    "Rebel Swordsmen",
+    "Yabuta Outlaws",
+    "Empire Criminals",
+    "Gutters",
+    "Grass Pirates",
+    "Sysus Bandits",
+    "Cult of Goblin",
+    "Bloodraiders",
+    "Skull Collectors",
+    "Sailback Poachers",
+    "Lake Threshers"
+   ]
+  },
+  "gang": {
+   "_doc": "организованные банды и ниндзя: бегут, если не равны врагу по численности или потеряли 60% отряда",
+   "values": {
+    "run away ratio of squad size": 0.4,
+    "run away ratio relative to enemy": 1.0
+   },
+   "factions": [
+    "Sand ninjas",
+    "Black Dragon Ninjas",
+    "White Eyebrow Clan",
+    "Swamp Ninjas",
+    "Red Sabres",
+    "Black Desert Ninjas",
+    "Skin Bandits",
+    "The Gorrillo Bandits",
+    "Slave Hunters",
+    "Dark Reavers",
+    "Steel Raiders",
+    "Blood Wolves",
+    "Lost Oni"
+   ]
+  },
+  "fanatic": {
+   "_doc": "фанатики и варбанды по лору бьются до конца — оставляем ванильные значения",
+   "values": {},
+   "factions": [
+    "Berserkers",
+    "Lone Berserker",
+    "Kral's Chosen",
+    "Band of Bones",
+    "Crab Raiders",
+    "Reavers",
+    "Skeleton Bandits",
+    "Oni",
+    "The Hollow Feast"
+   ]
+  }
+ },
+ "default_tier": "gang",
+ "_strong_doc": "Сильные (UC, Holy Nation, Shek Kingdom, Tech Hunters, Astartes, Necrons, остатки Империума) не меняются: у них уже 0/0 (бьются до конца) или ванильные 0.4/0.6 у UC.",
+ "world_relations": {
+  "_doc": "Единый мир: архетипная матрица отношений между фракциями (ванилы и модов). Применяется в behavior.py ДО дрожания семени. Правила: (1) участвуют фракции, реально используемые отрядами/городами; животные (fundamental type 0) и монстры из archetype 'monster' не участвуют; 'not real' участвуют только если названы в archetype_by_name. (2) Архетип: override_by_name > archetype_by_name > regex > fundamental type (type_fallback) > 'settler'. (3) matrix[A|B]=значение отношения (−100..100), записывается в обе стороны. (4) Заполняются ТОЛЬКО пары, где у фракции нет явного отношения и значение матрицы отличается от её 'default relation' не менее чем на min_delta; (5) явные противоречия (матрица ≤ −40, а явное > −10; или матрица ≥ 40, а явное ≤ −40) исправляются, но не между двумя ядровыми фракциями (core_origins) — ванильные пары между ванильными не переписываются. (6) exceptions=[A,B,значение] — точечные лорные исключения по именам, применяются при отсутствии отношения или при противоположном знаке, в том числе для ядровых пар.",
+  "min_delta": 15,
+  "core_origins": [
+   "gamedata.base",
+   "rebirth.mod"
+  ],
+  "skip_archetypes": [
+   "monster"
+  ],
+  "type_fallback": {
+   "1": "state",
+   "2": "state",
+   "3": "trader",
+   "4": "settler",
+   "5": "settler",
+   "6": "bandit",
+   "7": "bandit",
+   "8": "bandit",
+   "9": "settler",
+   "0": "monster"
+  },
+  "archetype_by_name": {
+   "state": [
+    "United Cities",
+    "Shek Kingdom",
+    "Police",
+    "Mercenary Police",
+    "Mercenary Guild",
+    "Tech Hunters",
+    "Final Enforcers",
+    "Republic of Tertius",
+    "Second Empire",
+    "Second Empire Exile",
+    "The Old Empire",
+    "Iron Company",
+    "Shem Residents",
+    "United Heroes League",
+    "Manhunters",
+    "Bounty Hunters",
+    "Cannibal Hunters",
+    "Anti-Slavers",
+    "Imperial Lords",
+    "Empire Peasants",
+    "Okranites"
+   ],
+   "religion": [
+    "The Holy Nation",
+    "The Holy Nation (postwar) (placeholder)",
+    "Preacher Cult",
+    "Cult of Fluorite",
+    "Temple of truth",
+    "Missionaries"
+   ],
+   "trader": [
+    "Traders Guild",
+    "Free Traders",
+    "Trade Ninjas",
+    "Sultans Wares",
+    "Imperial Bank",
+    "Gunsmiths",
+    "Guild of Surgeons",
+    "Drug Peddlers",
+    "Wandering Cloak Shop",
+    "cloak shop(test)"
+   ],
+   "bandit": [
+    "Shinobi Thieves",
+    "Rusty Raiders",
+    "Black Dog",
+    "Slave Traders",
+    "Slave Hunters",
+    "Skeleton Bandits",
+    "Bar Thugs"
+   ],
+   "savage": [
+    "Cannibals",
+    "Blood Butcher Tribe",
+    "Charred Skull Tribe",
+    "Gnawed Bone Tribe",
+    "Skin Bandits",
+    "Band of Bones",
+    "Kral's Chosen",
+    "Berserkers",
+    "Lone Berserker",
+    "The Hollow Feast",
+    "Skull Collectors",
+    "Fishmen",
+    "Fogmen",
+    "Reavers",
+    "Crab Raiders"
+   ],
+   "robot": [
+    "Skeletons",
+    "Skeleton Legion",
+    "Old Machines",
+    "Nomadic Skeletons",
+    "Skeleton Sultans",
+    "Floodlands Skeletons",
+    "Machinists",
+    "Mech Life",
+    "Cyborgs",
+    "Skeleton MkII",
+    "Skeleton MkII Log Head",
+    "Skeleton MkII Screamer"
+   ],
+   "monster": [
+    "Mist Creatures",
+    "Spiders",
+    "Blood Spiders",
+    "Crystal Hive",
+    "Crystal Enemys",
+    "Soulbodies",
+    "Grievewraiths",
+    "Ancient Ruins",
+    "Floodland Ruins",
+    "Broken Ones",
+    "Man-eating shark",
+    "Behemoth Remnants",
+    "Crystal Relics",
+    "Broken Crystal Relics"
+   ],
+   "imperium": [
+    "Astartes survivors",
+    "Death Watch",
+    "Grey Knight",
+    "Imperial Expedition Remnants",
+    "The Lost Black Sanctuary",
+    "Lost Warrior"
+   ],
+   "chaos": [
+    "Midnight Lord",
+    "Hatred of intelligence",
+    "World Devourer War Gang",
+    "Lost Chaos Space Marines",
+    "Daemons"
+   ],
+   "xeno": [
+    "Space Necromancer - Sora Dynasty",
+    "Greenskins"
+   ]
+  },
+  "override_by_name": {
+   "Rebel Farmers": "settler",
+   "Rebel Swordsmen": "settler",
+   "Vagrants": "settler",
+   "Flotsam Ninjas": "settler",
+   "Holy Nation Outlaws": "settler",
+   "Adventurers Guild": "settler"
+  },
+  "archetype_regex": [
+   [
+    "chaos",
+    "Chaos|Daemon|Khorne|Nurgle|Slaanesh|Tzeentch|World Eater|Night Lord"
+   ],
+   [
+    "imperium",
+    "Astartes|Space Marine|Imperial (Forces|Guard|Expedition)|Inquisition|Death Korps|Steel Legion|Mark-X|Adeptus"
+   ],
+   [
+    "xeno",
+    "Necron|Waaagh|Orks?\b|Eldar|Tyranid|Tau\b"
+   ]
+  ],
+  "matrix": {
+   "state|trader": 20,
+   "state|bandit": -60,
+   "state|savage": -70,
+   "state|imperium": -5,
+   "state|chaos": -80,
+   "state|xeno": -50,
+   "trader|trader": 25,
+   "trader|bandit": -60,
+   "trader|savage": -60,
+   "trader|religion": 10,
+   "trader|settler": 10,
+   "trader|imperium": -5,
+   "trader|chaos": -80,
+   "trader|xeno": -50,
+   "bandit|savage": -20,
+   "bandit|religion": -70,
+   "bandit|settler": -15,
+   "bandit|robot": -20,
+   "bandit|imperium": -40,
+   "bandit|chaos": -30,
+   "bandit|xeno": -30,
+   "savage|religion": -80,
+   "savage|settler": -40,
+   "savage|robot": -30,
+   "savage|savage": 20,
+   "savage|imperium": -60,
+   "savage|chaos": -50,
+   "savage|xeno": -20,
+   "religion|religion": 30,
+   "religion|robot": -80,
+   "religion|imperium": 10,
+   "religion|chaos": -90,
+   "religion|xeno": -80,
+   "robot|robot": 60,
+   "robot|imperium": -20,
+   "robot|chaos": -80,
+   "robot|xeno": -40,
+   "imperium|imperium": 80,
+   "imperium|chaos": -100,
+   "imperium|xeno": -100,
+   "imperium|settler": -5,
+   "chaos|chaos": 60,
+   "chaos|settler": -80,
+   "chaos|xeno": -80,
+   "xeno|xeno": -60,
+   "xeno|settler": -30
+  },
+  "exceptions": [
+   [
+    "Anti-Slavers",
+    "Slave Traders",
+    -100
+   ],
+   [
+    "Anti-Slavers",
+    "Slave Hunters",
+    -100
+   ],
+   [
+    "Cannibal Hunters",
+    "Cannibals",
+    -100
+   ],
+   [
+    "United Cities",
+    "Cannibals",
+    -90
+   ],
+   [
+    "Shek Kingdom",
+    "Cannibals",
+    -90
+   ],
+   [
+    "The Holy Nation",
+    "Cannibals",
+    -100
+   ],
+   [
+    "Traders Guild",
+    "Cannibals",
+    -80
+   ],
+   [
+    "Police",
+    "Shinobi Thieves",
+    -70
+   ],
+   [
+    "Police",
+    "Dust Bandits",
+    -70
+   ],
+   [
+    "Rebel Farmers",
+    "Anti-Slavers",
+    40
+   ],
+   [
+    "Rebel Swordsmen",
+    "Anti-Slavers",
+    40
+   ],
+   [
+    "Flotsam Ninjas",
+    "Traders Guild",
+    20
+   ],
+   [
+    "Trade Ninjas",
+    "Traders Guild",
+    40
+   ],
+   [
+    "Rusty Raiders",
+    "Dust Bandits",
+    60
+   ],
+   [
+    "Steel Raiders",
+    "Dust Bandits",
+    60
+   ],
+   [
+    "Guild of Surgeons",
+    "Traders Guild",
+    50
+   ],
+   [
+    "Adventurers Guild",
+    "Traders Guild",
+    50
+   ],
+   [
+    "Cult of Fluorite",
+    "The Holy Nation",
+    -30
+   ],
+   [
+    "Old Machines",
+    "Skeleton Legion",
+    70
+   ],
+   [
+    "Skeleton Sultans",
+    "Skeleton Legion",
+    70
+   ]
+  ],
+  "_doc_branches": "2026-11-13 LORE: ветви фракций (docs\\STORY.md «Ветви фракций») — родитель↔ветвь."
+ }
+}

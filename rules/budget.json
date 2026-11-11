@@ -1,0 +1,21 @@
+{
+ "_doc": "Бюджет происхождения (DESIGN.md «Доля божественного»): всё за пределами лора Kenshi (WH-фракции, их лут, реликты) ≈ 2% мира. Проверяет tools/build/budget.py в общем генераторе.",
+ "share_max": 0.02,
+ "tolerance": 0.1,
+ "own_share_min": 0.6,
+ "_own_doc": "экзотика в основном у своих фракций: доля экзотических выдач, пришедшихся на WH-фракции, ≥ own_share_min (цель, в отчёт)",
+ "wh_mods": [
+  "wh40k_imperial_forces.mod",
+  "wh40k_imperial_forces_EN.mod",
+  "Death Korps of Krieg.mod",
+  "Steel Legion Armor Mod.mod",
+  "OrcRaceReview.mod",
+  "OrcRaceReview_English.mod",
+  "40K Necrons.mod",
+  "40K Necrons EN.mod",
+  "TEXT TEXTURE.mod",
+  "TEXT TEXTURE EN.mod",
+  "ChaosDaemonsStandalone.mod",
+  "ChaosDaemonsStandalone_English.mod"
+ ]
+}

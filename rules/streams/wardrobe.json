@@ -1,0 +1,1747 @@
+{
+ "_doc": "Поток G WARDROBE (docs/streams/WARDROBE.md §3): гардероб фракций = своё производство по богатству + торговля с соседями + трофеи с врагов (LORE_MAP). Поглощает тиры потока D (уровни качества, T0-предметы WH) и трофеи бандитов из ECONOMY. Владение полями — DECISIONS.md.",
+ "seed": 2026,
+ "catalog": "C:/KenshiModMap/data/catalog.json",
+ "slots": [
+  "armour:hat",
+  "armour:body",
+  "armour:shirt",
+  "armour:legs",
+  "armour:boots",
+  "armour:belt"
+ ],
+ "options_per_slot": {
+  "default": 5,
+  "armour:shirt": 4,
+  "armour:belt": 4,
+  "armour:hat": 5
+ },
+ "quality_levels": {
+  "T0": {
+   "armour grade": 0,
+   "weapon level": [
+    "WEAPON_MANUFACTURER",
+    "-Expired-",
+    "52294-rebirth.mod"
+   ],
+   "suffix": " [T0]"
+  },
+  "T1": {
+   "armour grade": 2,
+   "weapon level": [
+    "WEAPON_MANUFACTURER",
+    "Catun Scrapmaster",
+    "1057-gamedata.base"
+   ],
+   "suffix": " [T1]"
+  },
+  "T2": {
+   "armour grade": 3,
+   "weapon level": [
+    "WEAPON_MANUFACTURER",
+    "Edgewalkers",
+    "1070-gamedata.base"
+   ],
+   "suffix": " [T2]"
+  },
+  "T3": {
+   "armour grade": 5,
+   "weapon level": [
+    "WEAPON_MANUFACTURER",
+    "Cross",
+    "52288-rebirth.mod"
+   ],
+   "suffix": " [T3 relic]"
+  }
+ },
+ "factions": [
+  {
+   "faction": [
+    "FACTION",
+    "The Holy Nation",
+    "1083-gamedata.base"
+   ],
+   "base": "T1",
+   "leader": "T2",
+   "_lore": "богатая теократия, паладины"
+  },
+  {
+   "faction": [
+    "FACTION",
+    "United Cities",
+    "defaultEmpireFactionSID"
+   ],
+   "base": "T1",
+   "leader": "T2",
+   "_lore": "самураи знати"
+  },
+  {
+   "faction": [
+    "FACTION",
+    "Shek Kingdom",
+    "11624-Dialogue (10).mod"
+   ],
+   "base": "T1",
+   "leader": "T2",
+   "_lore": "воины, но бедность после войн"
+  },
+  {
+   "faction": [
+    "FACTION",
+    "Tech Hunters",
+    "1233-gamedata.base"
+   ],
+   "base": "T1",
+   "leader": "T2",
+   "_lore": "охотники за древним"
+  },
+  {
+   "faction": [
+    "FACTION",
+    "Western Hive",
+    "18000-gamedata.base"
+   ],
+   "base": "T0",
+   "leader": "T1",
+   "_lore": "ульи бедны снаряжением"
+  },
+  {
+   "faction": [
+    "FACTION",
+    "Southern Hive",
+    "56777-Dialogue.mod"
+   ],
+   "base": "T0",
+   "leader": "T1"
+  },
+  {
+   "faction": [
+    "FACTION",
+    "Greenskins",
+    "840011-OrcRaceReview.mod"
+   ],
+   "base": "T0",
+   "leader": "T1",
+   "_lore": "Вааагх: трофейный хлам"
+  },
+  {
+   "faction": [
+    "FACTION",
+    "Astartes survivors",
+    "1034-TEXT TEXTURE.mod"
+   ],
+   "base": "T2",
+   "leader": "T3",
+   "_lore": "реликтовая элита"
+  },
+  {
+   "faction": [
+    "FACTION",
+    "The Lost Black Sanctuary",
+    "227-TEXT TEXTURE.mod"
+   ],
+   "base": "T2",
+   "leader": "T3"
+  },
+  {
+   "faction": [
+    "FACTION",
+    "Death Watch",
+    "463-TEXT TEXTURE.mod"
+   ],
+   "base": "T2",
+   "leader": "T3"
+  },
+  {
+   "faction": [
+    "FACTION",
+    "Grey Knight",
+    "759-TEXT TEXTURE.mod"
+   ],
+   "base": "T2",
+   "leader": "T3"
+  }
+ ],
+ "_factions_doc": "base/leader — тир рядовых/лидеров (из потока D). Класс богатства: base T2+ = rich, T1 = mid, T0 = poor; OT_BANDIT без записи = poor, остальные = mid.",
+ "wealth": {
+  "rich": {
+   "mix": {
+    "own": 0.55,
+    "common": 0.2,
+    "trade": 0.15,
+    "trophy": 0.1
+   },
+   "weight": 60,
+   "upgrade_chance": 15,
+   "elite_fixed": [
+    "armour:hat",
+    "armour:body"
+   ]
+  },
+  "mid": {
+   "mix": {
+    "own": 0.55,
+    "common": 0.2,
+    "trade": 0.15,
+    "trophy": 0.1
+   },
+   "weight": 60,
+   "upgrade_chance": 10,
+   "elite_fixed": [
+    "armour:hat"
+   ]
+  },
+  "poor": {
+   "mix": {
+    "own": 0.35,
+    "common": 0.1,
+    "trophy": 0.15,
+    "selfmade": 0.25,
+    "trade": 0.15
+   },
+   "weight": 15000,
+   "upgrade_chance": 5,
+   "elite_fixed": [
+    "armour:hat"
+   ],
+   "_weight_doc": "у бандитов наши варианты весом 15000 против реликта весом 1 → реликт ≈ 1:45000 на персонажа"
+  }
+ },
+ "relations": {
+  "trade_min": 50,
+  "trophy_max": -50
+ },
+ "bandit_relic": {
+  "weight": 1,
+  "slot": "armour:body",
+  "tier": "T3"
+ },
+ "weapons": {
+  "add_options": 2,
+  "third_option_chance": 0.4,
+  "chance": 30,
+  "classes": [
+   0,
+   1,
+   2,
+   3,
+   4,
+   5,
+   7,
+   8,
+   9
+  ],
+  "cross_class_chance": 0.5,
+  "melee_cats": [
+   "weapon:katana",
+   "weapon:sabre",
+   "weapon:hacker",
+   "weapon:blunt",
+   "weapon:heavy",
+   "weapon:polearm"
+  ],
+  "hard_cap": 30,
+  "crossbow": {
+   "owner_add_options": 2,
+   "new_share": 0.08,
+   "chance": 25,
+   "hard_cap": 60
+  }
+ },
+ "vendors": {
+  "clothing_items": 10,
+  "weight": 30
+ },
+ "wh_origin_factions": {
+  "imperial": [
+   "Imperial Expedition Remnants",
+   "Astartes survivors",
+   "The Lost Black Sanctuary",
+   "Death Watch",
+   "Grey Knight",
+   "Ultramarines (Adeptus Astartes)",
+   "Space Wolves (Adeptus Astartes)",
+   "Dark Angels (Adeptus Astartes)",
+   "Black Templars (Adeptus Astartes)"
+  ],
+  "chaos": [
+   "Lost Chaos Space Marines",
+   "World Devourer War Gang",
+   "Midnight Lord",
+   "Blood Sacrifice",
+   "World Eater Attack"
+  ],
+  "xenos_orc": [
+   "Greenskins"
+  ],
+  "xenos_necron": [
+   "Space Necromancer - Sora Dynasty"
+  ]
+ },
+ "style_affinity": {
+  "_doc": "куда попадают неиспользуемые вещи (никто не носит и не продаёт) по стилю; poor = все бедные фракции",
+  "holy": [
+   "The Holy Nation"
+  ],
+  "plate": [
+   "United Cities",
+   "Shek Kingdom"
+  ],
+  "chain": [
+   "United Cities",
+   "The Holy Nation"
+  ],
+  "masked": [
+   "Tech Hunters"
+  ],
+  "cyber": [
+   "Tech Hunters"
+  ],
+  "carapace": [
+   "Imperial Expedition Remnants"
+  ],
+  "power": [
+   "Imperial Expedition Remnants"
+  ],
+  "leather": [
+   "Nomads",
+   "Swampers",
+   "Drifters"
+  ],
+  "rags": [
+   "poor"
+  ],
+  "scrap": [
+   "poor"
+  ],
+  "tribal": [
+   "poor",
+   "Cannibals"
+  ],
+  "xenos": [
+   "Greenskins"
+  ]
+ },
+ "t0": {
+  "_doc": "CORE.md §7: T0 «обноски» — те же модели, хуже статы и цена. Раздаём остаткам Империума и (редко) бандитам как трофей с павших.",
+  "items": [
+   {
+    "src": [
+     "ARMOUR",
+     "Guardsman Armor",
+     "146-astramilitarumkit.mod"
+    ],
+    "suffix": " [T0 scavenged]",
+    "mult": {
+     "blunt def bonus": 0.5,
+     "cut def bonus": 0.5,
+     "pierce def mult": 0.7,
+     "hardness": 0.6,
+     "value": 0.3,
+     "combat def bonus": 0.5,
+     "level bonus": 0.5
+    }
+   },
+   {
+    "src": [
+     "CROSSBOW",
+     "Lasgun",
+     "12-astramilitarumkit.mod"
+    ],
+    "suffix": " [T0 failing]",
+    "mult": {
+     "pierce damage": 0.6,
+     "pierce damage max 0": 0.6,
+     "pierce damage max 1": 0.6,
+     "pierce damage min 0": 0.6,
+     "pierce damage min 1": 0.6,
+     "accuracy perfect skill": 0.8,
+     "value": 0.25,
+     "value 1": 0.25
+    }
+   },
+   {
+    "src": [
+     "WEAPON",
+     "(AM WH40k) Chainsword",
+     "67-astramilitarumkit.mod"
+    ],
+    "suffix": " [T0 jammed]",
+    "mult": {
+     "cut damage multiplier": 0.65,
+     "armour penetration": 0.4,
+     "bleed mult": 0.6,
+     "attack mod": 0.3,
+     "value": 0.3
+    }
+   }
+  ]
+ },
+ "vanilla_reweight": {
+  "_doc": "WARD_SHARE A: в слоте, где персонаж получил >= min_mods наших вариантов, его ванильные ссылки clothing перезаписываются (тот же target, v1 меньше; не удаляются, вес не повышается). v1 = вес внутри слота. vanilla_weight — потолок веса одной ванильной ссылки; суммарный вес ванили в слоте дополнительно ограничен так, чтобы доля наших вещей по весу была >= mod_share (0.8 = 80%). Опознавательные элиты (v1=100) и реликт бандитов (bandit_relic.weight) не считаются и не трогаются.",
+  "enabled": true,
+  "vanilla_weight": 25,
+  "min_mods": 2,
+  "mod_share": 0.8
+ },
+ "require_own_mesh": true,
+ "_own_mesh_doc": "WARD_SHARE C: модовые ARMOUR, у которых mesh и mesh female пусты или начинаются с префикса .\\data\\ (меш ванили), из пулов кандидатов исключаются — игроку они неотличимы от ванили. Ваниль, источники slots_ext и реликт бандитов не фильтруются.",
+ "unique_from_vanilla": true,
+ "_unique_doc": "WARD_SHARE B: флаг unique читается из ванильной цепочки; unique, выставленный модами (No_generic_recruits_now_unique, Kaizo: все наёмники/бармены) не отсекает персонажа. Ванильные unique (Hobbs, Bard и т.п.), слуги-рабы, нечеловеческие расы пропускаются как раньше.",
+ "squad_ref_cats_extra": [
+  "choosefrom list"
+ ],
+ "_squad_doc": "WARD_SHARE B: доп. поля SQUAD_TEMPLATE, откуда берём персонажей (наёмники/рекруты 'Sword for hire', 'hire *' лежат в choosefrom list). Уникальные (unique), рабы (slave / NPC class 6), стартовые и нечеловеческие расы по-прежнему пропускаются.",
+ "max_characters": 9000,
+ "repeat_soft_cap": 8,
+ "_repeat_doc": "вес выбора вещи = 1/(1+(использований/soft)^2); выше hard cap вещь не выдаётся (слот остаётся с меньшим числом вариантов). Персонажи обходятся в случайном порядке, чтобы жёсткий потолок не бил по поздним",
+ "fill_empty": {
+  "armour:hat": 0.4,
+  "armour:shirt": 0.5,
+  "armour:boots": 0.6,
+  "armour:belt": 0.45
+ },
+ "_fill_doc": "доля персонажей, которым слот, пустой в ваниле, заполняется вариантами из пула (иначе NPC ходят «пустыми»)",
+ "repeat_hard_cap": 25,
+ "vendor_hard_cap": 25,
+ "cloak_rx": "cloak|cape|poncho|pelt|robe|mantle|shawl|coat|shroud|tabard|surcoat|duster|hood|wrap|scarf",
+ "cloak_boost": 1.8,
+ "_mix_doc": "own = вещи культуры/фракции (мягкий вес 30-40%); common = общий пул яруса богатства без привязки к фракции (кроме WH/реликтов — они только у своих и в рамках 2%)",
+ "ranged": {
+  "_doc": "правило: огнестрел NPC — только однозарядный/двуствольный мушкет-подобный, арбалет, лук, гарпун, джезайл; без автоматов, современных винтовок, лазеров/плазмы/болтеров",
+  "allow_rx": "sling|junk ?bow|harpoon|oldworld bow|blowgun|^ranger$|eagle'?s cross|tooth ?pick|spring bat|vulture|jezail|musket|doublebarrel",
+  "deny_rx": "revolver|repeating|plasma|laser|las[gr]|bolt|melta|hell|gauss|arc rifle|autogun|ak-|vsv|sniper|rifle|flame|grenade|shred|ss-c|crystal|handturret$|handturret revolver|burst|death mark|shotgun|staff|this machine",
+  "deny_mods": [
+   "Metro.mod",
+   "Soulbody.mod"
+  ],
+  "allow_first_rx": "flintlock|matchlock|wheellock|arquebus|blunderbuss|tanegashima|long rifle|line rifle|double[- ]?barrel pistol",
+  "hard_deny_rx": "gatling|mortar|cannon|multi-?barrel|thunder gun|break-action|revolver|repeating|machine ?gun|plasma|laser|las[gr]|bolt|melta|hellgun|gauss|arc rifle|autogun|handturret|flamethrower|grenade",
+  "firearm_rx": "musket|flintlock|matchlock|wheellock|arquebus|blunderbuss|jezail|tanegashima|pistol|rifle|doublebarrel|double[- ]barrel|shotgun"
+ },
+ "backpack": {
+  "chance_by_role": {
+   "1": 20,
+   "2": 20,
+   "3": 55,
+   "4": 45,
+   "5": 50,
+   "7": 45,
+   "8": 55,
+   "9": 50,
+   "0": 35
+  },
+  "name_boost_rx": "trader|merchant|caravan|shopkeep",
+  "name_chance": 60,
+  "options": 2,
+  "skip_wh": true,
+  "_untouched_doc": "Фракции, которых гардероб не трогает совсем (одежда, рюкзаки, инвентарь, оружие — как у автора мода). 2026-11-15 плейтест: Soulbodies (светящиеся тела душ) носили рюкзаки и хлам в карманах.",
+  "untouched_factions": [
+   "Soulbodies"
+  ]
+ },
+ "loot": {
+  "mods": [
+   "gamedata.base",
+   "NewItemsGoR.mod",
+   "changes_otto.mod",
+   "rebirth.mod",
+   "Machine Oil and Coolant.mod",
+   "Buzzing.mod",
+   "gastronom.mod",
+   "Paper Craft.mod",
+   "Pizza_Time.mod",
+   "Lolu_Leather_Expansion.mod",
+   "Books+.mod"
+  ],
+  "bad_rx": "head|skin|\\bear\\b|limb|flesh|soul|badge|quest|key|permission|passport|cpu|dummy|aom_|daemon|chaos|demon|holy|seal|relic|ancient|divine|god|sacred|tag\\b|map\\b|note|letter|contract|proof|evidence|token|medal|crystal|core|blueprint|schematic|skeleton|robo|plague|corpse|body|blood|bone|casket|slave|tattoo|megacrab|megaraptor|ganglion|pearl|statue|first aid|splint|repair|medical|armour plating|chainmail|servo|motor|steel bars|raw iron|copper|fuel|money|crafting|redux",
+  "min_value": 15,
+  "max_value": 6000,
+  "max_weight": 6,
+  "share": 0.95,
+  "items": [
+   2,
+   5
+  ],
+  "item_chance": 60,
+  "cap_soft": 90,
+  "kinds_by_wealth": {
+   "poor": {
+    "junk": 0.5,
+    "food": 0.3,
+    "drug": 0.1,
+    "book": 0.05,
+    "luxury": 0.05
+   },
+   "mid": {
+    "junk": 0.45,
+    "food": 0.2,
+    "drug": 0.05,
+    "book": 0.15,
+    "luxury": 0.15
+   },
+   "rich": {
+    "junk": 0.2,
+    "food": 0.1,
+    "drug": 0.05,
+    "book": 0.3,
+    "luxury": 0.35
+   }
+  },
+  "value_cap": {
+   "poor": 900,
+   "mid": 2500,
+   "rich": 6000
+  },
+  "_doc": "CHARACTER inventory: ссылка (ITEM, количество 1, шанс %, 0). Без квестовых/божественного/Crafting Redux/KMM_Tech; мод-источник из белого списка",
+  "_doc_2026_11_13": "Владелец: хлам у NPC встречается очень редко. Было share 0.7 / 1–4 вещи / 40 % (итог 42 % шаблонов с лутом) -> 0.95 / 2–5 / 60 %.",
+  "belongings": {
+   "_doc": "Е3 (docs/RESEARCH_BELONGINGS.md): быт в карманах по архетипу фракции (archetype_of из behavior.json; имя фракции by_name_rx важнее). Ref(ITEM, 1, шанс %, 0); до max вещей, заменяют хвост общего лута (итог не больше loot.items[1]). value_cap против продажи «личных вещей» за тысячи. Письма Dialogue.mod с value 0 и quest=False: мрачные находки без дохода. Нет у монстров, роботов, хаоса, xeno, imperium.",
+   "enabled": true,
+   "max": 2,
+   "value_cap": 800,
+   "by_name_rx": [
+    [
+     "shek",
+     "^Shek|Kral|Shek Kingdom"
+    ],
+    [
+     "underworld",
+     "Flotsam|Hashish|Drug Peddlers"
+    ]
+   ],
+   "by_arch": {
+    "bandit": "bandit",
+    "underworld": "underworld",
+    "state": "soldier",
+    "trader": "nomad",
+    "settler": "nomad",
+    "religion": "holy",
+    "savage": "savage"
+   },
+   "sets": {
+    "bandit": [
+     {
+      "sid": "42334-changes_otto.mod",
+      "chance": 25
+     },
+     {
+      "sid": "1946-gamedata.base",
+      "chance": 20
+     },
+     {
+      "sid": "42311-changes_otto.mod",
+      "chance": 30
+     },
+     {
+      "sid": "43956-rebirth.mod",
+      "chance": 20
+     },
+     {
+      "sid": "1965-gamedata.base",
+      "chance": 10
+     },
+     {
+      "sid": "50384-Dialogue.mod",
+      "chance": 5
+     },
+     {
+      "sid": "49488-Dialogue.mod",
+      "chance": 5
+     }
+    ],
+    "underworld": [
+     {
+      "sid": "1230-gamedata.base",
+      "chance": 12
+     },
+     {
+      "sid": "1015-gamedata.base",
+      "chance": 20
+     },
+     {
+      "sid": "24-gastronom.mod",
+      "chance": 15
+     },
+     {
+      "sid": "16856-nodes_otto1.mod",
+      "chance": 10
+     },
+     {
+      "sid": "49476-Dialogue.mod",
+      "chance": 5
+     },
+     {
+      "sid": "49494-Dialogue.mod",
+      "chance": 3
+     }
+    ],
+    "soldier": [
+     {
+      "sid": "1946-gamedata.base",
+      "chance": 25
+     },
+     {
+      "sid": "50518-Newwworld.mod",
+      "chance": 20
+     },
+     {
+      "sid": "42310-changes_otto.mod",
+      "chance": 15
+     },
+     {
+      "sid": "43961-rebirth.mod",
+      "chance": 10
+     },
+     {
+      "sid": "53658-Dialogue.mod",
+      "chance": 4
+     },
+     {
+      "sid": "53659-Dialogue.mod",
+      "chance": 4
+     },
+     {
+      "sid": "53660-Dialogue.mod",
+      "chance": 4
+     },
+     {
+      "sid": "53661-Dialogue.mod",
+      "chance": 4
+     },
+     {
+      "sid": "97852-Dialogue.mod",
+      "chance": 4
+     },
+     {
+      "sid": "97853-Dialogue.mod",
+      "chance": 4
+     },
+     {
+      "sid": "49495-Dialogue.mod",
+      "chance": 3
+     },
+     {
+      "sid": "49493-Dialogue.mod",
+      "chance": 3
+     }
+    ],
+    "nomad": [
+     {
+      "sid": "12617-nodes_otto.mod",
+      "chance": 35
+     },
+     {
+      "sid": "1946-gamedata.base",
+      "chance": 25
+     },
+     {
+      "sid": "1960-gamedata.base",
+      "chance": 15
+     },
+     {
+      "sid": "50568-rebirth.mod",
+      "chance": 25
+     },
+     {
+      "sid": "1535185-Books+.mod",
+      "chance": 4
+     },
+     {
+      "sid": "1535186-Books+.mod",
+      "chance": 4
+     },
+     {
+      "sid": "1535187-Books+.mod",
+      "chance": 4
+     },
+     {
+      "sid": "1535204-Books+.mod",
+      "chance": 4
+     }
+    ],
+    "holy": [
+     {
+      "sid": "1946-gamedata.base",
+      "chance": 20
+     },
+     {
+      "sid": "1016-gamedata.base",
+      "chance": 15
+     },
+     {
+      "sid": "48295-Dialogue.mod",
+      "chance": 6
+     },
+     {
+      "sid": "48296-Dialogue.mod",
+      "chance": 6
+     },
+     {
+      "sid": "48297-Dialogue.mod",
+      "chance": 6
+     },
+     {
+      "sid": "49043-Dialogue.mod",
+      "chance": 6
+     },
+     {
+      "sid": "49056-Dialogue.mod",
+      "chance": 6
+     },
+     {
+      "sid": "49780-Dialogue.mod",
+      "chance": 6
+     },
+     {
+      "sid": "49046-Dialogue.mod",
+      "chance": 4
+     },
+     {
+      "sid": "49047-Dialogue.mod",
+      "chance": 4
+     },
+     {
+      "sid": "49048-Dialogue.mod",
+      "chance": 4
+     },
+     {
+      "sid": "49049-Dialogue.mod",
+      "chance": 4
+     },
+     {
+      "sid": "50383-Dialogue.mod",
+      "chance": 5
+     }
+    ],
+    "shek": [
+     {
+      "sid": "1016-gamedata.base",
+      "chance": 20
+     },
+     {
+      "sid": "42310-changes_otto.mod",
+      "chance": 20
+     },
+     {
+      "sid": "42334-changes_otto.mod",
+      "chance": 15
+     },
+     {
+      "sid": "48294-Dialogue.mod",
+      "chance": 8
+     },
+     {
+      "sid": "1535184-Books+.mod",
+      "chance": 5
+     }
+    ],
+    "savage": [
+     {
+      "sid": "32-gastronom.mod",
+      "chance": 15
+     },
+     {
+      "sid": "34-gastronom.mod",
+      "chance": 15
+     },
+     {
+      "sid": "14-test.mod",
+      "chance": 20
+     },
+     {
+      "sid": "50568-rebirth.mod",
+      "chance": 25
+     },
+     {
+      "sid": "49479-Dialogue.mod",
+      "chance": 3
+     },
+     {
+      "sid": "49481-Dialogue.mod",
+      "chance": 3
+     },
+     {
+      "sid": "56737-Dialogue.mod",
+      "chance": 3
+     },
+     {
+      "sid": "56738-Dialogue.mod",
+      "chance": 3
+     },
+     {
+      "sid": "56739-Dialogue.mod",
+      "chance": 3
+     },
+     {
+      "sid": "56740-Dialogue.mod",
+      "chance": 3
+     }
+    ]
+   }
+  }
+ },
+ "context": {
+  "_doc": "WARDROBE v3 (контекст): всё в данных. lore_hard — жёсткие правила лора; climate — веса одежды по региону (не запреты); bias — ремесло/занятие по имени CHARACTER; firearms — редкость и статус огнестрела; accessories — очки/перчатки/шея (секции Nexus 1838). Шансы — доля шаблонов персонажей (персонаж-шаблон носит одно и то же во всех спавнах); потолок повторов общий (repeat_hard_cap).",
+  "lore_hard": {
+   "power_armor": {
+    "_doc": "Astartes/автономные братства: силовая броня у >=90 % бойцов: у остальных 5 % прочие варианты тела остаются; у выбранных чужая броня тела заменяется силовой из пула своего происхождения",
+    "factions": {
+     "Astartes survivors": "imperial",
+     "The Lost Black Sanctuary": "imperial",
+     "Death Watch": "imperial",
+     "Grey Knight": "imperial",
+     "Lost Chaos Space Marines": "chaos",
+     "World Devourer War Gang": "chaos",
+     "Midnight Lord": "chaos",
+     "World Eater Attack": "chaos",
+     "Blood Sacrifice": "chaos",
+     "Ultramarines (Adeptus Astartes)": "imperial",
+     "Space Wolves (Adeptus Astartes)": "imperial",
+     "Dark Angels (Adeptus Astartes)": "imperial",
+     "Black Templars (Adeptus Astartes)": "imperial"
+    },
+    "name_rx": "power armou?r|terminator",
+    "share": 1.0,
+    "options": 1,
+    "slot": "armour:body",
+    "set_slots": [
+     "armour:hat",
+     "armour:body",
+     "armour:legs",
+     "armour:boots"
+    ],
+    "set_item_rx": "power|terminator|astartes|helm|greave|boots|gauntlet",
+    "_set_doc": "2026-11-13 (плейтест): астартес всех орденов, лоялисты и хаос, — всегда полный сет. Носитель силовой брони в исходных данных не трогается в set_slots (ни гардеробом, ни try_gear дирижёра); у фракций из factions без своей брони выдаётся полный сет одного ордена (префикс имени до « - »), один вариант на слот. Качество варьирует armour grade по тиру (quality_levels)."
+   },
+   "wear": {
+    "_doc": "доля шаблонов с ржавым T0-вариантом тела (механизм t0): остатки экспедиции Империума; по ярусу — бедные фракции реже",
+    "factions": {
+     "Imperial Expedition Remnants": 0.45
+    },
+    "poor_default": 0.05,
+    "slot": "armour:body"
+   },
+   "no_firearms": [
+    "The Holy Nation",
+    "Holy Nation Outlaws",
+    "Preacher Cult"
+   ],
+   "savage": {
+    "_doc": "Дикие фракции (плейтест 2026-11-13: туманники в поварской куртке и карго): во ВСЕХ слотах только своя культура — имя по name_rx (лохмотья/кости/шкуры/каннибальское) или вещь, которую эта фракция носит в ваниле/модах (worn_by); exclude_rx режет городское. С вероятностью trophy на слот — любой трофей, но с весом trophy_share от обычного веса класса (редкий, но заметный). Контекстные добавки (климат/ремесло/аксессуары) — тоже только своя культура.",
+    "factions": [
+     "Fogmen",
+     "Fog Fiends",
+     "Cannibals",
+     "Blood Butcher Tribe",
+     "Charred Skull Tribe",
+     "Gnawed Bone Tribe"
+    ],
+    "name_rx": "rag|bone|skull|pelvis|rib cage|hide|fur|pelt|skin|tribal|primitive|stick|bundle|loin|wrap|flotsam|scrap|bandage|sack|burlap|tooth|teeth|claw|feather|savage|cannibal|fog|crude|makeshift|shaman|totem|barbar",
+    "exclude_rx": "ninja|assassin|holy|samurai|wandering ronin|merchant|chef|hazmat|stickperson|farmer|copy|police|karuta|surgeon|wizard|dyed|blouse",
+    "trophy": 0.06,
+    "char_name_rx": "^fog\\b|^fogm[ae]n\\b|cannibal|\\bfog (heavy|prince|brute|praetorian|fiend)",
+    "char_name_exclude_rx": "hunter|outlaw|warning|ally|slave",
+    "_char_doc": "Шаблон считается диким и по имени персонажа: общие персонажи (Fog Heavy и т.п.) приписаны первому ссылающемуся отряду, часто чужой фракции (savage_seen=0 при сборке 2026-11-13).",
+    "ban_rx": "armou?red|helmet|\bhelm\b|plate|chain|\bmail\b|samurai|metal|steel|iron|visor|kabuto|jingasa|sallet|bucket|goggles|gas mask|hazmat",
+    "ban_keep_rx": "bone|skull|hide|fur|pelt|rag|tribal|primitive|crude|totem|tooth|claw|feather|cannibal|savage|barbar",
+    "_ban_doc": "2026-11-15 плейтест: Armoured Hood был у всех туманников — «дикари примитивные, откуда у них шлема; но могут мародёрить лут получше и прокачиваться как фракция». Вещь с ban_rx (шлем/металл/латы) без ban_keep_rx у диких не считается своей культурой (worn_by не в счёт): только трофей с весом trophy_share; в исходных данных такая вещь переводится в вес трофея (v0<0 = родное «[нет вещи]» не трогается). Следы (traces): T0/T1 без неё, T2/T3 — не больше одной такой вещи (рост фракции).",
+    "trophy_share": 0.1,
+    "fill_mult": 0.5,
+    "weight": 40,
+    "bare_share": 0.6,
+    "_bare_doc": "2026-11-13 плейтест: туманники одеты слишком часто. (1) пустые в ваниле слоты заполняются вдвое реже (fill_mult); (2) вес наших вариантов 40 (было 15000 у бедного класса - топил ванильные кости/шкуры 20-80); (3) в слотах, пустых в ваниле, вариант «[нет вещи]» (val1=-1, родная механика CHARACTER.clothing) с долей bare_share."
+   },
+   "uniforms": [
+    {
+     "id": "holy_nation",
+     "_doc": "Тест владельца 2026-11-13: паладин Святой Нации в обносках. Регулярная армия — хаотично, но в одном стиле: во всех слотах только вещи стиля Holy (имя по name_rx или то, что HN носит в ваниле/модах), exclude_rx режет WH-храмовников, «Unholy», лохмотья слуг. Трофей — редко, малым весом.",
+     "factions": [
+      "The Holy Nation"
+     ],
+     "name_rx": "^holy |holy (order|plate|chest|helmet|boots|lords?|hat|half|long|shorts|sleeve|thigh|shoulder|hessian|flame)|paladin|inquisitor's|holy red|^the holy flame",
+     "exclude_rx": "unholy|templar|grey knight|gray knight|stormtrooper|servant rags|power|terminator|rag",
+     "trophy": 0.04,
+     "trophy_share": 0.1
+    },
+    {
+     "id": "ninja",
+     "_doc": "2026-11-14 плейтест: ниндзя (ванильные и модовые) — осознанный подбор. Лёгкая ткань, маски, капюшоны, повязки, таби/дзори, соломенные шляпы; без лат, шлемов, силовой и священной брони. Плюс всё, что эта фракция носит в ваниле/модах (worn_by).",
+     "factions": [
+      "Shinobi Thieves",
+      "Sand ninjas",
+      "Swamp Ninjas",
+      "Flotsam Ninjas",
+      "Black Dragon Ninjas",
+      "Trade Ninjas",
+      "Black Desert Ninjas",
+      "Big Dave's Ninjas"
+     ],
+     "char_name_rx": "\bninja|shinobi|kunoichi",
+     "char_name_exclude_rx": "hunter|slayer|citizen|trader|merchant|shopkeeper|barman|bartender",
+     "name_rx": "ninja|shinobi|kunoichi|zukin|tabi|zori|bindings|\bgi\b|hood|cowl|bandana|scarf|wrap|sash|rag|straw|kasa|mask|robe|mantle|cloak|sandal|clothpants",
+     "exclude_rx": "plate|power|holy|samurai|cuirass|chain|heavy|terminator|helmet|carapace|armou?r\b|legplates|stormtrooper|templar|paladin|knight|unholy|baker|chef|apron|fog |hound|skull|bone|tricorn|police|barbari",
+     "trophy": 0.04,
+     "trophy_share": 0.1
+    },
+    {
+     "id": "samurai",
+     "_doc": "2026-11-14 плейтест: самураи — по имени персонажа (Samurai/Ashigaru у United Cities и их подвластных). Самурайский доспех, шлемы, кабуто, хакама, соломенные каса; без «древних/разрушенных/тёмных/болотных/свалочных» вариантов, без чужих культур.",
+     "char_factions": [
+      "United Cities",
+      "Traders Guild",
+      "Police",
+      "Drifters",
+      "Western Hive"
+     ],
+     "char_name_rx": "samurai|ashigaru",
+     "char_name_exclude_rx": "moaning|nameless|rogue",
+     "name_rx": "samurai|ashigaru|ronin|kasa|jingasa|kabuto|hakama|straw hat|sandogasa|sode|haidate|kote|do\b|clothpants|tabi|zori|bowl",
+     "exclude_rx": "ancient|ruined|dark |hive|swamp|junk yard|rebel|bone|blackened|vixen|dragon|vanguard|unsanctified|ninja",
+     "trophy": 0.03,
+     "trophy_share": 0.1
+    }
+   ],
+   "pagan": {
+    "_doc": "Владелец 2026-11-13: Druid Helm (череп с рогами) у Святой Нации и солдат — язычество не к месту. Языческие/племенные вещи по name_rx — только диким и культовым фракциям из factions и бедным (poor_ok); прочим не выдаются гардеробом.",
+    "name_rx": "druid|horned|antler|skull helm|skull mask|shaman|totem|witch|tribal|barbar|bone (helm|crown|mask)|pelvis",
+    "factions": [
+     "Fogmen",
+     "Fog Fiends",
+     "Cannibals",
+     "Berserkers",
+     "Band of Bones",
+     "Skin Bandits",
+     "Hiver Tribes",
+     "Swampers",
+     "Nomads",
+     "Bloodraiders"
+    ],
+    "poor_ok": true
+   }
+  },
+  "climate": {
+   "desert": {
+    "factions": {
+     "Shek Kingdom": 0.8,
+     "Nomads": 1.0,
+     "Dust Bandits": 1.0,
+     "Sand ninjas": 1.0,
+     "Desert Raiders": 1.0,
+     "Tech Hunters": 0.6,
+     "Traders Guild": 0.6,
+     "United Cities": 0.4,
+     "Mercenary Guild": 0.4,
+     "Reavers": 0.5
+    },
+    "name_rx": "desert|dust|sand|nomad",
+    "slots": [
+     "armour:hat",
+     "armour:body",
+     "armour:shirt"
+    ],
+    "item_rx": "cloak|cape|hood|veil|turban|scarf|wrap|shawl|mask|robe|poncho|goggle|glass",
+    "chance": 0.5
+   },
+   "wet": {
+    "factions": {
+     "Swampers": 1.0,
+     "Swamp Ninjas": 1.0,
+     "Red Sabres": 0.8,
+     "Southern Hive": 0.5,
+     "Western Hive": 0.5,
+     "Grayflayers": 0.6,
+     "Blackshifters": 0.4
+    },
+    "name_rx": "swamp|bog|marsh|acid",
+    "slots": [
+     "armour:hat",
+     "armour:body"
+    ],
+    "item_rx": "cloak|cape|hat|coat|poncho|rain|oil|hood|straw",
+    "chance": 0.5
+   },
+   "cold": {
+    "factions": {
+     "Anti-Slavers": 0.6,
+     "Berserkers": 0.8,
+     "Skin Bandits": 0.6,
+     "Kral's Chosen": 0.6,
+     "White Eyebrow Clan": 0.5,
+     "Stone Rats": 0.4,
+     "Black Dog": 0.4
+    },
+    "name_rx": "fur|snow|frost|cold|north",
+    "slots": [
+     "armour:body",
+     "armour:shirt",
+     "armour:hat",
+     "armour:legs"
+    ],
+    "item_rx": "fur|pelt|hide|skin|heavy|thick|wool|coat|cloak|padded|fleece|mantle",
+    "chance": 0.5
+   }
+  },
+  "bias": [
+   {
+    "id": "hunter",
+    "name_rx": "hunter|trapper|ranger|tracker|scout|beast|nomad|skinner",
+    "slots": [
+     "armour:hat",
+     "armour:body",
+     "armour:shirt"
+    ],
+    "item_rx": "leather|hide|fur|pelt|cloak|hood|skin|cape|scarf",
+    "chance": 0.5,
+    "ranged": 0.35
+   },
+   {
+    "id": "miner",
+    "name_rx": "miner|mining|digger|driller|prospector|quarry",
+    "slots": [
+     "armour:hat",
+     "armour:body",
+     "armour:legs",
+     "armour:belt"
+    ],
+    "item_rx": "helm|hat|apron|work|leather|overall|pad|belt|mask|goggle",
+    "chance": 0.6
+   },
+   {
+    "id": "farmer",
+    "name_rx": "farm|peasant|harvest|gardener|labou?rer|serf",
+    "slots": [
+     "armour:hat",
+     "armour:shirt",
+     "armour:body",
+     "armour:legs"
+    ],
+    "item_rx": "straw|hat|apron|rag|peasant|cloth|simple|shirt|work|wrap|tunic",
+    "chance": 0.5
+   },
+   {
+    "id": "trader",
+    "name_rx": "trader|merchant|caravan|shopkeep|vendor|barman|bartender|innkeeper|smuggler",
+    "slots": [
+     "armour:hat",
+     "armour:body",
+     "armour:shirt",
+     "armour:belt"
+    ],
+    "item_rx": "cloak|coat|hat|robe|vest|fine|merchant|belt|satchel|scarf|tunic",
+    "chance": 0.5
+   },
+   {
+    "id": "guard",
+    "name_rx": "guard|police|watch|patrol|sentinel|soldier|gate|enforcer|security|trooper|sentry|militia",
+    "slots": [
+     "armour:body",
+     "armour:hat",
+     "armour:legs",
+     "armour:boots"
+    ],
+    "item_rx": "armou?r|plate|chain|helm|brigandine|breastplate|greave|mail|cuirass|boot|lamellar",
+    "chance": 0.55
+   }
+  ],
+  "firearms": {
+   "_doc": "Огнестрел (порох) — редкость и статус. tech: вероятность 0..1 базового шанса по технологичности фракции (f.know дирижёра, статически). Базовый шанс шаблона = tech*base; множители: командир, ветеран (name_rx), охотник (name_rx). Один ствол, шанс срабатывания chance %. Цена/статы оружия не трогаем. Вне пулов: автоматы, энергетика, WH (только своим).",
+   "base": 0.3,
+   "leader_mult": 2.5,
+   "vet_mult": 2.0,
+   "hunter_mult": 2.0,
+   "cap": 0.6,
+   "chance": 30,
+   "vet_rx": "veteran|captain|commander|sergeant|officer|elite|marshal|chief|boss|lord|general|warden|champion",
+   "hunter_rx": "hunter|ranger|sniper|marksman|musket|gunner|trapper|sharpshooter",
+   "tech": {
+    "Tech Hunters": 1.0,
+    "United Cities": 1.0,
+    "Traders Guild": 0.9,
+    "Mercenary Guild": 0.9,
+    "Bounty Hunters": 0.8,
+    "Manhunters": 0.7,
+    "Slave Traders": 0.7,
+    "Shek Kingdom": 0.3,
+    "Anti-Slavers": 0.5,
+    "Cannibal Hunters": 0.4,
+    "Western Hive": 0.1,
+    "Southern Hive": 0.1,
+    "The Holy Nation": 0.0,
+    "Holy Nation Outlaws": 0.0,
+    "Preacher Cult": 0.0,
+    "Cannibals": 0.0,
+    "Skeletons": 0.0,
+    "Nomads": 0.15,
+    "Swampers": 0.05,
+    "Berserkers": 0.0,
+    "Kral's Chosen": 0.0,
+    "Fisher": 0.1,
+    "Dust Bandits": 0.3,
+    "Skin Bandits": 0.1,
+    "Reavers": 0.15,
+    "Deadcat": 0.2,
+    "Flotsam Ninjas": 0.2,
+    "Black Dragon Ninjas": 0.2
+   },
+   "tech_default": 0.25,
+   "shop_roles_rx": "gun|arms|weapon|armourer|smith"
+  },
+  "accessories": {
+   "_doc": "SLOTS: шанс на шаблон (потолок повторов общий; вещь ≤ repeat_hard_cap). Лидеры и WH пропускаются (опознавательный облик). eyes: пустыня/ржавая зона/кислота (climate × вес фракции; имя персонажа даёт 0.8); gloves: вооружённые base, мастеровые role; neck: холод/пустыня/торговцы.",
+   "cap": 0.5,
+   "armour:eyes": {
+    "base": 0.05,
+    "climate": {
+     "desert": 0.3,
+     "wet": 0.15
+    },
+    "name_rx": "ash|acid|burn|scorch|dust|desert|sand",
+    "name_p": 0.25,
+    "role_rx": "miner|smith|engineer|machinist|tech|worker|scout|hunter|mechanic",
+    "role": 0.2
+   },
+   "armour:gloves": {
+    "base": 0.1,
+    "armed": 0.4,
+    "role_rx": "miner|smith|farm|worker|engineer|machinist|mechanic|builder|labou?rer",
+    "role": 0.5
+   },
+   "armour:neck": {
+    "base": 0.28,
+    "climate": {
+     "cold": 0.45,
+     "desert": 0.4
+    },
+    "role_rx": "trader|merchant|caravan|lord|noble|priest|captain|general|scout|ranger",
+    "role": 0.4
+   }
+  }
+ },
+ "slots_ext": {
+  "_doc": "SLOTS (DECISIONS 2026-11-12): клоны мелких вещей в слоты Extra Inventory Sections (AttachSlot EYES=4, GLOVES=10, NECK=11). Исходник не меняется; клон = тот же ARMOUR (материал/защита/вес/цена/меш) с другим slot; исходник убирается из НАШИХ пулов (освобождает пояс/тело/шлем). Клон входит в те же VENDOR_LIST (не больше vendor_cap на вещь) и в аксессуарный пул NPC (context.accessories). Расы: если в данных исходника есть список разрешённых рас — он сохраняется; иначе клон допускается только расам с человеческим мешем тела (RACE «male mesh» = human_male.mesh минус human_deny_rx); исключения исходника (races exclude) сохраняются. Исключено: шлемы с визором, полные маски, 'туника с наручами', водолазки, плащи, WH-перчатки (power gauntlets), вещи без mesh (текстурные 'Racer/Jill/Shinra Gloves', 'Haidate/Peasant Bracers' на SlaveShirt), наголенники, chef neckerchief.",
+  "enum": {
+   "armour:eyes": 4,
+   "armour:gloves": 10,
+   "armour:neck": 11
+  },
+  "human_mesh_rx": "human_male\\.mesh$",
+  "human_deny_rx": "ghoul|zombie|horror|executioner|punisher|fiend|sprinter|golem|android|cyber|demigod|ancient|dead|real human|queen|strange|progenitor|astartes|marine|enforcer|space|terminator|primarch",
+  "vendor_cap": 8,
+  "tier_max": "T2",
+  "weight_rx": {
+   "blindfold": 0.15,
+   "eye ?patch": 0.35,
+   "forehead": 0.7
+  },
+  "savage_rx": "tooth|spiked|\\brag\\b",
+  "_savage_doc": "дикарские вещи — только своей культуре (worn_by), либо бедным фракциям",
+  "deny_by_faction": {
+   "The Holy Nation": "goggle|tooth|spiked|moaning|screeching|bracers|eye ?patch|blindfold",
+   "Holy Nation Outlaws": "goggle|tooth|spiked|moaning|screeching|bracers|eye ?patch|blindfold",
+   "Preacher Cult": "goggle|tooth|spiked|moaning|screeching|bracers|eye ?patch|blindfold"
+  },
+  "own_first": 0.6,
+  "items": [
+   {
+    "sid": "2168-gamedata.base",
+    "group": "armour:eyes",
+    "name": "Square Goggles"
+   },
+   {
+    "sid": "55395-rebirth.mod",
+    "group": "armour:eyes",
+    "name": "Ashlander Stormgoggles"
+   },
+   {
+    "sid": "1535104-Hats.mod",
+    "group": "armour:eyes",
+    "name": "Ashlander Stormgoggles Small"
+   },
+   {
+    "sid": "1535105-Hats.mod",
+    "group": "armour:eyes",
+    "name": "Square Goggles Small"
+   },
+   {
+    "sid": "319-Expanded Vanilla Armor.mod",
+    "group": "armour:eyes",
+    "name": "Drifter's Goggles"
+   },
+   {
+    "sid": "449-Expanded Vanilla Armor.mod",
+    "group": "armour:eyes",
+    "name": "Tsume Goggles"
+   },
+   {
+    "sid": "97859-Patchwork Armour.mod",
+    "group": "armour:eyes",
+    "name": "Drifter Goggles (forehead)"
+   },
+   {
+    "sid": "79-Side Quest.mod",
+    "group": "armour:eyes",
+    "name": "Veteran's Eyepatch (belt)"
+   },
+   {
+    "sid": "80-Side Quest.mod",
+    "group": "armour:eyes",
+    "name": "Wanderer's Eyepatch (belt)"
+   },
+   {
+    "sid": "1535102-Patchwork Armour.mod",
+    "group": "armour:eyes",
+    "name": "Blindfold (belt)"
+   },
+   {
+    "sid": "1535102-Hats.mod",
+    "group": "armour:neck",
+    "name": "Bandana Small"
+   },
+   {
+    "sid": "5007298-Hats.mod",
+    "group": "armour:neck",
+    "name": "Black Bandana Small"
+   },
+   {
+    "sid": "5007307-Hats.mod",
+    "group": "armour:neck",
+    "name": "Red Bandana Small"
+   },
+   {
+    "sid": "23-Custom Personal Armour Pack.mod",
+    "group": "armour:neck",
+    "name": "Neck Rag"
+   },
+   {
+    "sid": "37-Custom Personal Armour Pack.mod",
+    "group": "armour:neck",
+    "name": "Neck Scarf"
+   },
+   {
+    "sid": "38-Custom Personal Armour Pack.mod",
+    "group": "armour:neck",
+    "name": "Neck Scarf [dyed]"
+   },
+   {
+    "sid": "11750571-mybuilding+item.mod",
+    "group": "armour:neck",
+    "name": "Rag Scarf"
+   },
+   {
+    "sid": "7660246-mybuilding+item.mod",
+    "group": "armour:neck",
+    "name": "Rag Scarf (colored)"
+   },
+   {
+    "sid": "97860-Patchwork Armour.mod",
+    "group": "armour:neck",
+    "name": "Drifter Goggles (neck)"
+   },
+   {
+    "sid": "25-MotokoTheHuntress.mod",
+    "group": "armour:neck",
+    "name": "Square Goggles - Neck (Belt)"
+   },
+   {
+    "sid": "23-cat's swamp armor redux.mod",
+    "group": "armour:neck",
+    "name": "Swamper's Tooth Necklace"
+   }
+  ],
+  "enabled": true,
+  "_gloves_doc": "2026-11-13: клоны GLOVES=10 убраны — в сейве теста ни одной вещи в секции gloves, у игрока наручи легли в инвентарь/слот тела. Исходники вернулись в свои пулы. Глаза/шея работают (neck 35, eyes_eyes 3 в сейве)."
+ },
+ "dedup_pools": {
+  "_doc": "DEDUP-POOLS: клоны и перекраски из rules/dedup_canonical.json (tools/dedup_canonical.py) = одна вещь в пулах NPC и лавок; внутри группы канон/цвет по культуре фракции. Лимит повторов — на группу. slots_ext не затрагивается.",
+  "enabled": true,
+  "file": "C:/KenshiModMap/rules/dedup_canonical.json",
+  "worn_mult": 3.0,
+  "vendor_family_max": 2,
+  "color_pref": {}
+ },
+ "rare_items": [
+  {
+   "id": "hazards_shell",
+   "name_rx": "hazards? shell",
+   "cap": 6,
+   "_why": "Oni.mod, сет Hazards Shell — плейтест 2026-11-13: «намного реже»; 6 размещений на всё семейство (верх+низ, все окраски) вместо 25 на вещь"
+  }
+ ],
+ "stat_tiers": {
+  "_doc": "BALANCE 2026-11-13: тир статов NPC по CHARACTER «combat stats» (ванильные ориентиры: голодный бандит 5-20, охрана 25-40, элита/самураи/паладины 45-65, боссы 70+). T0 < b[0], T1 < b[1], T2 < b[2], иначе T3. Тиры снаряжения при выдаче ограничиваются окном вокруг тира статов: верхний тир = max(min(тир фракции, стат+1), min(стат, тир фракции+1)), т.е. бедность/богатство фракции сдвигают не более чем на 1 тир. Дикие фракции/форма (savage, uniforms), носители силовой брони, бандитский реликт (вес 1) и трофеи с малым шансом — вне правила.",
+  "bounds": [
+   22,
+   45,
+   70
+  ],
+  "enabled": true
+ },
+ "relic_tier": {
+  "_doc": "Реликтовый тир (владелец 2026-11-13): не только Warhammer — всё, что вписывается в «поздние утерянные технологии и оружие» на контрасте с обычным Kenshi: имперские золотые/святые сеты, древние самурайские и преторианские, энергетическая и гибридная (улей-кибер) броня, тяжёлые крепостные доспехи, трофейные элитные плиты. Список сетов по слотам (name_rx по имени вещи в слоте) — единый для WARDROBE.unique_relics и следующего блока ARMS (оружие добавлять отдельным ключом weapons). Вещи из excluded_mods.json items и не прошедшие каталог/own_mesh сюда не попадают автоматически (поиск идёт по отфильтрованному каталогу). Отбор: stat_score в верхнем перцентиле группы при малой распространённости (worn_by).",
+  "sets": [
+   {
+    "id": "alarus_gold",
+    "kind": "imperial_gold",
+    "slots": {
+     "armour:hat": "Alarus Terminator Helmet \\(Gold\\)",
+     "armour:body": "Alarus Terminator Armor \\(Gold\\)$",
+     "armour:legs": "Alarus Terminator Leg Armor \\(Gold\\)$",
+     "armour:boots": "Alarus Terminator Power Boots \\(Gold\\)"
+    }
+   },
+   {
+    "id": "royal_crown",
+    "kind": "imperial_gold",
+    "slots": {
+     "armour:hat": "^Imperial Crown$",
+     "armour:body": "Royal Guard - Alarus Terminator Armor \\(Golden Topless Crown\\)",
+     "armour:legs": "Alarus Terminator Leg Armor \\(Gold, no cloak\\)"
+    }
+   },
+   {
+    "id": "grey_knight",
+    "kind": "imperial_holy",
+    "slots": {
+     "armour:hat": "Grey Knight - Holy Shield Terminator Precision Power Helmet",
+     "armour:body": "Grey Knight - Shield Terminator Advanced Power Armor",
+     "armour:legs": "Grey Knight - Holy Shield Terminator Masterfully Crafted Power Leg Armor"
+    }
+   },
+   {
+    "id": "black_templar",
+    "kind": "imperial_holy",
+    "slots": {
+     "armour:hat": "Black Templar - Power Helmet \\(Raven's Beak\\)",
+     "armour:body": "Black Templar - Advanced Power Armor",
+     "armour:legs": "Black Templar - Exquisite Power Leg Armor \\(with Cloth\\)",
+     "armour:boots": "Black Templar - Precision Power Combat Boots"
+    }
+   },
+   {
+    "id": "battle_sisters",
+    "kind": "imperial_holy",
+    "slots": {
+     "armour:hat": "Helmet of the Battle Sisters",
+     "armour:body": "Armor of the Battle Sisters",
+     "armour:legs": "Armoured pants Sisters Battle",
+     "armour:boots": "Boots of the Battle Sisters"
+    }
+   },
+   {
+    "id": "inquisitor",
+    "kind": "imperial_holy",
+    "slots": {
+     "armour:hat": "Stormtrooper Helmet \\(Inquisitor Variant\\)",
+     "armour:body": "Stormtrooper Armor \\(Inquisitorial Variant\\)",
+     "armour:legs": "Armoured pants Stormtrooper \\(Inquisitorial version\\)",
+     "armour:boots": "Stormtrooper Boots \\(Inquisitor Variant\\)"
+    }
+   },
+   {
+    "id": "onyx_fortress",
+    "kind": "heavy_fortress",
+    "slots": {
+     "armour:hat": "Onyx Fortress Headguard",
+     "armour:body": "Onyx Fortress Chestguard",
+     "armour:legs": "Onyx Fortress Waistguard",
+     "armour:boots": "Onyx Fortress Sabaton"
+    }
+   },
+   {
+    "id": "iron_fortress",
+    "kind": "heavy_fortress",
+    "slots": {
+     "armour:hat": "Iron Fortress Headguard",
+     "armour:body": "Iron Fortress Chestguard",
+     "armour:legs": "Iron Fortress Waistguard",
+     "armour:boots": "Iron Fortress Sabaton"
+    }
+   },
+   {
+    "id": "electric_power",
+    "kind": "high_tech",
+    "slots": {
+     "armour:hat": "Electrical Powered Helmet",
+     "armour:body": "Electrical Powered Armor",
+     "armour:legs": "Electrical Powered Leg plate",
+     "armour:boots": "Electrical Powered Shoes"
+    }
+   },
+   {
+    "id": "hive_cyber",
+    "kind": "high_tech",
+    "slots": {
+     "armour:hat": "Hive Heavy Head Cyberimplant \\(soldier\\)",
+     "armour:body": "Hive Heavy Armor Cyberimplant$",
+     "armour:legs": "Hive Heavy Leg Armor Cyberimplant"
+    }
+   },
+   {
+    "id": "dark_praetorian",
+    "kind": "ancient",
+    "slots": {
+     "armour:hat": "Dark Samurai Helmet",
+     "armour:body": "Ancient Praetorian Armour",
+     "armour:legs": "Ancient Praetorian Legplates",
+     "armour:boots": "Dark Samurai Boots"
+    }
+   },
+   {
+    "id": "ancient_samurai",
+    "kind": "ancient",
+    "slots": {
+     "armour:hat": "Ancient (Stag )?Beetle Samurai Helmet",
+     "armour:body": "Ancient Reinfoced Samurai Armor",
+     "armour:legs": "Dark Samurai Legplates",
+     "armour:boots": "Vanguard Samurai boots"
+    }
+   },
+   {
+    "id": "hell_bringer",
+    "kind": "trophy_heavy",
+    "slots": {
+     "armour:hat": "Hell Bringer headgear",
+     "armour:body": "Hell Bringer Armour",
+     "armour:legs": "Hell Bringer bottoms",
+     "armour:boots": "Hell Bringer boots"
+    }
+   },
+   {
+    "id": "riot",
+    "kind": "trophy_heavy",
+    "slots": {
+     "armour:body": "Riot Armour \\(Upper\\)$",
+     "armour:legs": "Riot Armour \\(Lower\\)$"
+    }
+   },
+   {
+    "id": "heavy_plate",
+    "kind": "trophy_heavy",
+    "slots": {
+     "armour:body": "Valac's Plate|Plate Armor - Black|Combat Armor MkII - Black|Talon Armor MkIV|Tsume Armor MkIV|Samurai Armor - Superheavy|Vanguard Samurai Coat"
+    }
+   }
+  ]
+ },
+ "unique_relics": {
+  "_doc": "Уникальным персонажам — реликтовые сеты (владелец 2026-11-13). Кандидаты: CHARACTER unique=true в ванильной цепочке (unique_from_vanilla) + модовые уникальные с combat>=mod_min_cs и (награда >= mod_min_bounty или faction importance >= mod_min_imp). Ранжирование: score = lead*20 + importance*0.5 + награда/2000 + combat*0.3. Уровень 'set' (полный сет, вес 100 — слот заменяется целиком): лидер отряда или importance >= set_imp или награда >= set_bounty, и combat >= set_min_cs; 'accent' (одна вещь: шлем, иначе тело): combat >= accent_min_cs и (лидер или награда >= accent_bounty или importance >= accent_imp). Вещь тира T выдаётся при тире статов >= T-1. Одна вещь — одному персонажу на весь мир. Стиль: by_name (первое совпадение по regex), иначе by_faction; значение — список id из relic_tier.sets (через | в by_name), берётся первый с доступными вещами. Лорный фильтр: Святой Нации — только imperial_holy/imperial_gold, без хаоса, ксеносов, черепов; skip_factions (дикие, скелеты, рабовладельцы), рабы, роботы, звери, торговцы — без изменений. Только clothing (слот заменяется), имена/расы/фракции/AI/диалоги не трогаются. Править список можно здесь. default_styles: персонажам без стиля с combat >= default_min_cs — трофейная тяжёлая плита (одна вещь). Культисты/проповедники (Preacher Cult, Cult of Fluorite) — без брони по лору (skip_factions).",
+  "enabled": true,
+  "mod_min_cs": 55,
+  "mod_min_bounty": 40000,
+  "mod_min_imp": 40,
+  "set_imp": 40,
+  "set_bounty": 40000,
+  "set_min_cs": 45,
+  "accent_min_cs": 35,
+  "accent_bounty": 20000,
+  "accent_imp": 8,
+  "max_sets": 40,
+  "max_accents": 60,
+  "skip_name_rx": "slave|trader|merchant|test|player|bugmaster",
+  "by_name": [
+   [
+    "Phoenix",
+    "alarus_gold"
+   ],
+   [
+    "Valtena",
+    "grey_knight"
+   ],
+   [
+    "Seta",
+    "black_templar"
+   ],
+   [
+    "Emperor Tengu",
+    "royal_crown"
+   ],
+   [
+    "Esata",
+    "onyx_fortress"
+   ],
+   [
+    "Mukai",
+    "iron_fortress"
+   ],
+   [
+    "^(Iyo|Finch|Lord Commander Epson)",
+    "electric_power"
+   ],
+   [
+    "Queen",
+    "hive_cyber"
+   ],
+   [
+    "Eyegore",
+    "dark_praetorian"
+   ],
+   [
+    "^(Lord|Lady) ",
+    "ancient_samurai"
+   ],
+   [
+    "Police|Chief",
+    "riot"
+   ],
+   [
+    "^(Dust King|White Eyebrow|Red Sabre|Tinfist|Savant|Razor|Sand Ninja Oni|Shade|Valamon|Moll)",
+    "hell_bringer|heavy_plate"
+   ]
+  ],
+  "by_faction": {
+   "The Holy Nation": [
+    "black_templar",
+    "battle_sisters",
+    "inquisitor",
+    "grey_knight"
+   ],
+   "United Cities": [
+    "ancient_samurai",
+    "dark_praetorian",
+    "heavy_plate"
+   ],
+   "Shek Kingdom": [
+    "iron_fortress",
+    "heavy_plate"
+   ],
+   "Manhunters": [
+    "riot",
+    "heavy_plate"
+   ],
+   "Machinists": [
+    "electric_power"
+   ],
+   "Tech Hunters": [
+    "electric_power",
+    "heavy_plate"
+   ],
+   "Western Hive": [
+    "hive_cyber"
+   ],
+   "Southern Hive": [
+    "hive_cyber"
+   ],
+   "Anti-Slavers": [
+    "heavy_plate"
+   ],
+   "Flotsam Ninjas": [
+    "heavy_plate"
+   ],
+   "Dust Bandits": [
+    "hell_bringer",
+    "heavy_plate"
+   ],
+   "Skin Bandits": [
+    "heavy_plate"
+   ],
+   "Outlaw": [
+    "heavy_plate"
+   ],
+   "White Eyebrow Clan": [
+    "heavy_plate"
+   ]
+  },
+  "skip_factions": [
+   "Cannibals",
+   "Fogmen",
+   "Fog Fiends",
+   "Fishmen",
+   "Crab Raiders",
+   "Reavers",
+   "Kral's Chosen",
+   "Berserkers",
+   "Band of Bones",
+   "Skeletons",
+   "Skeleton Legion",
+   "Mist Creatures",
+   "Spiders",
+   "Traders Guild",
+   "Slave Traders",
+   "Preacher Cult",
+   "Cult of Fluorite",
+   "Free Traders",
+   "Hounds",
+   "Grayflayers",
+   "Oni",
+   "Gutters",
+   "Scavengers"
+  ],
+  "default_styles": [
+   "heavy_plate"
+  ],
+  "default_min_cs": 70
+ },
+ "identity": {
+  "_doc": "IDENTITY 2026-11-14 (плейтест: Desert Divers без крабовой брони): исходные вещи персонажа в слоте держат долю веса share_sig (если среди них опознавательная вещь фракции: её культуры или её носят <= sig_max_wearers фракций) или share_gen. Только повышение веса исходных ссылок; родные фракционные вещи больше не занижаются WARD_SHARE A.",
+  "enabled": true,
+  "share_sig": 0.55,
+  "share_gen": 0.4,
+  "sig_max_wearers": 6
+ },
+ "coherence": {
+  "_doc": "COHERENCE 2026-11-14 «каждому своё»: общий пул и торговля фракции — только вещи культур, которые она уже носит (профиль по исходным clothing её персонажей); generic/selfmade — только при совпадении узкого стиля. broad_styles не считаются совпадением.",
+  "enabled": true,
+  "broad_styles": [
+   "plate"
+  ]
+ },
+ "disguise": {
+  "enabled": true,
+  "_doc": "ванильная маскировка: клеймо формы (CHARACTER wears uniform) модовым персонажам пар (фракция, класс NPC), где его носит большинство ванильных (или, без ванильных, большинство модовых); у клеймёных родная вещь фракции держит share_uniform веса слота",
+  "min_share": 0.5,
+  "share_uniform": 0.75,
+  "skip_classes": [
+   6
+  ]
+ },
+ "palette": {
+  "enabled": true,
+  "_doc": "яркие перекраски (red/yellow/white/purple/cyan/dyed…) в добавленных пулах и при выборе цвета семейства — только фракциям из faction_bright_ok; своё фракции не фильтруется. Цвета: tools/palette_audit.py → data/palette_audit.json; разбор docs/PALETTE.md",
+  "item_colors": "C:\\KenshiModMap\\data\\palette_audit.json",
+  "faction_bright_ok": {
+   "United Cities": [
+    "blue",
+    "gold",
+    "red"
+   ],
+   "Traders Guild": [
+    "blue",
+    "gold",
+    "red"
+   ],
+   "The Holy Nation": [
+    "blue",
+    "gold",
+    "white"
+   ],
+   "Shek Kingdom": [
+    "orange",
+    "red"
+   ],
+   "Swampers": [
+    "green"
+   ],
+   "Trade Ninjas": [
+    "blue",
+    "gold",
+    "red"
+   ],
+   "Holy Nation Outlaws": [
+    "blue",
+    "gold",
+    "white"
+   ],
+   "Swamp Ninjas": [
+    "green"
+   ],
+   "Red Sabres": [
+    "red"
+   ],
+   "The Holy Nation (postwar) (placeholder)": [
+    "blue",
+    "gold",
+    "white"
+   ],
+   "Swamp Creatures": [
+    "green"
+   ],
+   "Swamp Things": [
+    "green"
+   ],
+   "Taste of Shek": [
+    "orange",
+    "red"
+   ]
+  }
+ },
+ "set_packages": {
+  "enabled": true,
+  "_doc": "комплекты (префикс имени + мод, ≥3 основных слота): доля персонажей получает один комплект; его вещь весит mult × прочих добавок слота, родное в этих слотах не поднимается. Комплект только из доступных фракции пулов (own/trade/common после культуры и палитры), своя культура ×4 к выбору",
+  "p_leader": 0.6,
+  "p_by_class": {
+   "rich": 0.35,
+   "mid": 0.3,
+   "poor": 0.12
+  },
+  "mult": 2.5,
+  "min_main_slots": 3,
+  "main_slots": [
+   "armour:hat",
+   "armour:body",
+   "armour:legs",
+   "armour:boots",
+   "armour:shirt",
+   "armour:belt"
+  ],
+  "generic_tokens": [
+   "leather",
+   "plate",
+   "light",
+   "heavy",
+   "old",
+   "rag",
+   "rags",
+   "simple",
+   "iron",
+   "steel",
+   "black",
+   "red",
+   "white",
+   "green",
+   "blue",
+   "dark",
+   "long",
+   "short",
+   "small",
+   "large",
+   "big",
+   "the",
+   "a",
+   "armor",
+   "armour",
+   "advanced",
+   "basic",
+   "cheap",
+   "fine",
+   "great",
+   "dyed",
+   "ancient",
+   "rusty",
+   "worn",
+   "padded",
+   "cloth",
+   "chain",
+   "samurai",
+   "bandit",
+   "desert",
+   "swamp",
+   "hive",
+   "shek",
+   "holy"
+  ],
+  "profession_rx": "chef|baker|cook|apron|surgeon|doctor|medic|nurse|bartender|barman|miner|farmer|smith",
+  "set_culture": {
+   "Stickperson": [
+    "Western Hive",
+    "Southern Hive",
+    "Hive",
+    "Hive Traders",
+    "Hiver Expansion Alliances",
+    "Red Hive",
+    "Dark Hive",
+    "Steel Raiders"
+   ],
+   "Stickman": [
+    "Western Hive",
+    "Southern Hive",
+    "Hive",
+    "Hive Traders",
+    "Hiver Expansion Alliances",
+    "Red Hive",
+    "Dark Hive",
+    "Steel Raiders"
+   ]
+  }
+ }
+}

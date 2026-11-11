@@ -1,0 +1,332 @@
+{
+  "_doc": "Поток C ECONOMY: деньги NPC по ролям, трофеи, воры (ходят между городами, скупщики краденого), караваны из торговых городов, оборот торговцев. Трофеи бандитов (поле clothing) перенесены в WARDROBE (2026-11-11).",
+  "money_by_role": {
+    "_doc": "Каты у NPC по NPC class (CharacterTypeEnum из KenshiLib). Только повышаем: min=max(тек, правило), max=max(тек, правило). 0 OT_NONE и 6 OT_SLAVE не трогаем.",
+    "1": {
+      "role": "OT_LAW_ENFORCEMENT",
+      "min": 150,
+      "max": 600
+    },
+    "2": {
+      "role": "OT_MILITARY",
+      "min": 100,
+      "max": 500
+    },
+    "3": {
+      "role": "OT_TRADER",
+      "min": 300,
+      "max": 1500
+    },
+    "4": {
+      "role": "OT_CIVILIAN",
+      "min": 30,
+      "max": 250
+    },
+    "5": {
+      "role": "OT_DIPLOMAT (в данных — лавочники)",
+      "min": 300,
+      "max": 1500
+    },
+    "7": {
+      "role": "OT_SLAVER",
+      "min": 300,
+      "max": 1200
+    },
+    "8": {
+      "role": "OT_BANDIT",
+      "min": 20,
+      "max": 300
+    },
+    "9": {
+      "role": "OT_ADVENTURER",
+      "min": 20,
+      "max": 300
+    },
+    "skip_name_contains": [
+      "test",
+      "initialisation",
+      "generation_template"
+    ]
+  },
+  "thieves": {
+    "_doc": "В движке нет AI-задачи «украсть у NPC/из здания» (только LOOT_*: трупы, еда, контейнеры). Данными можно: воры ходят между городами (второй AI-пакет), контрабандисты скупают краденое.",
+    "travel_squads": [
+      [
+        "SQUAD_TEMPLATE",
+        "Town Thief"
+      ]
+    ],
+    "travel_package": [
+      "AI_PACKAGE",
+      "Wandering from town to town",
+      "2675-gamedata.base"
+    ],
+    "travel_priority": 1,
+    "fences": {
+      "squads": [
+        [
+          "SQUAD_TEMPLATE",
+          "Thieves Guild smuggler",
+          "51794-rebirth.mod"
+        ]
+      ],
+      "values": {
+        "buys stolen": true,
+        "buys illegal": true
+      }
+    }
+  },
+  "caravans": {
+    "_doc": "Караваны выходят из торговых городов как roaming squads (val0 — вес/численность как у ванильных записей; 2 — частое значение). Только города союзников гильдии/ульев.",
+    "roaming": [
+      {
+        "squad": [
+          "SQUAD_TEMPLATE",
+          "Caravan",
+          "1161-gamedata.base"
+        ],
+        "weight": 2,
+        "towns": [
+          "Heft",
+          "Bark",
+          "Stoat",
+          "Sho-Battai",
+          "Brink",
+          "Clownsteady",
+          "Drin"
+        ]
+      },
+      {
+        "squad": [
+          "SQUAD_TEMPLATE",
+          "Hiver Merchant caravan",
+          "47188-Dialogue.mod"
+        ],
+        "weight": 2,
+        "towns": [
+          "Hive Village",
+          "Western Hive"
+        ]
+      }
+    ]
+  },
+  "vendor_turnover": {
+    "_doc": "Торговцы обновляют ассортимент чаще: refresh ≥ from_hours → to_hours (только у is trader).",
+    "from_hours": 24.0,
+    "to_hours": 16.0
+  },
+  "items": {
+    "_doc": "ITEMS-блок: цены предметов (не броня/оружие/патроны) и обороты через списки торговцев. Ваниль-эталон (цены не трогаем, кроме пустых цен лор-записок). Сигналы — data/items_audit.json (ассеты) + _items.py.",
+    "skip_groups": [
+      "token",
+      "ammo",
+      "blueprint",
+      "limb",
+      "trinket",
+      "misc",
+      "organic"
+    ],
+    "skip_name_rx": "dagger|sword|katana|blade|no longer in use|unused|\\[X\\]|\bFCS\b|\btest\b",
+    "outlier": {
+      "hi_factor": 1.5,
+      "hi_factor_rare": 3.0,
+      "hi_trigger_p90": 2.0,
+      "hi_trigger_ratio": 3.0,
+      "lo_groups": [
+        "food",
+        "drug",
+        "medical",
+        "repair",
+        "map",
+        "material"
+      ],
+      "lo_trigger_p10": 0.5,
+      "lo_trigger_ratio": 0.3333,
+      "min_vanilla_n": 3,
+      "rare_rx": "royal|queen|king|ancient|relic|legend|spectral|overlord|emperor|titan|sacred|holy|crystal|soul|banquet|feast|core|pelt|heart|eye|head",
+      "lo_skip_rx": "dirty|rotten|foul|spoiled|human|patty|bug|juice"
+    },
+    "books": {
+      "_doc": "Книги/записки с value=0, не квестовые (нет ссылок диалогов, не лежат только в инвентаре NPC). Ориентиры ваниль: Damaged Book 10, лор-записки 100–200, Book 300, Ancient Science Book 5000.",
+      "keep_zero_rx": "wanted|beast bounty|reward|poster|contract|^item$|copy$",
+      "vanilla_value0_refs": [
+        "VENDOR_LIST.items",
+        "ITEM_PLACEMENT_GROUP.items",
+        "SQUAD_TEMPLATE.special items"
+      ],
+      "tiers": [
+        {
+          "id": "ancient",
+          "rx": "cogitator|datapad|data-?slate|archive|lexicanum|schematic|grimoire|psyker|ancient (science|tech|technolog|records?|knowledge)|technolog(y|ies) manual",
+          "value": 2500
+        },
+        {
+          "id": "rare",
+          "rx": "codex|manual|treatise|savant|inquisitor.s journal|testament|chronicle",
+          "value": 900
+        },
+        {
+          "id": "scrap",
+          "rx": "scrap|torn|slip|receipt|ticket|damaged|half-eaten|plate|page\b",
+          "value": 20
+        },
+        {
+          "id": "note",
+          "rx": "letter|note|memo|message|diary|journal|log\b|logbook|report|record|scan|recording|smartpad|speech|farewell",
+          "value": 60
+        },
+        {
+          "id": "book",
+          "rx": ".",
+          "value": 150
+        }
+      ]
+    },
+    "intro": {
+      "_doc": "Мёртвые предметы (нигде не появляются) -> списки торговцев по тематике. Один список на предмет (по хэшу sid), cap — новых предметов на список. Только value>0 после правки цен, ассеты и иконка на месте, не квестовые.",
+      "default_ref": [
+        100,
+        0,
+        0
+      ],
+      "themes": [
+        {
+          "id": "holy_notes",
+          "groups": [
+            "book"
+          ],
+          "rx": "holy|phoenix|inquisitor|paladin|scripture|prayer|heretic|sacred|templar",
+          "lists": [
+            "Lore: Holy Nation Forbidden Books & Notes",
+            "Lore: Holy Nation Offiical Books For Shops & Homes"
+          ],
+          "cap": 6
+        },
+        {
+          "id": "tech_notes",
+          "groups": [
+            "book"
+          ],
+          "rx": "skelet|robot|machin|engineer|schematic|ancient|tech|smartpad|scan|recording|cogitator|datapad|savant|gunpowder|sulfur|geolog|cargo|signal",
+          "lists": [
+            "Lore: Worlds End Library",
+            "library loot"
+          ],
+          "cap": 8
+        },
+        {
+          "id": "notes",
+          "groups": [
+            "book"
+          ],
+          "rx": ".",
+          "lists": [
+            "Lore: Hub Notes & Reports",
+            "Lore: Empire Unnofficial Letters & Books",
+            "Lore: Mongrel Town Diary Excerpts"
+          ],
+          "cap": 6
+        },
+        {
+          "id": "fish_food",
+          "groups": [
+            "food",
+            "drug"
+          ],
+          "rx": "fish|crab|shrimp|mollusk|egg",
+          "lists": [
+            "fishy bar"
+          ],
+          "cap": 4
+        },
+        {
+          "id": "food",
+          "groups": [
+            "food",
+            "medical",
+            "drug"
+          ],
+          "rx": ".",
+          "lists": [
+            "_all food",
+            "caravan (survival items)"
+          ],
+          "cap": 5
+        },
+        {
+          "id": "curios",
+          "groups": [
+            "trade"
+          ],
+          "rx": "figure|pearl|statue|vase|\\begg\\b|milk|\\burn\\b|idol",
+          "lists": [
+            "wealthy house"
+          ],
+          "cap": 6
+        },
+        {
+          "id": "trade",
+          "groups": [
+            "trade",
+            "material",
+            "tool"
+          ],
+          "rx": ".",
+          "lists": [
+            "trade goods"
+          ],
+          "cap": 4
+        },
+        {
+          "id": "beast_gear",
+          "groups": [
+            "container"
+          ],
+          "rx": "animal|harness|\\[|dog|crab|beast|pouch|pockets|pack",
+          "lists": [
+            "adventure shop"
+          ],
+          "cap": 10
+        },
+        {
+          "id": "bags",
+          "groups": [
+            "container"
+          ],
+          "rx": ".",
+          "lists": [
+            "item vendor adv"
+          ],
+          "cap": 4
+        },
+        {
+          "id": "maps",
+          "groups": [
+            "map"
+          ],
+          "rx": ".",
+          "lists": [
+            "adventure shop"
+          ],
+          "cap": 4
+        }
+      ]
+    },
+    "dups": {
+      "_doc": "Дубли по имени (разные записи/моды): из списков торговцев/лута убираем худший (нет иконки/ассетов, не ваниль), на его место — лучший. Записи не удаляем (сейвы).",
+      "groups": [
+        "food",
+        "drug",
+        "medical",
+        "container",
+        "book",
+        "trade",
+        "map",
+        "material",
+        "tool",
+        "repair"
+      ],
+      "min_name_len": 5
+    }
+  }
+}

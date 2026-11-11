@@ -1,0 +1,1158 @@
+{
+ "_doc": "Поток D RELICS: уровни снаряжения, остатки Империума, реликты, WH-отряды в мире. Тиры снаряжения и T0-предметы перенесены в WARDROBE (2026-11-11).",
+ "imperial_remnants": {
+  "_doc": "CORE.md §6: Империум — немногочисленная элита, остатки экспедиции. Фракция KMM + 2 бродячих патруля, редкие спавны. Отношения пишутся только в собственную запись фракции (чужие фракции принадлежат потоку E).",
+  "faction_name": "Imperial Expedition Remnants",
+  "faction_template": [
+   "FACTION",
+   "Manhunters"
+  ],
+  "hostile": [
+   [
+    "FACTION",
+    "Greenskins",
+    -80
+   ],
+   [
+    "FACTION",
+    "Space Necromancer - Sora Dynasty",
+    -100
+   ],
+   [
+    "FACTION",
+    "Lost Chaos Space Marines",
+    -100
+   ],
+   [
+    "FACTION",
+    "World Devourer War Gang",
+    -100
+   ],
+   [
+    "FACTION",
+    "Midnight Lord",
+    -100
+   ],
+   [
+    "FACTION",
+    "Cannibals",
+    -100
+   ],
+   [
+    "FACTION",
+    "Dust Bandits",
+    -40
+   ]
+  ],
+  "friendly": [
+   [
+    "FACTION",
+    "Astartes survivors",
+    60
+   ],
+   [
+    "FACTION",
+    "Death Watch",
+    40
+   ],
+   [
+    "FACTION",
+    "Grey Knight",
+    40
+   ]
+  ],
+  "patrol_ai": [
+   [
+    "AI_PACKAGE",
+    "Patrol map (short range)"
+   ]
+  ],
+  "squads": [
+   {
+    "name": "Imperial Remnant Patrol",
+    "leader": [
+     "CHARACTER",
+     "Commissar",
+     "346-astramilitarumkit.mod"
+    ],
+    "members": [
+     [
+      "CHARACTER",
+      "Guardsman",
+      "347-astramilitarumkit.mod",
+      3,
+      5
+     ]
+    ],
+    "t0_share": true
+   },
+   {
+    "name": "Death Korps Remnant Patrol",
+    "leader": [
+     "CHARACTER",
+     "Soldier",
+     "5007317-Death Korps of Krieg.mod"
+    ],
+    "members": [
+     [
+      "CHARACTER",
+      "Soldier",
+      "5007315-Death Korps of Krieg.mod",
+      3,
+      6
+     ]
+    ],
+    "t0_share": true
+   }
+  ],
+  "spawns": [
+   [
+    "Ashlands",
+    1
+   ],
+   [
+    "Venge",
+    1
+   ],
+   [
+    "Deadlands",
+    1
+   ],
+   [
+    "Stobe's Gamble",
+    1
+   ],
+   [
+    "Sonorous Dark",
+    1
+   ],
+   [
+    "The Black Desert",
+    1
+   ]
+  ],
+  "_spawns_doc": "Патрули остатков экспедиции — только опасные зоны (пепел, руины древних, мёртвые земли), не Border Zone: опасная задача, а не дорожный разбой (DESIGN.md). Ходят «Patrol map (short range)» вокруг места спавна."
+ },
+ "greenskin_warband": {
+  "_doc": "CORE.md §6: орки — рейдеры/варбанды. Бродячая банда фракции Greenskins с AI рейдеров.",
+  "name": "Greenskin Warband",
+  "faction": [
+   "FACTION",
+   "Greenskins"
+  ],
+  "ai_from_squad": [
+   "SQUAD_TEMPLATE",
+   "Dust Bandit squad"
+  ],
+  "leader": [
+   "CHARACTER",
+   "Orc Big 'Un"
+  ],
+  "members": [
+   [
+    "CHARACTER",
+    "Bolt Boy",
+    null,
+    2,
+    4
+   ],
+   [
+    "CHARACTER",
+    "Orc Wanderer",
+    null,
+    2,
+    5
+   ]
+  ],
+  "spawns": [
+   [
+    "Stenn Desert",
+    2
+   ],
+   [
+    "Spider Plains",
+    2
+   ],
+   [
+    "Bonefields",
+    2
+   ]
+  ]
+ },
+ "crystal_spawns": {
+  "name_rx": "crystal",
+  "allow_biomes": [
+   "The Crater",
+   "Shun",
+   "Ashlands",
+   "Deadlands"
+  ],
+  "nests": {
+   "factor": 0.1,
+   "cap": 10
+  },
+  "homeless": {
+   "factor": 0.25,
+   "cap": 3
+  },
+  "_doc": "Тест владельца 2026-11-13: кристальные жуки — очень редкая группа в подходящих местах. Ссылки BIOME_GROUP nests/homeless spawns на шаблоны с name_rx в имени: вне allow_biomes удаляются, в разрешённых вес = min(round(v0*factor), cap). Численность отрядов — поток fix (crystal)."
+ },
+ "spawn_skew": {
+  "_doc": "Перекосы спавна модовых шаблонов (audit_classes D, 2026-11-13): вес >= min_weight и > ratio x медианы биома -> max(floor, cap_x_median x медиана). Ванильные записи (события мира: вторжения, лагеря войны) и skip_name_rx не трогаются.",
+  "vanilla_mods": [
+   "gamedata.base",
+   "rebirth.mod",
+   "Newwworld.mod",
+   "Dialogue.mod"
+  ],
+  "skip_name_rx": "invasion|war camp|crystal",
+  "min_weight": 100,
+  "ratio": 8,
+  "cap_x_median": 4,
+  "floor": 10
+ },
+ "faction_balance": {
+  "_doc": "Пропорции фракций по биомам (BALANCE 2026-11-13, tools/faction_share.py). Для каждого биома и категории (homeless spawns / nests) доля архетипа (behavior world_relations, звери/монстры = wild) считается по весу x размер отряда. Ориентир — ванильная структура этого же биома (слои vanilla_mods); если в ваниле в категории < sparse_min записей, ориентир — ванильная структура мира по категории (для nests в таких биомах — без ограничений). Модовые записи архетипа, чья доля выше tol-кратного ориентира (cap = max(ref*(1+tol), floor)), делят вес множителем (общий на архетип, не ниже min_factor, вес >= 1): моды делят долю своего ванильного архетипа, разнообразие сохраняется. Ванильные записи, события (skip_name_rx), KMM-отряды и WH-архетипы (chaos/xeno/imperium — бюджет budget.json) не трогаются. Недопредставленные архетипы (доля < ref*(1-tol)) поднимаются весом их модовых записей не более max_factor (и не выше 3x медианы биома).",
+  "enabled": true,
+  "vanilla_mods": [
+   "gamedata.base",
+   "rebirth.mod",
+   "Newwworld.mod",
+   "Dialogue.mod"
+  ],
+  "tol": 0.25,
+  "floor": 0.03,
+  "sparse_min": 8,
+  "min_factor": 0.1,
+  "aim": 0.95,
+  "skip_name_rx": "invasion|war camp|crystal",
+  "skip_archetypes": [
+   "chaos",
+   "xeno",
+   "imperium"
+  ],
+  "max_factor": 2.5
+ },
+ "arms": {
+  "_doc": "ARMS 2026-11-13: математика снаряжения. Модель и допущения - в шапке tools/arms_audit.py. Тиры T0-T5: перцентили ванили (pooled x = score/потолок группы), RELIC = выше ванильного топа. Нормализация - значения полей существующих ARMOUR/WEAPON каталога (value не трогаем: им владеет economy; цена реликта - relative price mult).",
+  "enabled": true,
+  "vanilla_mods": [
+   "gamedata.base",
+   "rebirth.mod",
+   "Newwworld.mod",
+   "Dialogue.mod"
+  ],
+  "base_cut": [
+   0.0,
+   0.05,
+   0.1,
+   0.15
+  ],
+  "base_blunt": [
+   0.0,
+   0.03,
+   0.07,
+   0.1
+  ],
+  "grade_mult": {
+   "0": 0.5,
+   "1": 0.7,
+   "2": 0.85,
+   "3": 1.0,
+   "4": 1.1,
+   "5": 1.25
+  },
+  "tier_percentiles": [
+   0.35,
+   0.55,
+   0.72,
+   0.88,
+   0.96
+  ],
+  "tier_cap_frac": 1.0,
+  "vanilla_bonus_floor": 0.0,
+  "pierce_mult_cap": 1.3,
+  "weight_cap": {
+   "armour:body": 60,
+   "armour:legs": 30,
+   "armour:hat": 15,
+   "armour:boots": 15
+  },
+  "relic_target": {
+   "armour:body": 1.15,
+   "armour:legs": 1.05,
+   "armour:hat": 1.05,
+   "armour:boots": 1.0
+  },
+  "relic_pierce_mult": 1.2,
+  "relic_weight_min": {
+   "armour:body": 35,
+   "armour:legs": 14,
+   "armour:hat": 4,
+   "armour:boots": 6
+  },
+  "relic_mob_cap": {
+   "armour:body": {
+    "dodge mult": 0.9,
+    "combat speed mult": 1.0,
+    "athletics mult": 0.95,
+    "stealth mult": 0.8
+   },
+   "armour:legs": {
+    "dodge mult": 0.95,
+    "combat speed mult": 1.0,
+    "athletics mult": 0.95,
+    "stealth mult": 0.9
+   },
+   "armour:hat": {
+    "stealth mult": 0.95
+   },
+   "armour:boots": {
+    "stealth mult": 0.9
+   }
+  },
+  "relic_price_mult": {
+   "armour:body": 4.0,
+   "armour:legs": 3.0,
+   "armour:hat": 3.0,
+   "armour:boots": 3.0
+  },
+  "relic_weapons_rx": "power (sword|saber|axe|halberd|hammer|mace)|powered axe|chain ?(saw|sword|axe)|chainsaw|thunder hammer|psychic sword|nemesis|omnissiah|relic|ripper|pneumatic hammer",
+  "relic_weapon_pen": 0.6,
+  "relic_weapon_floor": 1.15,
+  "weapon_dmg_cap": 2.0,
+  "scenarios": {
+   "stick": [
+    0.0,
+    1.0,
+    0.0
+   ],
+   "sword_t2": [
+    1.0,
+    0.0,
+    0.1
+   ],
+   "heavy_t5": [
+    0.8,
+    0.8,
+    0.3
+   ],
+   "relic_blade": [
+    1.0,
+    0.0,
+    0.6
+   ]
+  },
+  "tier_percentiles_weapon": [
+   0.15,
+   0.35,
+   0.55,
+   0.75,
+   0.9
+  ],
+  "ceil_slack": 1.1,
+  "groups": [
+   "armour:hat",
+   "armour:body",
+   "armour:legs",
+   "armour:boots",
+   "armour:shirt"
+  ],
+  "cov_cap": {
+   "armour:body": 4.0,
+   "armour:legs": 2.5,
+   "armour:hat": 1.0,
+   "armour:boots": 1.0,
+   "armour:shirt": 3.0
+  },
+  "mult_fields": [
+   "dodge mult",
+   "athletics mult",
+   "stealth mult",
+   "combat speed mult",
+   "damage output mult"
+  ],
+  "relic_biomes": [
+   "Sonorous Dark",
+   "The Black Desert",
+   "Ashlands",
+   "Deadlands",
+   "The Crater",
+   "Venge",
+   "Stobe's Gamble",
+   "Rebirth",
+   "Okran's Pride",
+   "The Eye"
+  ],
+  "relic_spawn_move_frac": 0.5,
+  "relic_faction_extra": [
+   "Imperial Expedition Remnants"
+  ],
+  "int_fields": [
+   "combat def bonus",
+   "combat attk bonus",
+   "level bonus"
+  ],
+  "pa_extra_rx": "power (combat|boots|helm|leg|gaunt|greave|armou?r)|powered? (helmet|boots)|terminator|mark[- ]?x|mkx",
+  "item_scale": {
+   "_doc": "Точечное ослабление/усиление вещей поверх ARMS (ключ — sid). scale 0.5 = эффект вдвое слабее.",
+   "1032-TEXT TEXTURE.mod": {
+    "_name": "Imperial Crown (帝皇冠冕, TEXT TEXTURE) — корона Императора Тэнгу (wardrobe royal_crown); владелец 2026-11-13: ослабить в 2 раза",
+    "scale": 0.5,
+    "mult_fields": [
+     "athletics mult",
+     "combat speed mult",
+     "damage output mult",
+     "dexterity mult",
+     "dodge mult",
+     "pierce def mult",
+     "ranged skill mult",
+     "stealth mult",
+     "asassination mult"
+    ],
+    "resist_fields": [
+     "cut def bonus",
+     "blunt def bonus"
+    ],
+    "int_fields": [
+     "combat attk bonus",
+     "combat def bonus",
+     "unarmed bonus",
+     "perception bonus",
+     "level bonus"
+    ]
+   }
+  }
+ },
+ "rival_danger": {
+  "_doc": "R5 2026-11-15 (продолжение Q1 RIVALS): прокачка через встречи. Соперники и их тиры берутся из rules/streams/fix.json rivals (prospectors+wanderers, tiers) через tools/streams/_shared.py:rival_tier. Опасность биома d = средние combat stats членов бродячих отрядов (вес x число членов) по ванильным слоям faction_balance.vanilla_mods; при ванильной массе < min_vanilla_mass берётся текущее состояние. t = (d-safe_at)/(danger_at-safe_at) в [0,1], arms.relic_biomes не ниже relic_biome_floor. tier_mult = множители [t=0, t=0.5, t=1], между точками линейно. keep_rival_mass: масса соперников в биоме сохраняется (меняется состав, а не частота встреч). fb_guard_steps: ослабление сдвига, если доля архетипа выходит за коридор faction_balance (cap/low) дальше чем на fb_slack (абс. доля; уже вышедшая из коридора доля может сдвинуться не более чем на fb_slack). quant: целое Q<=max_upscale на все записи биома, чтобы веса 1 могли стать x0.4 (ошибка округления <= tol). Бюджет WH режется после этого прохода.",
+  "enabled": true,
+  "danger": {
+   "safe_at": 18,
+   "danger_at": 40,
+   "min_vanilla_mass": 100,
+   "relic_biome_floor": 0.75
+  },
+  "tier_mult": {
+   "weak": [
+    1.3,
+    1.0,
+    0.6
+   ],
+   "mid": [
+    1.1,
+    1.15,
+    0.9
+   ],
+   "strong": [
+    0.4,
+    1.0,
+    1.6
+   ]
+  },
+  "keep_rival_mass": true,
+  "fb_guard_steps": [
+   1.0,
+   0.5,
+   0.25,
+   0
+  ],
+  "fb_slack": 0.01,
+  "quant": {
+   "max_upscale": 5,
+   "tol": 0.2
+  }
+ },
+ "soul_echo": {
+  "_doc": "S1 (2026-11-15) ЭХО ПАВШИХ: Soul World (Soulbody.mod), фракция Soulbodies — светящиеся тела душ. Не случайный спавн: в BIOME_GROUP их записи weight_mult (x0.3) от итогового веса, веса целые: масса шаблона round(W*mult) раздаётся по биомам методом наибольшего остатка, запись с 0 снимается из биома. Ночью они приходят к местам недавней бойни — KMM_Predators (echo_*). pkg_from 42157-rebirth.mod «animal patrol aggressive» (signal func 0, unloaded 0: Patrol без маршрута — звериный пакет у людей, стоят на месте ?) , и его копия 14-Soulbody Tweaks.mod «Patrol Aggressive with Medic» (тоже signal 0/unloaded 0, +Medic/Robotics; Robotics теряется) -> pkg_to 3949-gamedata.base «Patrol map: Aggressive (short range)» (ванильный пакет бродячих агрессивных отрядов: SIG_START_PATROL=6, UPJOB_PATROL_SHORTRANGE=2, Patrol + attack enemies and neutrals); только шаблоны с членами CHARACTER.",
+  "enabled": true,
+  "faction": "5007288-Soulbody.mod",
+  "weight_mult": 0.3,
+  "cats": [
+   "homeless spawns"
+  ],
+  "pkg_from": [
+   "42157-rebirth.mod",
+   "14-Soulbody Tweaks.mod"
+  ],
+  "pkg_to": "3949-gamedata.base"
+ },
+ "astartes_chapters": {
+  "_doc": "A1 (2026-11-15, docs/core/ASTARTES.md): ордена космодесанта Mark-X (TEXT TEXTURE.mod) вместо лагерей. (1) remove_camps: TOWN лагерей космодесанта REMOVED=true (флаг FCS, как у rebirth.mod для 89 TOWN; обратимо: убрать sid из списка); (2) снимаются homeless spawns отрядов фракций remove_spawn_factions (исходные и добавленные этим потоком раньше, напр. перенос arms в relic_biomes); (3) FACTION-ордена = клон faction_template без лагерей/кампаний/жителей; отношения: база template + relations_override (UC/HN/Shek нейтрально-холодные) + allies + ордена между собой; имя содержит «Astartes» — behavior.world_relations даёт архетип imperium (матрица: хаос/ксено -100, дикари -60, бандиты -40, государства -5, только недостающие пары); (4) ранги = клоны CHARACTER мода с экипировкой своего ордена: master (unique, своё имя) → captain → sergeant → братья; named=false (имя записи = звание ?), race задаётся, если у исходника её нет (elite → elite_race, иначе default_race); (5) отряды: командный (master, unique-лидер), ударный капитана, патруль сержанта, приданные уники мода (Grey Knights / Deathwatch / Black Shield / Emperor's Champion / Imperial Fist) — бродячие (homeless spawns) только в биомах своего региона, веса целые (вес записи в биоме, роль → вес); AI packages = patrol_ai. Проход последний в потоке: бюджет WH и баланс фракций эти веса не режут (масса ~150 из ~215000, отчёт astartes_*). Нужна новая игра.",
+  "enabled": true,
+  "faction_template": "Astartes survivors",
+  "faction_values": {
+   "default relation": -5,
+   "not real": false
+  },
+  "faction_race": "Astartes (The Lost)",
+  "default_race": "Astartes (The Lost)",
+  "elite_race": "Astartes (Elite)",
+  "relations_override": [
+   [
+    "United Cities",
+    -10
+   ],
+   [
+    "The Holy Nation",
+    -10
+   ],
+   [
+    "Shek Kingdom",
+    -10
+   ],
+   [
+    "Tech Hunters",
+    30
+   ],
+   [
+    "Nameless",
+    5
+   ],
+   [
+    "Anti-Slavers",
+    0
+   ],
+   [
+    "Skeletons",
+    -5
+   ],
+   [
+    "Traders Guild",
+    0
+   ],
+   [
+    "Man-eating shark",
+    -60
+   ],
+   [
+    "Midnight Lord",
+    -100
+   ],
+   [
+    "Space Necromancer - Sora Dynasty",
+    -100
+   ],
+   [
+    "Greenskins",
+    -100
+   ],
+   [
+    "Hatred of intelligence",
+    -100
+   ],
+   [
+    "Daemons",
+    -100
+   ],
+   [
+    "Lost Chaos Space Marines",
+    -100
+   ],
+   [
+    "World Devourer War Gang",
+    -100
+   ],
+   [
+    "Cannibals",
+    -60
+   ],
+   [
+    "Fogmen",
+    -60
+   ],
+   [
+    "Fishmen",
+    -60
+   ],
+   [
+    "Skin Bandits",
+    -60
+   ]
+  ],
+  "allies": [
+   "Astartes survivors",
+   "Death Watch",
+   "Grey Knight",
+   "Imperial Expedition Remnants",
+   "The Lost Black Sanctuary",
+   "Lost Warrior"
+  ],
+  "ally_value": 80,
+  "chapter_value": 80,
+  "remove_camps": [
+   [
+    "1033-TEXT TEXTURE.mod",
+    "Astartes outpost (Astartes survivors, Flats Lagoon)"
+   ],
+   [
+    "424-TEXT TEXTURE.mod",
+    "Black Sanctuary Camp (The Lost Black Sanctuary, Gut)"
+   ],
+   [
+    "462-TEXT TEXTURE.mod",
+    "Death Watch landing point (Death Watch, Howler Maze)"
+   ],
+   [
+    "758-TEXT TEXTURE.mod",
+    "Devil's Hideout (Grey Knight, Leviathan Coast)"
+   ],
+   [
+    "947-TEXT TEXTURE.mod",
+    "Silent Camp (Grey Knight, Sinkuun)"
+   ],
+   [
+    "1724-TEXT TEXTURE.mod",
+    "Branding Camp (Black Shield, Spider Plains)"
+   ]
+  ],
+  "remove_spawn_factions": [
+   "Astartes survivors"
+  ],
+  "patrol_ai": [
+   "AI_PACKAGE",
+   "Patrol map (short range)"
+  ],
+  "squad_template": [
+   "SQUAD_TEMPLATE",
+   "TC Shek Warrior Patrol"
+  ],
+  "squad_values": {
+   "dont multiply": true,
+   "patrol approaches towns": false,
+   "roaming military": false,
+   "is trader": false
+  },
+  "chapters": [
+   {
+    "key": "ultramarines",
+    "faction": "Ultramarines (Adeptus Astartes)",
+    "relic": "hunt_chaos",
+    "region": "Cheaters Run (кислотные ливни; Human Research Institute — Midnight Lord)",
+    "ranks": {
+     "master": {
+      "src": [
+       "CHARACTER",
+       "Ultramariner - Quintus Proctor",
+       "422-TEXT TEXTURE.mod"
+      ],
+      "name": "Chapter Master Aurelian Varro",
+      "unique": true,
+      "pkg_from": "1022-TEXT TEXTURE.mod"
+     },
+     "captain": {
+      "src": [
+       "CHARACTER",
+       "Extreme Warrior - Terminator Assault Captain",
+       "168-TEXT TEXTURE.mod"
+      ],
+      "name": "Ultramarines Captain",
+      "elite": true
+     },
+     "sergeant": {
+      "src": [
+       "CHARACTER",
+       "Ultra Warrior 03 Assault Sergeant",
+       "167-TEXT TEXTURE.mod"
+      ],
+      "name": "Ultramarines Sergeant"
+     },
+     "veteran": {
+      "src": [
+       "CHARACTER",
+       "Ultramarines - Tactical Veteran",
+       "2174-TEXT TEXTURE.mod"
+      ],
+      "name": "Ultramarines Veteran"
+     },
+     "terminator": {
+      "src": [
+       "CHARACTER",
+       "Ultramariner - Unyielding Terminator (equipped with a power hammer)",
+       "3061-TEXT TEXTURE.mod"
+      ],
+      "name": "Ultramarines Terminator",
+      "elite": true
+     },
+     "brother": {
+      "src": [
+       "CHARACTER",
+       "New Extreme Warrior 001",
+       "1022-TEXT TEXTURE.mod"
+      ],
+      "name": "Ultramarines Battle-Brother"
+     }
+    },
+    "squads": [
+     {
+      "role": "master",
+      "name": "Ultramarines - Chapter Master's Honour Guard",
+      "leader": "master",
+      "members": [
+       [
+        "veteran",
+        2,
+        2
+       ],
+       [
+        "terminator",
+        1,
+        1
+       ]
+      ]
+     },
+     {
+      "role": "captain",
+      "name": "Ultramarines - Captain's Strike Force",
+      "leader": "captain",
+      "members": [
+       [
+        "terminator",
+        1,
+        1
+       ],
+       [
+        "veteran",
+        1,
+        1
+       ],
+       [
+        "brother",
+        2,
+        3
+       ]
+      ]
+     },
+     {
+      "role": "sergeant",
+      "name": "Ultramarines - Sergeant's Tactical Patrol",
+      "leader": "sergeant",
+      "members": [
+       [
+        "brother",
+        2,
+        3
+       ]
+      ]
+     },
+     {
+      "role": "attached",
+      "name": "Grey Knights Purgation Squad (with the Ultramarines)",
+      "leader": [
+       "CHARACTER",
+       "Grey Knight - Lord Garan Crow",
+       "699-TEXT TEXTURE.mod"
+      ],
+      "members": [
+       [
+        [
+         "CHARACTER",
+         "Grey Knight - Shield Terminator",
+         "795-TEXT TEXTURE.mod"
+        ],
+        1,
+        1
+       ],
+       [
+        [
+         "CHARACTER",
+         "Grey Knight - Shield Terminator 2 (with Power Sword)",
+         "952-TEXT TEXTURE.mod"
+        ],
+        1,
+        1
+       ]
+      ]
+     }
+    ],
+    "spawns": [
+     [
+      "Cheaters Run",
+      {
+       "master": 1,
+       "captain": 1,
+       "sergeant": 2,
+       "attached": 1
+      }
+     ]
+    ]
+   },
+   {
+    "key": "space_wolves",
+    "faction": "Space Wolves (Adeptus Astartes)",
+    "relic": "hunt_xenos",
+    "region": "Sonorous Dark + Ashlands (кислотный ливень, пепел; Tomb of the Dead некронов, Skinhouse)",
+    "ranks": {
+     "master": {
+      "src": [
+       "CHARACTER",
+       "Space Wolf - Unyielding Terminator Sergeant",
+       "3897-TEXT TEXTURE.mod"
+      ],
+      "name": "Wolf Lord Ragnvald Frostfang",
+      "unique": true,
+      "elite": true
+     },
+     "captain": {
+      "src": [
+       "CHARACTER",
+       "Space Wolf - Unyielding Terminator (Power Hammer)",
+       "3864-TEXT TEXTURE.mod"
+      ],
+      "name": "Wolf Guard Battle Leader",
+      "elite": true
+     },
+     "sergeant": {
+      "src": [
+       "CHARACTER",
+       "Space Wolf - Unyielding Terminator (Lightning Claw)",
+       "3892-TEXT TEXTURE.mod"
+      ],
+      "name": "Wolf Guard Pack Leader"
+     },
+     "brother": {
+      "src": [
+       "CHARACTER",
+       "Space Wolf - Unyielding Terminator (Power Fist)",
+       "3893-TEXT TEXTURE.mod"
+      ],
+      "name": "Wolf Guard Terminator"
+     }
+    },
+    "squads": [
+     {
+      "role": "master",
+      "name": "Space Wolves - Wolf Lord's Hearthguard",
+      "leader": "master",
+      "members": [
+       [
+        "captain",
+        1,
+        1
+       ],
+       [
+        "brother",
+        2,
+        2
+       ]
+      ]
+     },
+     {
+      "role": "captain",
+      "name": "Space Wolves - Wolf Guard Hunting Pack",
+      "leader": "captain",
+      "members": [
+       [
+        "brother",
+        2,
+        3
+       ]
+      ]
+     },
+     {
+      "role": "sergeant",
+      "name": "Space Wolves - Pack Patrol",
+      "leader": "sergeant",
+      "members": [
+       [
+        "brother",
+        1,
+        2
+       ]
+      ]
+     },
+     {
+      "role": "attached",
+      "name": "Deathwatch Kill-Team (with the Space Wolves)",
+      "leader": [
+       "CHARACTER",
+       "Deathwatch - Black Shield Captain",
+       "429-TEXT TEXTURE.mod"
+      ],
+      "members": [
+       [
+        [
+         "CHARACTER",
+         "Death Watch - Thorfinn",
+         "439-TEXT TEXTURE.mod"
+        ],
+        1,
+        1
+       ],
+       [
+        [
+         "CHARACTER",
+         "Deathwatch - Black Shield",
+         "443-TEXT TEXTURE.mod"
+        ],
+        1,
+        1
+       ]
+      ]
+     }
+    ],
+    "spawns": [
+     [
+      "Sonorous Dark",
+      {
+       "master": 2,
+       "captain": 4,
+       "sergeant": 10,
+       "attached": 1
+      }
+     ],
+     [
+      "Ashlands",
+      {
+       "master": 1,
+       "captain": 3,
+       "sergeant": 8
+      }
+     ]
+    ]
+   },
+   {
+    "key": "dark_angels",
+    "faction": "Dark Angels (Adeptus Astartes)",
+    "relic": "hunt_chaos",
+    "region": "The Black Desert + Deadlands (ядовитый газ, газовый ливень)",
+    "ranks": {
+     "master": {
+      "src": [
+       "CHARACTER",
+       "Dark Angel - Deathwing Terminator Captain",
+       "3896-TEXT TEXTURE.mod"
+      ],
+      "name": "Master Zadkiel of the Deathwing",
+      "unique": true,
+      "elite": true
+     },
+     "captain": {
+      "src": [
+       "CHARACTER",
+       "Dark Angel - Deathwing Terminator Captain",
+       "3896-TEXT TEXTURE.mod"
+      ],
+      "name": "Dark Angels Captain",
+      "elite": true
+     },
+     "sergeant": {
+      "src": [
+       "CHARACTER",
+       "Dark Angel - Deathwing Terminator (Power Sword)",
+       "3872-TEXT TEXTURE.mod"
+      ],
+      "name": "Deathwing Sergeant"
+     },
+     "knight": {
+      "src": [
+       "CHARACTER",
+       "Dark Angel - Deathwing Terminator (Power Fist)",
+       "3895-TEXT TEXTURE.mod"
+      ],
+      "name": "Deathwing Knight"
+     },
+     "brother": {
+      "src": [
+       "CHARACTER",
+       "Dark Angel - Deathwing Terminator (Lightning Claw)",
+       "3894-TEXT TEXTURE.mod"
+      ],
+      "name": "Deathwing Terminator"
+     }
+    },
+    "squads": [
+     {
+      "role": "master",
+      "name": "Dark Angels - Master's Inner Circle",
+      "leader": "master",
+      "members": [
+       [
+        [
+         "CHARACTER",
+         "Black Shield - Brand Warrior",
+         "1710-TEXT TEXTURE.mod"
+        ],
+        1,
+        1
+       ],
+       [
+        "knight",
+        1,
+        1
+       ]
+      ]
+     },
+     {
+      "role": "captain",
+      "name": "Dark Angels - Deathwing Strike",
+      "leader": "captain",
+      "members": [
+       [
+        "knight",
+        1,
+        1
+       ],
+       [
+        "brother",
+        1,
+        2
+       ]
+      ]
+     },
+     {
+      "role": "sergeant",
+      "name": "Dark Angels - Deathwing Patrol",
+      "leader": "sergeant",
+      "members": [
+       [
+        "brother",
+        1,
+        2
+       ]
+      ]
+     }
+    ],
+    "spawns": [
+     [
+      "The Black Desert",
+      {
+       "master": 1,
+       "captain": 1,
+       "sergeant": 3
+      }
+     ],
+     [
+      "Deadlands",
+      {
+       "master": 1,
+       "captain": 1,
+       "sergeant": 3
+      }
+     ]
+    ]
+   },
+   {
+    "key": "black_templars",
+    "faction": "Black Templars (Adeptus Astartes)",
+    "relic": "hunt_chaos",
+    "region": "Venge (лучи с неба; Perdition/Tower of Trial — Oni, Thrall Masters)",
+    "ranks": {
+     "master": {
+      "src": [
+       "CHARACTER",
+       "Black Templar - Paladin Eckhart",
+       "191-TEXT TEXTURE.mod"
+      ],
+      "name": "High Marshal Gerold Vane",
+      "unique": true
+     },
+     "captain": {
+      "src": [
+       "CHARACTER",
+       "Black Templar Mighty Man 04",
+       "212-TEXT TEXTURE.mod"
+      ],
+      "name": "Black Templars Castellan",
+      "elite": true
+     },
+     "sergeant": {
+      "src": [
+       "CHARACTER",
+       "Black Sanctuary Man 03",
+       "210-TEXT TEXTURE.mod"
+      ],
+      "name": "Black Templars Sword Brother"
+     },
+     "brother": {
+      "src": [
+       "CHARACTER",
+       "Black Templar Mighty Man 02",
+       "206-TEXT TEXTURE.mod"
+      ],
+      "name": "Black Templars Battle-Brother"
+     },
+     "initiate": {
+      "src": [
+       "CHARACTER",
+       "Black Sanctuary Little Macho Man 001",
+       "217-TEXT TEXTURE.mod"
+      ],
+      "name": "Black Templars Initiate"
+     }
+    },
+    "squads": [
+     {
+      "role": "master",
+      "name": "Black Templars - High Marshal's Retinue",
+      "leader": "master",
+      "members": [
+       [
+        [
+         "CHARACTER",
+         "Black Templar Mighty Man - Emperor Champion",
+         "214-TEXT TEXTURE.mod"
+        ],
+        1,
+        1
+       ],
+       [
+        [
+         "CHARACTER",
+         "Imperial Fist - Enmu",
+         "959-TEXT TEXTURE.mod"
+        ],
+        1,
+        1
+       ]
+      ]
+     },
+     {
+      "role": "captain",
+      "name": "Black Templars - Crusade Company",
+      "leader": "captain",
+      "members": [
+       [
+        "brother",
+        2,
+        3
+       ],
+       [
+        "initiate",
+        1,
+        1
+       ]
+      ]
+     },
+     {
+      "role": "sergeant",
+      "name": "Black Templars - Crusade Patrol",
+      "leader": "sergeant",
+      "members": [
+       [
+        "initiate",
+        1,
+        2
+       ],
+       [
+        "brother",
+        0,
+        1
+       ]
+      ]
+     }
+    ],
+    "spawns": [
+     [
+      "Venge",
+      {
+       "master": 1,
+       "captain": 2,
+       "sergeant": 4
+      }
+     ]
+    ]
+   }
+  ]
+ }
+}
