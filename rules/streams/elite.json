@@ -1,0 +1,200 @@
+{
+ "_doc": "Поток ELITE: элитные гвардии (мини-подразделения) богатых фракций. Только НОВЫЕ записи: CHARACTER (боец, ветеран, командир; клон базового бойца фракции, свои clothing/weapons, повышенный combat stats) + SQUAD_TEMPLATE (клон боевого отряда фракции: AI/faction/диалоги сохраняются, состав свой). Броня — полный комплект слотов (шлем, тело, ноги, сапоги, пояс/плащ): 2–3 варианта на слот, у последнего шанс 100 (слот не пуст). Вещи не WH (origin не imperial/chaos/xenos), не из catalog_excluded. Спавн — Lua kmm_elite.lua (данные: build/KMM_Elite/scripts/kmm_elite_data.lua).",
+ "catalog": "C:/KenshiModMap/data/catalog.json",
+ "excluded": "C:/KenshiModMap/data/catalog_excluded.json",
+ "bad_origins": [
+  "imperial",
+  "chaos",
+  "xenos",
+  "relic"
+ ],
+ "roles": {
+  "guard": {
+   "suffix": "Guard",
+   "combat": 66,
+   "wages": 400,
+   "money": [
+    400,
+    1200
+   ]
+  },
+  "veteran": {
+   "suffix": "Veteran",
+   "combat": 76,
+   "wages": 600,
+   "money": [
+    800,
+    2000
+   ]
+  },
+  "commander": {
+   "suffix": "Captain",
+   "combat": 86,
+   "wages": 900,
+   "money": [
+    1500,
+    3500
+   ]
+  }
+ },
+ "squad_size": {
+  "guard": [
+   2,
+   3
+  ],
+  "veteran": [
+   1,
+   2
+  ]
+ },
+ "units": [
+  {
+   "key": "gusoku",
+   "faction": "defaultEmpireFactionSID",
+   "name": "Tenka Gusoku Guard",
+   "lore": "Личная гвардия Объединённых Городов: сверхтяжёлые самурайские доспехи гусоку и длинные нодати; её выводят, только когда казна переполнена.",
+   "char_template": "2160-gamedata.base",
+   "squad_template": "61910-rebirth.mod",
+   "slots": {
+    "hat": [
+     "10-Samurai Helmets.mod",
+     "11-Samurai Helmets.mod",
+     "212-Expanded Vanilla Armor.mod"
+    ],
+    "body": [
+     "309-Expanded Vanilla Armor.mod",
+     "261-Expanded Vanilla Armor.mod",
+     "45-Expanded Vanilla Armor.mod"
+    ],
+    "legs": [
+     "2150-gamedata.base",
+     "321-Expanded Vanilla Armor.mod",
+     "311-Expanded Vanilla Armor.mod"
+    ],
+    "boots": [
+     "5008937-Vanguad_mercenares.mod",
+     "549-gamedata.base",
+     "281-Expanded Vanilla Armor.mod"
+    ],
+    "belt": [
+     "41-HTT_Cloaks.mod",
+     "23-HTT_Cloaks.mod",
+     "5007308-Hats.mod"
+    ]
+   },
+   "weapons": [
+    "71-LFW - INFINITE.mod",
+    "10-Sugoi Nagai Katana.mod",
+    "5007315-Serrated Katana.mod",
+    "922-gamedata.base"
+   ]
+  },
+  {
+   "key": "phoenix",
+   "faction": "1083-gamedata.base",
+   "name": "Phoenix Seraphs",
+   "lore": "Закованные в латы Феникса паладины Святой Нации: крестоносный отряд для показательных расправ, появляется там, где у Церкви густо золото и ересь.",
+   "char_template": "1408-gamedata.base",
+   "squad_template": "55666-rebirth.mod",
+   "slots": {
+    "hat": [
+     "442-Expanded Vanilla Armor.mod",
+     "381-Expanded Vanilla Armor.mod",
+     "13-holy_lord_phoenix.mod"
+    ],
+    "body": [
+     "438-Expanded Vanilla Armor.mod",
+     "31-Expanded Vanilla Armor.mod",
+     "377-Expanded Vanilla Armor.mod"
+    ],
+    "legs": [
+     "440-Expanded Vanilla Armor.mod",
+     "380-Expanded Vanilla Armor.mod",
+     "28-Expanded Vanilla Armor.mod"
+    ],
+    "boots": [
+     "443-Expanded Vanilla Armor.mod",
+     "382-Expanded Vanilla Armor.mod",
+     "26-Expanded Vanilla Armor.mod"
+    ],
+    "belt": [
+     "20-HTT_Cloaks.mod",
+     "31-HTT_Cloaks.mod",
+     "5007314-Hats.mod"
+    ]
+   },
+   "weapons": [
+    "5007298-HOLY KATANA.mod",
+    "41-Believer + Book Craft.mod",
+    "18-Cut Weapon Restoration.mod",
+    "5007294-Chopper.mod"
+   ]
+  }
+ ],
+ "lua": {
+  "year_days": 360,
+  "min_years": 2,
+  "wealth_mult": 1.5,
+  "know_min": 1.5,
+  "faction_cooldown_days": 20,
+  "max_alive": 1,
+  "spawn_min": 2200,
+  "spawn_max": 5500,
+  "radius_max": 6000,
+  "poll_seconds": 5,
+  "squad_size": 5,
+  "shelf_min": 0.8,
+  "shelf_spend": [
+   0.05,
+   0.08
+  ],
+  "native_special": true,
+  "legacy_if_no_native": true,
+  "gate_open_days": 2
+ },
+ "personal_guard": {
+  "_doc": "Владелец 2026-11-13: усилить личную охрану важных персонажей. VIP — уникальный (combat >= vip_min_cs или faction importance >= vip_min_imp, не раб, не skip_factions). Бойцы его отряда (не уникальные, combat >= guard_min_cs, не not_guard_rx) заменяются клонами: combat = min(cs_cap, max(cs+cs_add, cs*cs_mult)); число +max(1, ceil(n*add_frac)) но не больше add_max, если в отряде меньше max_squad_for_growth человек. Ванильные шаблоны бойцов не меняются (клон только в отрядах VIP). Отряды больше max_squad_total — армии, не трогаются.",
+  "enabled": true,
+  "vip_min_cs": 50,
+  "vip_min_imp": 40,
+  "guard_min_cs": 15,
+  "cs_add": 15,
+  "cs_mult": 1.25,
+  "cs_cap": 100,
+  "add_frac": 0.25,
+  "add_max": 3,
+  "max_squad_for_growth": 24,
+  "skip_squad_rx": "test|测试|prisoner|vault|captive|slave|copy|player|recruit",
+  "not_guard_rx": "slave|prisoner|eunuch|concubine|servant|citizen|peasant|child|pet|animal|beast|dog|garru|beak|bull|goat|leviathan|cleaner|worker|farmer|merchant|trader|barman|bartender|shopkeeper|wife|husband|machinist|fogman|thrall",
+  "skip_factions": [
+   "Fogmen",
+   "Feral Swamp Ninjas",
+   "Cannibals",
+   "Blood Butcher Tribe",
+   "Charred Skull Tribe",
+   "Gnawed Bone Tribe",
+   "Vagrants",
+   "Fishmen",
+   "Slave Traders",
+   "Slavers"
+  ],
+  "max_squad_total": 30
+ },
+ "native_special": {
+  "_doc": "Родной спавн элиты: UNIQUE_SQUAD_TEMPLATE в FACTION.special squads, замок WORLD_EVENT_STATE (Lua ws_set по богатству). template — ванильный уник (2954 General Epson Army) как база значений/fallback AI. replacement_hours = 20 игровых дней.",
+  "enabled": true,
+  "template": "2954-gamedata.base",
+  "replacement_hours": 480,
+  "persistent": true,
+  "squad_size": {
+   "guard": [
+    2,
+    3
+   ],
+   "veteran": [
+    1,
+    2
+   ]
+  }
+ }
+}

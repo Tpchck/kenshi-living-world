@@ -1,0 +1,6 @@
+{
+  "_doc": "Локальные (не Workshop, не KMM_*) моды из Kenshi/mods: имя .mod -> папка. Включаются в сборку через lo.py (EXTRA, запись 'local:<имя .mod>') и проходят те же проверки mods_cfg.py. Nexus 1838: пустой .mod + DLL (RE_Kenshi) — секции инвентаря (очки/перчатки-кольца/шея) создаются кодом, данных RACE нет.",
+  "mods": {
+    "Extra Inventory Sections Plugin.mod": "Extra Inventory Sections Plugin"
+  }
+}
