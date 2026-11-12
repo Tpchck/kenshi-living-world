@@ -1,0 +1,7 @@
+{
+ "_doc": "Семя мира при пересборке (WORLD_FLOW §1): mode per_build — новое семя при каждой сборке (случайные стартовые отношения фракций в рамках лора и варианты гарнизонов городов); fixed — взять seed. Выбранное семя пишется в build/kmm_build_report.json. Второй слой случайности — семя дирижёра на каждую новую игру (rules/conductor.json params.seed).",
+ "mode": "per_build",
+ "seed": 2026,
+ "relations": {"jitter": 8, "lock_abs": 50, "share": 0.5},
+ "towns": {"residents_jitter": 1, "share": 0.5, "min_residents": 2}
+}
