@@ -1,0 +1,782 @@
+{
+  "_doc": "Поток TECH: путь к реликтам через технологии поверх Crafting Redux (docs/streams/TECH.md, LATE_GAME.md §9). Только новые записи: дерево исследований «Relics», 3 станка, компонент «Relic AI Core». Существующие записи не меняются.",
+  "catalog": "C:\\KenshiModMap\\data\\catalog.json",
+  "origins": [
+    "imperial"
+  ],
+  "_origins_doc": "Воспроизводима только человеческая техника экспедиции (Империум). Хаос (варп) и ксенос (некроны, орки) — не воспроизводятся.",
+  "exclude_groups": [
+    "weapon:turret",
+    "weapon:unarmed"
+  ],
+  "category": "Relics",
+  "anchors": {
+    "_doc": "Опоры дерева: первая существующая в ctx запись из списка (Crafting Redux, если подключён через lo.py EXTRA; иначе ваниль).",
+    "tech6": [
+      [
+        "RESEARCH",
+        "Tech Level 6",
+        "2093-gamedata.base"
+      ]
+    ],
+    "armour": [
+      [
+        "RESEARCH",
+        "Armor Crafting - Plate",
+        "39-2PN8CraftingReduxVanilla.mod"
+      ],
+      [
+        "RESEARCH",
+        "Plate Armour Crafting",
+        "2297-gamedata.base"
+      ]
+    ],
+    "weapons": [
+      [
+        "RESEARCH",
+        "Masterwork Weapon Expertise",
+        "21-2PN8WeaponSmithingCore.mod"
+      ],
+      [
+        "RESEARCH",
+        "Advanced Weapon Grades",
+        "52310-rebirth.mod"
+      ]
+    ],
+    "apex_weapons": [
+      [
+        "RESEARCH",
+        "Edgewalkers Weapon Smithing",
+        "20-2PN8WeaponSmithingCore.mod"
+      ],
+      [
+        "RESEARCH",
+        "Edgewalkers",
+        "53083-rebirth.mod"
+      ]
+    ],
+    "robotics": [
+      [
+        "RESEARCH",
+        "Robotic Arms Redux",
+        "10-2PN8RoboticsRedux.mod"
+      ],
+      [
+        "RESEARCH",
+        "Robotics",
+        "43924-rebirth.mod"
+      ]
+    ]
+  },
+  "items_ref": {
+    "ai_core": "43392-changes_otto.mod",
+    "power_core": "43398-changes_otto.mod",
+    "cpu_unit": "43394-changes_otto.mod",
+    "science_book": "43953-rebirth.mod",
+    "engineering": "43951-rebirth.mod",
+    "iron_plates": "42159-gamedata.base",
+    "steel_bars": "579-gamedata.base",
+    "armour_plating": "2288-gamedata.base"
+  },
+  "relic_core": {
+    "name": "Relic AI Core",
+    "template": "43392-changes_otto.mod",
+    "value": 90000,
+    "weight kg": 4.0,
+    "production time": 96,
+    "ingredients": [
+      [
+        "ai_core",
+        300
+      ],
+      [
+        "power_core",
+        200
+      ],
+      [
+        "cpu_unit",
+        400
+      ],
+      [
+        "science_book",
+        200
+      ]
+    ],
+    "_ingredients_doc": "val0 = количество × 100 (как у ванильного AI Core: CPU 300 + Power Core 100 = 3 + 1).",
+    "description": "A reconstructed thinking-engine of the ancients, assembled from salvaged AI cores around a pattern recovered from relic wargear. Without one, no workshop on the continent can reproduce the old machine-armour or its weapons. Fragile, slow to make, and worth more than a town."
+  },
+  "buildings": {
+    "relic_armoury": {
+      "name": "Relic Armoury",
+      "template": [
+        "BUILDING",
+        "Heavy Armour Smithy",
+        "2257-gamedata.base"
+      ],
+      "functionality": "armour",
+      "crafts": {
+        "types": [
+          "ARMOUR"
+        ],
+        "tiers": [
+          "T0",
+          "T1",
+          "T2"
+        ]
+      },
+      "construction": [
+        [
+          "iron_plates",
+          40
+        ],
+        [
+          "steel_bars",
+          20
+        ],
+        [
+          "power_core",
+          2
+        ]
+      ],
+      "description": "A heavy smithy rebuilt around recovered expedition tooling. Forges the plate and carapace patterns of the off-world remnants, once the patterns are understood."
+    },
+    "relic_gunsmith": {
+      "name": "Relic Gunsmith",
+      "template": [
+        "BUILDING",
+        "Crossbow Crafting Bench",
+        "96183-Newwworld.mod"
+      ],
+      "functionality": "crossbow",
+      "crafts": {
+        "types": [
+          "CROSSBOW"
+        ],
+        "tiers": [
+          "T0",
+          "T1",
+          "T2",
+          "T3"
+        ]
+      },
+      "construction": [
+        [
+          "iron_plates",
+          30
+        ],
+        [
+          "steel_bars",
+          30
+        ],
+        [
+          "power_core",
+          2
+        ]
+      ],
+      "description": "Precision jigs and boring tools copied from relic firearms. Reproduces the ranged weapons of the expedition remnants."
+    },
+    "reliquary_forge": {
+      "name": "Reliquary Forge",
+      "template": [
+        "BUILDING",
+        "Heavy Armour Smithy",
+        "2257-gamedata.base"
+      ],
+      "functionality": "armour",
+      "crafts": {
+        "types": [
+          "ARMOUR"
+        ],
+        "tiers": [
+          "T3"
+        ]
+      },
+      "construction": [
+        [
+          "iron_plates",
+          60
+        ],
+        [
+          "steel_bars",
+          40
+        ],
+        [
+          "relic_core",
+          1
+        ]
+      ],
+      "description": "The apex of the relic arts: a forge governed by a Relic AI Core. Only here can the true relic armour of the expedition be made again."
+    },
+    "cogitator_bench": {
+      "name": "Cogitator Assembly Bench",
+      "template": [
+        "BUILDING",
+        "Robotics Bench",
+        "43881-Newwworld.mod"
+      ],
+      "functionality": "item",
+      "crafts": {
+        "items": [
+          "relic_core"
+        ]
+      },
+      "construction": [
+        [
+          "iron_plates",
+          30
+        ],
+        [
+          "steel_bars",
+          20
+        ],
+        [
+          "ai_core",
+          1
+        ]
+      ],
+      "description": "A clean bench of ancient design for assembling Relic AI Cores."
+    },
+    "relic_foundry": {
+      "name": "Relic Foundry",
+      "template": [
+        "BUILDING",
+        "Heavy Armour Smithy",
+        "2257-gamedata.base"
+      ],
+      "functionality": "armour",
+      "crafts": {
+        "curated": "ARMOUR"
+      },
+      "construction": [
+        [
+          "iron_plates",
+          60
+        ],
+        [
+          "steel_bars",
+          40
+        ],
+        [
+          "relic_core",
+          2
+        ]
+      ],
+      "description": "A deep foundry run by a Relic AI Core. Casts the few true relic suits - terminator plate, the Hell series, arc-powered shells - from rare cores, plating and power cells. Slow and ruinously expensive."
+    },
+    "relic_arsenal": {
+      "name": "Relic Arsenal",
+      "template": [
+        "BUILDING",
+        "Crossbow Crafting Bench",
+        "96183-Newwworld.mod"
+      ],
+      "functionality": "crossbow",
+      "crafts": {
+        "curated": "CROSSBOW"
+      },
+      "construction": [
+        [
+          "iron_plates",
+          40
+        ],
+        [
+          "steel_bars",
+          40
+        ],
+        [
+          "relic_core",
+          1
+        ],
+        [
+          "power_core",
+          4
+        ]
+      ],
+      "description": "A sealed arsenal bench for plasma, hell, arc and gauss weapons. Every piece wants an AI core and several power cells."
+    }
+  },
+  "functionality_templates": {
+    "armour": "2296-gamedata.base",
+    "crossbow": "96449-crafting.mod",
+    "item": "42165-gamedata.base"
+  },
+  "research": [
+    {
+      "key": "studies",
+      "name": "Relic Studies",
+      "level": 6,
+      "time": 96,
+      "money": 10000,
+      "requires": [
+        "@tech6",
+        "@armour"
+      ],
+      "cost": [
+        [
+          "science_book",
+          5
+        ],
+        [
+          "engineering",
+          5
+        ]
+      ],
+      "description": "The off-world remnants carry wargear no smith on the continent understands. Careful study of recovered pieces is the first step to making them again."
+    },
+    {
+      "key": "kit",
+      "name": "Expedition Kit Patterns",
+      "level": 6,
+      "time": 120,
+      "money": 20000,
+      "requires": [
+        "studies"
+      ],
+      "cost": [
+        [
+          "engineering",
+          6
+        ],
+        [
+          "ai_core",
+          1
+        ]
+      ],
+      "enable": {
+        "armour_tiers": [
+          "T0",
+          "T1"
+        ],
+        "buildings": [
+          "relic_armoury"
+        ]
+      },
+      "description": "Flak, webbing and the plain field armour of the expedition rank and file. Builds the Relic Armoury."
+    },
+    {
+      "key": "forge_armour",
+      "name": "Forge-Pattern Armour",
+      "level": 6,
+      "time": 168,
+      "money": 40000,
+      "requires": [
+        "kit"
+      ],
+      "cost": [
+        [
+          "science_book",
+          6
+        ],
+        [
+          "ai_core",
+          2
+        ]
+      ],
+      "enable": {
+        "armour_tiers": [
+          "T2"
+        ]
+      },
+      "description": "Carapace and officer armour of the remnants. Heavy, precise work that needs an AI core to model the alloys."
+    },
+    {
+      "key": "weapons",
+      "name": "Relic Weapon Patterns",
+      "level": 6,
+      "time": 168,
+      "money": 40000,
+      "requires": [
+        "kit",
+        "@weapons"
+      ],
+      "cost": [
+        [
+          "engineering",
+          6
+        ],
+        [
+          "ai_core",
+          2
+        ]
+      ],
+      "enable": {
+        "weapon_tiers": [
+          "T0",
+          "T1",
+          "T2"
+        ],
+        "crossbow_tiers": [
+          "T0",
+          "T1",
+          "T2"
+        ],
+        "buildings": [
+          "relic_gunsmith"
+        ]
+      },
+      "description": "Blades and firearms of the expedition. Melee patterns can be forged at any weapon smith; firearms need the Relic Gunsmith."
+    },
+    {
+      "key": "cogitator",
+      "name": "Cogitator Reconstruction",
+      "level": 6,
+      "time": 240,
+      "money": 80000,
+      "requires": [
+        "forge_armour",
+        "weapons",
+        "@apex_weapons",
+        "@robotics"
+      ],
+      "cost": [
+        [
+          "ai_core",
+          4
+        ],
+        [
+          "science_book",
+          10
+        ],
+        [
+          "power_core",
+          4
+        ]
+      ],
+      "enable": {
+        "items": [
+          "relic_core"
+        ],
+        "buildings": [
+          "cogitator_bench"
+        ]
+      },
+      "description": "The ancients did not forge relics by hand: a thinking engine guided every pass. Rebuilding one from salvaged AI cores is the key to everything beyond."
+    },
+    {
+      "key": "apex",
+      "name": "Relic Reconstruction",
+      "level": 6,
+      "time": 336,
+      "money": 150000,
+      "requires": [
+        "cogitator"
+      ],
+      "cost": [
+        [
+          "relic_core",
+          2
+        ],
+        [
+          "ai_core",
+          2
+        ],
+        [
+          "science_book",
+          10
+        ]
+      ],
+      "enable": {
+        "armour_tiers": [
+          "T3"
+        ],
+        "weapon_tiers": [
+          "T3"
+        ],
+        "crossbow_tiers": [
+          "T3"
+        ],
+        "buildings": [
+          "reliquary_forge"
+        ]
+      },
+      "description": "True relic wargear: power armour and master-crafted arms of the expedition elite. Whoever learns this first changes the balance of the world."
+    },
+    {
+      "key": "foundry",
+      "name": "Relic Foundry Rites",
+      "level": 6,
+      "time": 480,
+      "money": 250000,
+      "requires": [
+        "apex"
+      ],
+      "cost": [
+        [
+          "relic_core",
+          3
+        ],
+        [
+          "ai_core",
+          4
+        ],
+        [
+          "science_book",
+          12
+        ]
+      ],
+      "enable": {
+        "curated": true,
+        "buildings": [
+          "relic_foundry",
+          "relic_arsenal"
+        ]
+      },
+      "description": "Beyond reconstruction lies selection: a dozen true relics - terminator plate, the Hell series, arc armour, plasma and gauss arms - can be cast again from rare cores and power cells. One suit costs more than a town."
+    }
+  ],
+  "relic_craft": {
+    "_doc": "Курируемый набор реликтов (2026-11-13): исследование «Relic Foundry Rites» (после Relic Reconstruction) -> станки Relic Foundry (броня) и Relic Arsenal (стрелковое), оружие ближнего боя куётся на обычных кузницах после исследования. Редкие материалы: Relic AI Core, AI Core, Power Core, CPU Unit, Ancient Science Book. Количество ×100 пишется кодом. Только имперская техника и мод-реликты без WH-Хаоса/ксеносов.",
+    "recipes": {
+      "body_t3": {
+        "time": 120,
+        "ing": [
+          [
+            "relic_core",
+            1
+          ],
+          [
+            "power_core",
+            4
+          ],
+          [
+            "armour_plating",
+            20
+          ],
+          [
+            "steel_bars",
+            20
+          ]
+        ]
+      },
+      "body_t2": {
+        "time": 96,
+        "ing": [
+          [
+            "relic_core",
+            1
+          ],
+          [
+            "power_core",
+            2
+          ],
+          [
+            "armour_plating",
+            12
+          ],
+          [
+            "steel_bars",
+            10
+          ]
+        ]
+      },
+      "legs": {
+        "time": 72,
+        "ing": [
+          [
+            "ai_core",
+            2
+          ],
+          [
+            "power_core",
+            2
+          ],
+          [
+            "armour_plating",
+            10
+          ],
+          [
+            "steel_bars",
+            8
+          ]
+        ]
+      },
+      "hat": {
+        "time": 60,
+        "ing": [
+          [
+            "ai_core",
+            2
+          ],
+          [
+            "power_core",
+            1
+          ],
+          [
+            "armour_plating",
+            5
+          ],
+          [
+            "science_book",
+            1
+          ]
+        ]
+      },
+      "boots": {
+        "time": 48,
+        "ing": [
+          [
+            "ai_core",
+            1
+          ],
+          [
+            "power_core",
+            1
+          ],
+          [
+            "armour_plating",
+            5
+          ]
+        ]
+      },
+      "gun": {
+        "time": 72,
+        "ing": [
+          [
+            "ai_core",
+            2
+          ],
+          [
+            "power_core",
+            3
+          ],
+          [
+            "cpu_unit",
+            2
+          ],
+          [
+            "steel_bars",
+            20
+          ]
+        ]
+      },
+      "blade": {
+        "time": 72,
+        "ing": [
+          [
+            "ai_core",
+            2
+          ],
+          [
+            "power_core",
+            2
+          ],
+          [
+            "steel_bars",
+            20
+          ],
+          [
+            "science_book",
+            1
+          ]
+        ]
+      }
+    },
+    "items": [
+      [
+        "ARMOUR",
+        "124-TEXT TEXTURE.mod",
+        "body_t3"
+      ],
+      [
+        "ARMOUR",
+        "125-TEXT TEXTURE.mod",
+        "legs"
+      ],
+      [
+        "ARMOUR",
+        "127-TEXT TEXTURE.mod",
+        "hat"
+      ],
+      [
+        "ARMOUR",
+        "121-TEXT TEXTURE.mod",
+        "boots"
+      ],
+      [
+        "ARMOUR",
+        "1846-TEXT TEXTURE.mod",
+        "body_t3"
+      ],
+      [
+        "ARMOUR",
+        "3148-TEXT TEXTURE.mod",
+        "body_t3"
+      ],
+      [
+        "ARMOUR",
+        "11-Hell Bringer.mod",
+        "body_t2"
+      ],
+      [
+        "ARMOUR",
+        "14-Hell Bringer.mod",
+        "legs"
+      ],
+      [
+        "ARMOUR",
+        "13-Hell Bringer.mod",
+        "hat"
+      ],
+      [
+        "ARMOUR",
+        "12-Hell Bringer.mod",
+        "boots"
+      ],
+      [
+        "ARMOUR",
+        "Hard_5007298-e_b.mod",
+        "body_t2"
+      ],
+      [
+        "ARMOUR",
+        "Hard_5007316-e_p2.mod",
+        "legs"
+      ],
+      [
+        "ARMOUR",
+        "Hard_5007294-e_h.mod",
+        "hat"
+      ],
+      [
+        "ARMOUR",
+        "Hard_5007313-e_l.mod",
+        "boots"
+      ],
+      [
+        "CROSSBOW",
+        "42-astramilitarumkit.mod",
+        "gun"
+      ],
+      [
+        "CROSSBOW",
+        "34-astramilitarumkit.mod",
+        "gun"
+      ],
+      [
+        "CROSSBOW",
+        "446-wh40k_imperial_forces.mod",
+        "gun"
+      ],
+      [
+        "CROSSBOW",
+        "188-Endgame Building.mod",
+        "gun"
+      ],
+      [
+        "CROSSBOW",
+        "2075-TEXT TEXTURE.mod",
+        "gun"
+      ],
+      [
+        "WEAPON",
+        "2831-TEXT TEXTURE.mod",
+        "blade"
+      ],
+      [
+        "WEAPON",
+        "457-TEXT TEXTURE.mod",
+        "blade"
+      ]
+    ]
+  }
+}

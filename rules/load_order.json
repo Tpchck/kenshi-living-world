@@ -1,0 +1,31 @@
+{
+ "_doc": "Хвост mods.cfg после основы, WH-слоя и EXTRA (tools/fast/lo.py): наши моды в этом порядке. Генератор tools/build/mods_cfg.py берёт только те, что собраны (build/<мод>/<мод>.mod) и не в disabled.",
+ "kmm": [
+  "KMM_Core",
+  "KMM_Relics",
+  "KMM_Wardrobe",
+  "KMM_Economy",
+  "KMM_Behavior",
+  "KMM_Traces",
+  "KMM_Tech",
+  "KMM_Diplo",
+  "KMM_Town",
+  "KMM_Elite",
+  "KMM_Atlas",
+  "KMM_Native",
+  "KMM_Stock",
+  "KMM_Conductor",
+  "KMM_Tempo",
+  "KMM_Rumors",
+  "KMM_Ore",
+  "KMM_Fix",
+  "KMM_Cleanup"
+ ],
+ "disabled": {
+  "KMM_Glue": "заменён потоками (архив build/KMM_Glue)"
+ },
+ "new_game": {
+  "_doc": "Моды только для НОВОЙ игры: true — ставится и пишется в mods.cfg; false — собран, но не включён. 2026-11-14 плейтест: сейвы держать не нужно — KMM_Cleanup включён (нужна новая игра).",
+  "KMM_Cleanup": true
+ }
+}

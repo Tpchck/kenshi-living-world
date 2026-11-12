@@ -1,0 +1,99 @@
+{
+  "_doc": "Поток TOWN (DESIGN «Город за работой»): горожане по расписанию через ванильные AI-задачи. Новые AI_PACKAGE = клон исходного пакета отряда (все его цели и addon-наследования сохраняются) + цели расписания (val0..val1 — часы, val2 — вес; окна через полночь допустимы, как у ванили). В существующих отрядах-жителях меняется ТОЛЬКО категория ссылок «AI packages»: исходный пакет → вариант с тем же приоритетом. Вариант выбирается по crc32(sid отряда) среди [ваниль, A, B] — часть отрядов остаётся ванильной. Торговые/караванные (is trader, roaming squads) и записи KMM не трогаются. Склады ресурсов кухонь/мастерских данными не помечаются (только через ванильную мебель — запрещено): см. docs/streams/TOWN.md.",
+  "tasks": {
+    "_doc": "ванильные AI_TASK (gamedata.base / rebirth.mod); bar — новая запись потока (GO_TO_THE_BAR_AND_DRINK, в ванили нет AI_TASK с этой задачей)",
+    "work": "5261-gamedata.base",
+    "work_pretend": "43932-rebirth.mod",
+    "bed": "3105-gamedata.base",
+    "bed_secure": "46053-rebirth.mod",
+    "wake": "12607-gamedata.base",
+    "patrol": "965-gamedata.base",
+    "patrol_fluff": "57336-__dont commit.mod",
+    "shopping": "969-gamedata.base",
+    "sit": "96454-rebirth.mod",
+    "home": "1136-gamedata.base",
+    "relax": "14543-gamedata.base",
+    "storage": "5232-gamedata.base",
+    "bar": "@bar"
+  },
+  "bar_task": {"name": "KMM go to the bar and drink", "enum": 154, "classification": 2, "targeting": 1, "ending": 0},
+  "vanilla_share": true,
+  "roles": {
+    "worker": {
+      "_doc": "рабочие ферм/рудников/цехов: смены у машин (реальная работа AUTO_LABOURING_MINES), вечером бар, ночью сон",
+      "packages": ["42198-rebirth.mod", "50393-rebirth.mod", "50354-rebirth.mod", "2855-gamedata.base"],
+      "variants": {
+        "early": {"add": [["Squad AI Goals", "work", 5, 13, 110], ["Squad2 AI Goals", "work", 5, 13, 110], ["Squad AI Goals", "bar", 16, 21, 60],
+                          ["Squad AI Goals", "bed", 21, 5, 70], ["Squad AI Goals", "wake", 0, 24, 0], ["Leader AI Goals", "bed", 22, 5, 60]]},
+        "late": {"add": [["Squad AI Goals", "work", 12, 20, 110], ["Squad2 AI Goals", "work", 12, 20, 110], ["Squad AI Goals", "sit", 7, 12, 40],
+                         ["Squad AI Goals", "bar", 20, 24, 60], ["Squad AI Goals", "bed", 0, 8, 70], ["Squad AI Goals", "wake", 0, 24, 0], ["Leader AI Goals", "bar", 19, 23, 50]]}
+      }
+    },
+    "craftsman": {
+      "_doc": "мастерские при лавках (не торговые отряды): подмастерья у верстака/наковальни (pretend — анимация без ванильного выхода; материальный выход ведёт Lua по складу), склад, вечер в баре",
+      "packages": ["3108-gamedata.base", "54573-rebirth.mod", "2824-gamedata.base", "46959-rebirth.mod"],
+      "variants": {
+        "bench_day": {"add": [["Squad AI Goals", "work_pretend", 7, 15, 30], ["Squad AI Goals", "storage", 7, 18, 10], ["Squad AI Goals", "bar", 18, 21, 25]]},
+        "bench_late": {"add": [["Squad AI Goals", "work_pretend", 11, 19, 30], ["Squad AI Goals", "storage", 11, 19, 10], ["Squad AI Goals", "bar", 20, 23, 25]]}
+      }
+    },
+    "civilian": {
+      "_doc": "горожане в домах: покупки днём, прогулка, бар вечером, сон",
+      "packages": ["3107-gamedata.base", "96408-rebirth.mod"],
+      "variants": {
+        "homebody": {"add": [["Leader AI Goals", "shopping", 9, 13, 50], ["Squad AI Goals", "sit", 13, 18, 45], ["Squad AI Goals", "bed_secure", 21, 7, 60], ["Squad AI Goals", "wake", 0, 24, 0]]},
+        "outgoing": {"add": [["Leader AI Goals", "patrol_fluff", 9, 16, 45], ["Leader AI Goals", "bar", 18, 23, 60], ["Squad AI Goals", "patrol_fluff", 10, 17, 45],
+                             ["Squad AI Goals", "bar", 18, 23, 60], ["Squad AI Goals", "bed_secure", 23, 8, 60], ["Squad AI Goals", "wake", 0, 24, 0]]}
+      }
+    },
+    "bar_regular": {
+      "_doc": "завсегдатаи баров (ванильный «hang out in a bar»): днём город, вечером бар, ночью сон (кровати бара); часть остаётся ванильной",
+      "packages": ["14499-gamedata.base"],
+      "variants": {
+        "day_stroll": {"add": [["Leader AI Goals", "patrol_fluff", 9, 16, 40], ["Leader AI Goals", "bar", 17, 24, 60], ["Leader AI Goals", "bed", 1, 8, 40], ["Leader AI Goals", "wake", 0, 24, 0]]},
+        "night_owl": {"add": [["Leader AI Goals", "sit", 11, 17, 40], ["Leader AI Goals", "bar", 19, 3, 70], ["Leader AI Goals", "bed", 4, 11, 50], ["Leader AI Goals", "wake", 0, 24, 0]]}
+      }
+    },
+    "watch": {
+      "_doc": "городская стража «patrol town 24hr»: смена с отдыхом (бар и сон после ночного обхода); остальные отряды — круглосуточно",
+      "packages": ["65865-rebirth.mod"],
+      "variants": {
+        "night_shift": {"add": [["Leader AI Goals", "bar", 7, 10, 60], ["Leader AI Goals", "bed", 10, 16, 60], ["Leader AI Goals", "wake", 0, 24, 0]]},
+        "day_shift": {"add": [["Leader AI Goals", "bar", 19, 22, 60], ["Leader AI Goals", "bed", 22, 5, 60], ["Leader AI Goals", "wake", 0, 24, 0]]}
+      }
+    }
+  },
+  "pcr": {
+    "_doc": "Populated Cities Redux (CitizensRedux.mod): 4 отряда, по одному пакету — варианты по парам «мужской/женский» шаблон. У «citizen lives» нет сна, вожак патрулирует ночью — убираем ночной патруль вожака, даём сон в бару (их дом — бар) и бар вечером.",
+    "squads": {
+      "16-CitizensRedux.mod": ["17-CitizensRedux.mod", "family_day"],
+      "22-CitizensRedux.mod": ["17-CitizensRedux.mod", "family_evening"],
+      "18-CitizensRedux.mod": ["19-CitizensRedux.mod", "patrol_day"],
+      "23-CitizensRedux.mod": ["19-CitizensRedux.mod", "patrol_night"]
+    },
+    "variants": {
+      "family_day": {"drop": [["Leader AI Goals", "patrol", 21, 5]],
+                     "add": [["Leader AI Goals", "bar", 17, 21, 70], ["Leader AI Goals", "bed", 22, 5, 90], ["Leader AI Goals", "wake", 0, 24, 0],
+                             ["Squad AI Goals", "bar", 18, 22, 50], ["Squad AI Goals", "bed", 23, 5, 70], ["Squad AI Goals", "wake", 0, 24, 0],
+                             ["Squad2 AI Goals", "bed", 23, 7, 60], ["Squad2 AI Goals", "wake", 0, 24, 0]]},
+      "family_evening": {"drop": [["Leader AI Goals", "patrol", 21, 5]],
+                         "add": [["Leader AI Goals", "bar", 19, 24, 80], ["Leader AI Goals", "bed", 0, 7, 90], ["Leader AI Goals", "wake", 0, 24, 0],
+                                 ["Squad AI Goals", "work", 9, 16, 60], ["Squad AI Goals", "bar", 19, 24, 60], ["Squad AI Goals", "bed", 0, 8, 70],
+                                 ["Squad AI Goals", "wake", 0, 24, 0], ["Squad2 AI Goals", "bed", 0, 8, 60], ["Squad2 AI Goals", "wake", 0, 24, 0]]},
+      "patrol_day": {"add": [["Leader AI Goals", "patrol", 6, 18, 90], ["Leader AI Goals", "bar", 19, 22, 70], ["Leader AI Goals", "bed", 22, 6, 80], ["Leader AI Goals", "wake", 0, 24, 0]]},
+      "patrol_night": {"add": [["Leader AI Goals", "patrol", 18, 6, 90], ["Leader AI Goals", "bar", 7, 10, 70], ["Leader AI Goals", "bed", 10, 17, 80], ["Leader AI Goals", "wake", 0, 24, 0]]}
+    }
+  },
+  "chain": {
+    "_doc": "данные для Lua-цепочки (scripts/kmm_town_data.lua): машина (BUILDING stringID) → категория склада KMM_Stock + предмет-продукт (ITEM), по выходу её BUILDING_FUNCTIONALITY (produces / item crafts) и по скамьям крафта. Порядок имён = приоритет продукта.",
+    "items": {
+      "food": ["Bread", "Dried Meat", "Foodcube", "Rice Bowl", "Gohan", "Chewsticks", "Cooked Vegetables", "Meatwrap", "Dustwich", "Ration Pack"],
+      "metal": ["Iron Plates", "Steel Bars", "Copper Alloy Plates"],
+      "med": ["Basic First Aid Kit", "Standard First Aid Kit", "Splint Kit"],
+      "drugs": ["Hashish", "Grog"],
+      "lux": ["Sake", "Cactus Rum", "Fabrics", "Leather", "Purple Beer"],
+      "scrap": ["Electrical Components", "Building Material"]
+    },
+    "bench_categories": {"weapon crafts": "weapons", "crossbow crafts": "weapons", "armour crafts": "armor", "robotics crafts": "scrap"}
+  }
+}
