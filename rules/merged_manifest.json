@@ -1,0 +1,494 @@
+{
+ "_doc": "Манифест KMM_Merged (tools/build/merge_mods.py). md5 исходников: при расхождении генератор возвращает мод в mods.cfg и предупреждает.",
+ "built": "2026-11-16 14:47:00",
+ "mode": "last",
+ "slot": "HTT_Cloaks_ReKenshiNECK.mod",
+ "insert_after": "Barbarian's cloak and sack.mod",
+ "insert_before": "Towns Expansion.mod",
+ "merged_file": "build/KMM_Merged/KMM_Merged.mod",
+ "merged_md5": "e078ee27375e7ca5ff035b231631c315",
+ "merged_records": 3306,
+ "source_records": 3392,
+ "verify": {
+  "sids": 3306,
+  "fields_compared": 101544,
+  "source_field_writes": 11872,
+  "diffs": 0
+ },
+ "sources": [
+  {
+   "name": "Vain revert patch.mod",
+   "path": "C:/Program Files (x86)/Steam/steamapps/workshop/content/233860/2629443054/Vain revert patch.mod",
+   "md5": "cd6a73f4ff70ae8e28b4c00de821bfe3",
+   "records": 2
+  },
+  {
+   "name": "MoodLighting.mod",
+   "path": "C:/Program Files (x86)/Steam/steamapps/workshop/content/233860/3295047328/MoodLighting.mod",
+   "md5": "271ee73828bb99a5200706ef841f5054",
+   "records": 20
+  },
+  {
+   "name": "DeadlandsClouds.mod",
+   "path": "C:/Program Files (x86)/Steam/steamapps/workshop/content/233860/3552198769/DeadlandsClouds.mod",
+   "md5": "421e6a653ae3050da5b95841af3700fe",
+   "records": 3
+  },
+  {
+   "name": "UPK No Swamp Distant Towns.mod",
+   "path": "C:/Program Files (x86)/Steam/steamapps/workshop/content/233860/3343675820/UPK No Swamp Distant Towns.mod",
+   "md5": "ef0e70e0e60e6841b827a7d08bcd33be",
+   "records": 5
+  },
+  {
+   "name": "UPK Thief Fences Buy Hashish.mod",
+   "path": "C:/Program Files (x86)/Steam/steamapps/workshop/content/233860/3534763540/UPK Thief Fences Buy Hashish.mod",
+   "md5": "2417cf734dd876fa4b991bbf370daf75",
+   "records": 4
+  },
+  {
+   "name": "AgnuGenderFix.mod",
+   "path": "C:/Program Files (x86)/Steam/steamapps/workshop/content/233860/3538295906/AgnuGenderFix.mod",
+   "md5": "9f6c846489792d6be8c0f6069c6e65bf",
+   "records": 11
+  },
+  {
+   "name": "More Travel Dialogue EN.mod",
+   "path": "C:/Program Files (x86)/Steam/steamapps/workshop/content/233860/3776301708/More Travel Dialogue EN.mod",
+   "md5": "cfe4a0a8db96770927ef9378976239f9",
+   "records": 320
+  },
+  {
+   "name": "CBT Did Hear No Bell.mod",
+   "path": "C:/Program Files (x86)/Steam/steamapps/workshop/content/233860/2880065031/CBT Did Hear No Bell.mod",
+   "md5": "849f2966746a97ebe86abd18678fd79c",
+   "records": 24
+  },
+  {
+   "name": "Heavy weapon combat stance [MCS patch].mod",
+   "path": "C:/Program Files (x86)/Steam/steamapps/workshop/content/233860/2374039537/Heavy weapon combat stance [MCS patch].mod",
+   "md5": "0ec94d096dbf1c83c413a19ee5273504",
+   "records": 1
+  },
+  {
+   "name": "Faster Stand-Up Animation.mod",
+   "path": "C:/Program Files (x86)/Steam/steamapps/workshop/content/233860/1391766984/Faster Stand-Up Animation.mod",
+   "md5": "5d038f875f05092d577d3dece73b57d6",
+   "records": 1
+  },
+  {
+   "name": "hevy_downcut_swing_limiter.mod",
+   "path": "C:/Program Files (x86)/Steam/steamapps/workshop/content/233860/2839696625/hevy_downcut_swing_limiter.mod",
+   "md5": "adefe541eb0d92378d9c84e56052795c",
+   "records": 4
+  },
+  {
+   "name": "Great Anims_Rebalance.mod",
+   "path": "C:/Program Files (x86)/Steam/steamapps/workshop/content/233860/3047829102/Great Anims_Rebalance.mod",
+   "md5": "790a9a1ac55efaefe474bd40b11cd5f1",
+   "records": 50
+  },
+  {
+   "name": "Great Animations missing anims disabled.mod",
+   "path": "C:/Program Files (x86)/Steam/steamapps/workshop/content/233860/3726991126/Great Animations missing anims disabled.mod",
+   "md5": "ee0c021aa7ead111fb4ced8bcd224454",
+   "records": 4
+  },
+  {
+   "name": "DigCombat_skill_limits.mod",
+   "path": "C:/Program Files (x86)/Steam/steamapps/workshop/content/233860/3047884128/DigCombat_skill_limits.mod",
+   "md5": "b62d4d119864fe7cf2654ff6c3d6d098",
+   "records": 7
+  },
+  {
+   "name": "GROUNDED 2 Remove Blowbacks.mod",
+   "path": "C:/Program Files (x86)/Steam/steamapps/workshop/content/233860/3404778105/GROUNDED 2 Remove Blowbacks.mod",
+   "md5": "7acb50e21f3386f3a8763b777298e59b",
+   "records": 1
+  },
+  {
+   "name": "Idle Stands Patch.mod",
+   "path": "C:/Program Files (x86)/Steam/steamapps/workshop/content/233860/2007492437/Idle Stands Patch.mod",
+   "md5": "0b2bb2af8f69cc11c58c9d845d27f078",
+   "records": 44
+  },
+  {
+   "name": "Goat is strong animal PATCH.mod",
+   "path": "C:/Program Files (x86)/Steam/steamapps/workshop/content/233860/3814146656/Goat is strong animal PATCH.mod",
+   "md5": "c01fc4f5a7afe7b9643db8a7b639a181",
+   "records": 8
+  },
+  {
+   "name": "Oni-Nerf.mod",
+   "path": "C:/Program Files (x86)/Steam/steamapps/workshop/content/233860/1910723550/Oni-Nerf.mod",
+   "md5": "dcb7877fff8cc85dd041d0130621eb81",
+   "records": 16
+  },
+  {
+   "name": "Wander Set Seed.mod",
+   "path": "C:/Program Files (x86)/Steam/steamapps/workshop/content/233860/2701536008/Wander Set Seed.mod",
+   "md5": "acb0628f34e42a7bbd246a1f7e6593ad",
+   "records": 30
+  },
+  {
+   "name": "RecruitPrisoners_StarvingBanditPatch.mod",
+   "path": "C:/Program Files (x86)/Steam/steamapps/workshop/content/233860/3630827922/RecruitPrisoners_StarvingBanditPatch.mod",
+   "md5": "8aca5366d301932b496e921c73c9f24b",
+   "records": 8
+  },
+  {
+   "name": "No_generic_recruits_now_unique.mod",
+   "path": "C:/Program Files (x86)/Steam/steamapps/workshop/content/233860/2995365144/No_generic_recruits_now_unique.mod",
+   "md5": "001f7d1c9cd8af75fa740dd02636318d",
+   "records": 36
+  },
+  {
+   "name": "Tech hunter and sailback.mod",
+   "path": "C:/Program Files (x86)/Steam/steamapps/workshop/content/233860/2762658210/Tech hunter and sailback.mod",
+   "md5": "92b2cf480aecb1d76375f705248aba21",
+   "records": 5
+  },
+  {
+   "name": "Lost Armoury Loot and Difficulty Enhancements.mod",
+   "path": "C:/Program Files (x86)/Steam/steamapps/workshop/content/233860/1872720272/Lost Armoury Loot and Difficulty Enhancements.mod",
+   "md5": "57030444f445bc3cdea89e2f465fe046",
+   "records": 3
+  },
+  {
+   "name": "Resort Island TWEAKS.mod",
+   "path": "C:/Program Files (x86)/Steam/steamapps/workshop/content/233860/3529011767/Resort Island TWEAKS.mod",
+   "md5": "428f4ffc9fc1c2d21c64e6d41a6639af",
+   "records": 22
+  },
+  {
+   "name": "Extra Node.mod",
+   "path": "C:/Program Files (x86)/Steam/steamapps/workshop/content/233860/2997069341/Extra Node.mod",
+   "md5": "d9bb451ab917158c50d16485ffa7b601",
+   "records": 6
+  },
+  {
+   "name": "Forgotten Buildings - Stackable Storage.mod",
+   "path": "C:/Program Files (x86)/Steam/steamapps/workshop/content/233860/2092285777/Forgotten Buildings - Stackable Storage.mod",
+   "md5": "54ea7e5c954f78433d2d64b898a6e60e",
+   "records": 51
+  },
+  {
+   "name": "Extra Node for Flipped Buildings.mod",
+   "path": "C:/Program Files (x86)/Steam/steamapps/workshop/content/233860/3004525738/Extra Node for Flipped Buildings.mod",
+   "md5": "813c10e70d08611a7cf6b6bf31db0973",
+   "records": 8
+  },
+  {
+   "name": "Deep Foundations + Forgotten Buildings.mod",
+   "path": "C:/Program Files (x86)/Steam/steamapps/workshop/content/233860/3768218659/Deep Foundations + Forgotten Buildings.mod",
+   "md5": "ba723d21a2cbbe25fe90f2d446c05bc5",
+   "records": 13
+  },
+  {
+   "name": "2PN8MoistureFarmingEnhanced.mod",
+   "path": "C:/Program Files (x86)/Steam/steamapps/workshop/content/233860/2761762099/2PN8MoistureFarmingEnhanced.mod",
+   "md5": "0f38f256ada41f6ddc7278b22d95a183",
+   "records": 17
+  },
+  {
+   "name": "Modded Furnace.mod",
+   "path": "C:/Program Files (x86)/Steam/steamapps/workshop/content/233860/1190939507/Modded Furnace.mod",
+   "md5": "acb9e8363a9001c4128d3f2a6acf4107",
+   "records": 4
+  },
+  {
+   "name": "Weapon Smith Training.mod",
+   "path": "C:/Program Files (x86)/Steam/steamapps/workshop/content/233860/2060833183/Weapon Smith Training.mod",
+   "md5": "5cd94a511b051eff8cb6b28cfd584b3f",
+   "records": 7
+  },
+  {
+   "name": "cook_set ENG.mod",
+   "path": "C:/Program Files (x86)/Steam/steamapps/workshop/content/233860/3767538865/cook_set ENG.mod",
+   "md5": "bb02d8c5821f739caec0a1bae346152d",
+   "records": 198
+  },
+  {
+   "name": "Recruitable Foreign Swordsman.mod",
+   "path": "C:/Program Files (x86)/Steam/steamapps/workshop/content/233860/3156040928/Recruitable Foreign Swordsman.mod",
+   "md5": "902d27d97777546f7f2d111df88a072d",
+   "records": 25
+  },
+  {
+   "name": "Anti Stun for more Attack Slots.mod",
+   "path": "C:/Program Files (x86)/Steam/steamapps/workshop/content/233860/2077429110/Anti Stun for more Attack Slots.mod",
+   "md5": "fd6cd68fffe41497bb473fd510eec2b2",
+   "records": 4
+  },
+  {
+   "name": "Sensible Martial Arts.mod",
+   "path": "C:/Program Files (x86)/Steam/steamapps/workshop/content/233860/2412456723/Sensible Martial Arts.mod",
+   "md5": "7818612232acdc0c272ffb8db7725b7d",
+   "records": 10
+  },
+  {
+   "name": "Hiver Expansion Assault Sequence Fix.mod",
+   "path": "C:/Program Files (x86)/Steam/steamapps/workshop/content/233860/3215316631/Hiver Expansion Assault Sequence Fix.mod",
+   "md5": "c33f1619638d2a3ce885193e3499c2f6",
+   "records": 19
+  },
+  {
+   "name": "Combat Tweaks.mod",
+   "path": "C:/Program Files (x86)/Steam/steamapps/workshop/content/233860/2983100432/Combat Tweaks.mod",
+   "md5": "b2d6a6f1371fc986da3a007e2d6071ea",
+   "records": 3
+  },
+  {
+   "name": "Stop shouting at your allies.mod",
+   "path": "C:/Program Files (x86)/Steam/steamapps/workshop/content/233860/2425736432/Stop shouting at your allies.mod",
+   "md5": "feb697d1b9a5428e8717cc8bec806249",
+   "records": 233
+  },
+  {
+   "name": "Strategic Ambiguity.mod",
+   "path": "C:/Program Files (x86)/Steam/steamapps/workshop/content/233860/2894978661/Strategic Ambiguity.mod",
+   "md5": "11f9322c5bc309e2763b9a6ec13a7e9e",
+   "records": 254
+  },
+  {
+   "name": "Idle Farmers.mod",
+   "path": "C:/Program Files (x86)/Steam/steamapps/workshop/content/233860/1393228841/Idle Farmers.mod",
+   "md5": "125dc3c5007c4b5a503431246a59fb35",
+   "records": 2
+  },
+  {
+   "name": "ExSlaverPlus.mod",
+   "path": "C:/Program Files (x86)/Steam/steamapps/workshop/content/233860/3006827384/ExSlaverPlus.mod",
+   "md5": "97f76e0d11009ead085a28bdf76867ce",
+   "records": 110
+  },
+  {
+   "name": "Sensible Slavers.mod",
+   "path": "C:/Program Files (x86)/Steam/steamapps/workshop/content/233860/3033388232/Sensible Slavers.mod",
+   "md5": "9f02f919f42a4cab926c94224aebbe9e",
+   "records": 9
+  },
+  {
+   "name": "Weaklings give XP.mod",
+   "path": "C:/Program Files (x86)/Steam/steamapps/workshop/content/233860/1616003450/Weaklings give XP.mod",
+   "md5": "436e97c8e62e352264910524bbe565da",
+   "records": 1
+  },
+  {
+   "name": "CBT Hair Fix+Children of Kenshi.mod",
+   "path": "C:/Program Files (x86)/Steam/steamapps/workshop/content/233860/3811462056/CBT Hair Fix+Children of Kenshi.mod",
+   "md5": "d8c192aaf43d7e734620b67d378e8c32",
+   "records": 2
+  },
+  {
+   "name": "Holy Villages - Kaizo Patch.mod",
+   "path": "C:/Program Files (x86)/Steam/steamapps/workshop/content/233860/3774466274/Holy Villages - Kaizo Patch.mod",
+   "md5": "90bfb2380b77a8e7e9405b8f147f7028",
+   "records": 20
+  },
+  {
+   "name": "Buildings Category Tweaks - Bars.mod",
+   "path": "C:/Program Files (x86)/Steam/steamapps/workshop/content/233860/2988820024/Buildings Category Tweaks - Bars.mod",
+   "md5": "0540537e2089eca753ac15b68093f46d",
+   "records": 14
+  },
+  {
+   "name": "Buildings Category Tweaks - CMKillingTime.mod",
+   "path": "C:/Program Files (x86)/Steam/steamapps/workshop/content/233860/3014129647/Buildings Category Tweaks - CMKillingTime.mod",
+   "md5": "e35f02575c3fe647f22e8dfffc98ad87",
+   "records": 18
+  },
+  {
+   "name": "Buildings Category Tweaks - Glass.mod",
+   "path": "C:/Program Files (x86)/Steam/steamapps/workshop/content/233860/2988819860/Buildings Category Tweaks - Glass.mod",
+   "md5": "9d0c9836e66df93d688e72df3e528f1c",
+   "records": 14
+  },
+  {
+   "name": "Buildings Category Tweaks - Grave.mod",
+   "path": "C:/Program Files (x86)/Steam/steamapps/workshop/content/233860/2988823632/Buildings Category Tweaks - Grave.mod",
+   "md5": "c39268795f99e524302f0e5aad6f0967",
+   "records": 34
+  },
+  {
+   "name": "Buildings Category Tweaks - Hives.mod",
+   "path": "C:/Program Files (x86)/Steam/steamapps/workshop/content/233860/2988820255/Buildings Category Tweaks - Hives.mod",
+   "md5": "31b9fc79802d6305efb007eb35b0690b",
+   "records": 16
+  },
+  {
+   "name": "Buildings Category Tweaks - Japanese.mod",
+   "path": "C:/Program Files (x86)/Steam/steamapps/workshop/content/233860/3671590770/Buildings Category Tweaks - Japanese.mod",
+   "md5": "a4cbfb77f80981a405f7853d3da7cd10",
+   "records": 76
+  },
+  {
+   "name": "Buildings Category Tweaks - Prison.mod",
+   "path": "C:/Program Files (x86)/Steam/steamapps/workshop/content/233860/2993075128/Buildings Category Tweaks - Prison.mod",
+   "md5": "2c45cfdff6480526883ac9e9429d8b28",
+   "records": 19
+  },
+  {
+   "name": "Building Category Tweaks - Signs.mod",
+   "path": "C:/Program Files (x86)/Steam/steamapps/workshop/content/233860/3182091219/Building Category Tweaks - Signs.mod",
+   "md5": "48c66624c6ec0ad51cbdac7112bf463e",
+   "records": 5
+  },
+  {
+   "name": "Buildings Category Tweaks - Sitting.mod",
+   "path": "C:/Program Files (x86)/Steam/steamapps/workshop/content/233860/2993076793/Buildings Category Tweaks - Sitting.mod",
+   "md5": "4c8a00b927d7d3a1b44de5c4025b533a",
+   "records": 51
+  },
+  {
+   "name": "Buildings Category Tweaks - Torture.mod",
+   "path": "C:/Program Files (x86)/Steam/steamapps/workshop/content/233860/3151936132/Buildings Category Tweaks - Torture.mod",
+   "md5": "87303a29a0fb8d7e0a6942006ed9eabe",
+   "records": 28
+  },
+  {
+   "name": "2PN8BuildingsCategoryMedical.mod",
+   "path": "C:/Program Files (x86)/Steam/steamapps/workshop/content/233860/3586806232/2PN8BuildingsCategoryMedical.mod",
+   "md5": "0deb781f187a0362f2fd5b0649016d50",
+   "records": 29
+  },
+  {
+   "name": "Snowii's Weaponsmith Clutter Reduction.mod",
+   "path": "C:/Program Files (x86)/Steam/steamapps/workshop/content/233860/2164425925/Snowii's Weaponsmith Clutter Reduction.mod",
+   "md5": "630a68fcd57779a8f8c05e4c374192f2",
+   "records": 3
+  },
+  {
+   "name": "Unleash the hair.mod",
+   "path": "C:/Program Files (x86)/Steam/steamapps/workshop/content/233860/789210069/Unleash the hair.mod",
+   "md5": "ee01f1764bdb806be344278079d98174",
+   "records": 2
+  },
+  {
+   "name": "Vanilla Aesthetic Patch - Oni Hat - Release the hair addon.mod",
+   "path": "C:/Program Files (x86)/Steam/steamapps/workshop/content/233860/2310350322/Vanilla Aesthetic Patch - Oni Hat - Release the hair addon.mod",
+   "md5": "5cba71ce1db908d66d352bb1f7be0ea0",
+   "records": 2
+  },
+  {
+   "name": "Lolu_Robot Limbs Height Fix.mod",
+   "path": "C:/Program Files (x86)/Steam/steamapps/workshop/content/233860/3556892652/Lolu_Robot Limbs Height Fix.mod",
+   "md5": "0a509b7ae87176fe99f007a355854884",
+   "records": 10
+  },
+  {
+   "name": "HarderPrisonerLocks.mod",
+   "path": "C:/Program Files (x86)/Steam/steamapps/workshop/content/233860/2164081763/HarderPrisonerLocks.mod",
+   "md5": "8ca00af26803337a31b6e1c0b37bf809",
+   "records": 5
+  },
+  {
+   "name": "TradeWithThieves.mod",
+   "path": "C:/Program Files (x86)/Steam/steamapps/workshop/content/233860/1677155066/TradeWithThieves.mod",
+   "md5": "29df4f12799af75fb0fd4cb047599fd3",
+   "records": 77
+  },
+  {
+   "name": "Trade While Disguised.mod",
+   "path": "C:/Program Files (x86)/Steam/steamapps/workshop/content/233860/3632920670/Trade While Disguised.mod",
+   "md5": "ba26459ae214ea6f5c8de07828072101",
+   "records": 79
+  },
+  {
+   "name": "HiveTradePermit.mod",
+   "path": "C:/Program Files (x86)/Steam/steamapps/workshop/content/233860/3727508743/HiveTradePermit.mod",
+   "md5": "175a57fcbe9e520235a7d80e28508dc9",
+   "records": 139
+  },
+  {
+   "name": "Kenshi Vibes.mod",
+   "path": "C:/Program Files (x86)/Steam/steamapps/workshop/content/233860/2486260824/Kenshi Vibes.mod",
+   "md5": "f06a597f14a33c22c4d1fb5f47b8fc01",
+   "records": 29
+  },
+  {
+   "name": "Thanks you based Okran.mod",
+   "path": "C:/Program Files (x86)/Steam/steamapps/workshop/content/233860/2493105466/Thanks you based Okran.mod",
+   "md5": "f1b6dfd76ac87278a06f928fc0b17e5a",
+   "records": 5
+  },
+  {
+   "name": "clankers.mod",
+   "path": "C:/Program Files (x86)/Steam/steamapps/workshop/content/233860/3645296528/clankers.mod",
+   "md5": "fe1c9d63cf66663ef61550f33adafbaf",
+   "records": 6
+  },
+  {
+   "name": "beakthing statue plus.mod",
+   "path": "C:/Program Files (x86)/Steam/steamapps/workshop/content/233860/2810767993/beakthing statue plus.mod",
+   "md5": "43bbff1ef6142c9fd5a702e7e01d0720",
+   "records": 69
+  },
+  {
+   "name": "Buildings Category Tweaks - Becky.mod",
+   "path": "C:/Program Files (x86)/Steam/steamapps/workshop/content/233860/2988882104/Buildings Category Tweaks - Becky.mod",
+   "md5": "dffec2378a1569b77bdb73d4a53e751e",
+   "records": 93
+  },
+  {
+   "name": "Soulbody No Crater Terrain Edits.mod",
+   "path": "C:/Program Files (x86)/Steam/steamapps/workshop/content/233860/3549419288/Soulbody No Crater Terrain Edits.mod",
+   "md5": "fac19519973b1acbcc4e4c5909562561",
+   "records": 4
+  },
+  {
+   "name": "RemoveTestStart - LOWER.mod",
+   "path": "C:/Program Files (x86)/Steam/steamapps/workshop/content/233860/3401610869/RemoveTestStart - LOWER.mod",
+   "md5": "16df90299cf8d28f6a43d651249056b7",
+   "records": 46
+  },
+  {
+   "name": "wh40k_imperial_forces_EN.mod",
+   "path": "C:/Program Files (x86)/Steam/steamapps/workshop/content/233860/3787053769/wh40k_imperial_forces_EN.mod",
+   "md5": "b0518df6a8586d8629740d224b5111e0",
+   "records": 309
+  },
+  {
+   "name": "OrcRaceReview_English.mod",
+   "path": "C:/Program Files (x86)/Steam/steamapps/workshop/content/233860/3836356922/OrcRaceReview_English.mod",
+   "md5": "65b3dd03ee34446796b75aad7572b6e1",
+   "records": 157
+  },
+  {
+   "name": "40K Necrons EN.mod",
+   "path": "C:/Program Files (x86)/Steam/steamapps/workshop/content/233860/3596387634/40K Necrons EN.mod",
+   "md5": "0ddb923ea8d4357cbb1eb352beb3199a",
+   "records": 118
+  },
+  {
+   "name": "ChaosDaemonsStandalone_English.mod",
+   "path": "C:/Program Files (x86)/Steam/steamapps/workshop/content/233860/3821856574/ChaosDaemonsStandalone_English.mod",
+   "md5": "d8a35e49996983c3423ad4732e9da45c",
+   "records": 61
+  },
+  {
+   "name": "2PN8CraftingResearchPatch.mod",
+   "path": "C:/Program Files (x86)/Steam/steamapps/workshop/content/233860/3585385588/2PN8CraftingResearchPatch.mod",
+   "md5": "f55207c9e4dc7f6180701810cd162c96",
+   "records": 4
+  },
+  {
+   "name": "2PN8RoboticsStorageAndLimbs.mod",
+   "path": "C:/Program Files (x86)/Steam/steamapps/workshop/content/233860/2760310007/2PN8RoboticsStorageAndLimbs.mod",
+   "md5": "d0a12eaea2bf697bfcb149e0d46852f6",
+   "records": 20
+  },
+  {
+   "name": "Katanas and Firelock EN.mod",
+   "path": "C:/Program Files (x86)/Steam/steamapps/workshop/content/233860/3262178905/Katanas and Firelock EN.mod",
+   "md5": "efed029e36358241d4db40bf492e3ca4",
+   "records": 202
+  },
+  {
+   "name": "HTT_Cloaks_ReKenshiNECK.mod",
+   "path": "C:/Program Files (x86)/Steam/steamapps/workshop/content/233860/3698596380/HTT_Cloaks_ReKenshiNECK.mod",
+   "md5": "74913588fc11abb1b2abd5869cc212ab",
+   "records": 23
+  }
+ ]
+}

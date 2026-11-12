@@ -1,0 +1,818 @@
+{
+"_doc": "Генерируется tools/dedup_canonical.py (не править руками). clone_groups: точные клоны, поток wardrobe берёт canon; families: перекраски, поток считает семейство одной вещью (вес 1), цвет выбирает внутри.",
+"stats": {
+"catalog_items": 2023,
+"clone_groups": 24,
+"clones": 26,
+"families": 42,
+"family_members": 106
+},
+"clone_groups": [
+{
+"canon": "100-Expanded Vanilla Armor.mod",
+"name": "Armoured Rags - Plate",
+"clones": [
+"102-Expanded Vanilla Armor.mod"
+]
+},
+{
+"canon": "11-Hive Equipment Overhaul.mod",
+"name": "Hive Soldier Samurai Armour",
+"clones": [
+"30-Hive Equipment Overhaul.mod"
+]
+},
+{
+"canon": "11-Modified Samurai Armor.mod",
+"name": "Reinforced Samurai Armor",
+"clones": [
+"14-Modified Samurai Armor [RUS].mod"
+]
+},
+{
+"canon": "11750571-mybuilding+item.mod",
+"name": "Rag Scarf",
+"clones": [
+"7660246-mybuilding+item.mod"
+]
+},
+{
+"canon": "1535100-Hats.mod",
+"name": "Turban Small",
+"clones": [
+"1535103-Hats.mod"
+]
+},
+{
+"canon": "1535169-Dread's Gear.mod",
+"name": "Heavy Coat",
+"clones": [
+"1535172-Dread's Gear.mod"
+]
+},
+{
+"canon": "15583178-Vanguad_mercenares.mod",
+"name": "HeavyMotorBottoms",
+"clones": [
+"15583179-Vanguad_mercenares.mod"
+]
+},
+{
+"canon": "18-Lolu_Customized Headgear Collection.mod",
+"name": "Karuta Zukin with Hair",
+"clones": [
+"38-Lolulile Customized Headgear integration.mod"
+]
+},
+{
+"canon": "224-Expanded Vanilla Armor.mod",
+"name": "Rag Hood",
+"clones": [
+"226-Expanded Vanilla Armor.mod"
+]
+},
+{
+"canon": "224-TEXT TEXTURE.mod",
+"name": "Elite Power Armor Liner",
+"clones": [
+"3193-TEXT TEXTURE.mod"
+]
+},
+{
+"canon": "2307-clothes_v1.mod",
+"name": "Armoured Rags",
+"clones": [
+"42052-rebirth.mod"
+]
+},
+{
+"canon": "2308-clothes_v1.mod",
+"name": "Rag Loincloth",
+"clones": [
+"64923-rebirth.mod"
+]
+},
+{
+"canon": "234-astramilitarumkit.mod",
+"name": "Commissar Boots",
+"clones": [
+"410-wh40k_imperial_forces.mod"
+]
+},
+{
+"canon": "26-HTT_Cloaks.mod",
+"name": "Fabric Cloak",
+"clones": [
+"65-HTT_Cloaks.mod"
+]
+},
+{
+"canon": "271-Expanded Vanilla Armor.mod",
+"name": "Armored Rag Skirt - Heavy",
+"clones": [
+"272-Expanded Vanilla Armor.mod"
+]
+},
+{
+"canon": "45-Expanded Vanilla Armor.mod",
+"name": "Samurai Armor - Heavy",
+"clones": [
+"261-Expanded Vanilla Armor.mod"
+]
+},
+{
+"canon": "5007315-Wolf_Headgear.mod",
+"name": "Wolf Headgear (yella)",
+"clones": [
+"5007331-Wolf_Headgear.mod",
+"5007316-Wolf_Headgear.mod",
+"5007333-Wolf_Headgear.mod"
+]
+},
+{
+"canon": "53-HTT_Cloaks.mod",
+"name": "Cloak (Nameless)",
+"clones": [
+"67-HTT_Cloaks.mod"
+]
+},
+{
+"canon": "5346-armor_otto.mod",
+"name": "Armoured Rag Skirt",
+"clones": [
+"42260-rebirth.mod"
+]
+},
+{
+"canon": "54-HTT_Cloaks.mod",
+"name": "Quality Fabric Cloak",
+"clones": [
+"66-HTT_Cloaks.mod"
+]
+},
+{
+"canon": "550-gamedata.base",
+"name": "Cargopants",
+"clones": [
+"50391-rebirth.mod"
+]
+},
+{
+"canon": "576-gamedata.base",
+"name": "Small Backpack",
+"clones": [
+"46037-rebirth.mod"
+]
+},
+{
+"canon": "635-gamedata.base",
+"name": "Medium Backpack",
+"clones": [
+"1286-gamedata.base"
+]
+},
+{
+"canon": "69-Custom Personal Armour Pack.mod",
+"name": "Stickperson Legplates 3",
+"clones": [
+"80-Custom Personal Armour Pack.mod"
+]
+}
+],
+"families": [
+{
+"key": "armour:belt|chef neckerchief",
+"members": [
+{
+"sid": "18-cook_set.mod",
+"color": "red"
+},
+{
+"sid": "38-cook_set.mod",
+"color": "yellow"
+},
+{
+"sid": "39-cook_set.mod",
+"color": "green"
+}
+]
+},
+{
+"key": "armour:belt|desert mask with glasses",
+"members": [
+{
+"sid": "35-Custom Personal Armour Pack.mod",
+"color": ""
+},
+{
+"sid": "36-Custom Personal Armour Pack.mod",
+"color": "dyed"
+}
+]
+},
+{
+"key": "armour:belt|neck scarf",
+"members": [
+{
+"sid": "37-Custom Personal Armour Pack.mod",
+"color": ""
+},
+{
+"sid": "38-Custom Personal Armour Pack.mod",
+"color": "dyed"
+}
+]
+},
+{
+"key": "armour:body|armored rags - heavy",
+"members": [
+{
+"sid": "41-Expanded Vanilla Armor.mod",
+"color": ""
+},
+{
+"sid": "68-Expanded Vanilla Armor.mod",
+"color": "colored"
+}
+]
+},
+{
+"key": "armour:body|combat armor mki",
+"members": [
+{
+"sid": "480-Expanded Vanilla Armor.mod",
+"color": "white"
+},
+{
+"sid": "488-Expanded Vanilla Armor.mod",
+"color": "black"
+}
+]
+},
+{
+"key": "armour:body|combat armor mkii",
+"members": [
+{
+"sid": "479-Expanded Vanilla Armor.mod",
+"color": "white"
+},
+{
+"sid": "489-Expanded Vanilla Armor.mod",
+"color": "black"
+}
+]
+},
+{
+"key": "armour:body|hitatare robe",
+"members": [
+{
+"sid": "10-ronin.mod",
+"color": "white"
+},
+{
+"sid": "22-ronin.mod",
+"color": "grey"
+},
+{
+"sid": "24-ronin.mod",
+"color": "yellow"
+}
+]
+},
+{
+"key": "armour:body|imperial guard - alarus terminator armor",
+"members": [
+{
+"sid": "1839-TEXT TEXTURE.mod",
+"color": "gold"
+},
+{
+"sid": "1846-TEXT TEXTURE.mod",
+"color": "black"
+}
+]
+},
+{
+"key": "armour:body|ninja rags",
+"members": [
+{
+"sid": "1534063-OMO'S ARMOUR for the World.mod",
+"color": "colored"
+},
+{
+"sid": "2151-gamedata.base",
+"color": ""
+}
+]
+},
+{
+"key": "armour:body|plate armor",
+"members": [
+{
+"sid": "527-Expanded Vanilla Armor.mod",
+"color": ""
+},
+{
+"sid": "543-Expanded Vanilla Armor.mod",
+"color": "black"
+}
+]
+},
+{
+"key": "armour:body|plate duster",
+"members": [
+{
+"sid": "447-Expanded Vanilla Armor.mod",
+"color": "white"
+},
+{
+"sid": "486-Expanded Vanilla Armor.mod",
+"color": "black"
+}
+]
+},
+{
+"key": "armour:body|plate jacket heavy",
+"members": [
+{
+"sid": "239-Expanded Vanilla Armor.mod",
+"color": "grey"
+},
+{
+"sid": "248-Expanded Vanilla Armor.mod",
+"color": "black"
+},
+{
+"sid": "249-Expanded Vanilla Armor.mod",
+"color": "white"
+}
+]
+},
+{
+"key": "armour:body|plate jacket medium",
+"members": [
+{
+"sid": "238-Expanded Vanilla Armor.mod",
+"color": "grey"
+},
+{
+"sid": "244-Expanded Vanilla Armor.mod",
+"color": "black"
+},
+{
+"sid": "245-Expanded Vanilla Armor.mod",
+"color": "white"
+}
+]
+},
+{
+"key": "armour:body|police jacket mki",
+"members": [
+{
+"sid": "34-Expanded Vanilla Armor.mod",
+"color": "grey"
+},
+{
+"sid": "80-Expanded Vanilla Armor.mod",
+"color": "black"
+},
+{
+"sid": "81-Expanded Vanilla Armor.mod",
+"color": "white"
+}
+]
+},
+{
+"key": "armour:body|police jacket mkii",
+"members": [
+{
+"sid": "35-Expanded Vanilla Armor.mod",
+"color": "grey"
+},
+{
+"sid": "82-Expanded Vanilla Armor.mod",
+"color": "black"
+},
+{
+"sid": "83-Expanded Vanilla Armor.mod",
+"color": "white"
+}
+]
+},
+{
+"key": "armour:body|ronin robe",
+"members": [
+{
+"sid": "46-Custom Personal Armour Pack.mod",
+"color": ""
+},
+{
+"sid": "48-Custom Personal Armour Pack.mod",
+"color": "dyed"
+}
+]
+},
+{
+"key": "armour:body|ss armor",
+"members": [
+{
+"sid": "5008540-Crystal City.mod",
+"color": "red"
+},
+{
+"sid": "5008558-Crystal City.mod",
+"color": "green"
+},
+{
+"sid": "5008559-Crystal City.mod",
+"color": "cyan"
+},
+{
+"sid": "5008560-Crystal City.mod",
+"color": "purple"
+}
+]
+},
+{
+"key": "armour:boots|imperial guard - alarus terminator power boots",
+"members": [
+{
+"sid": "1842-TEXT TEXTURE.mod",
+"color": "gold"
+},
+{
+"sid": "1849-TEXT TEXTURE.mod",
+"color": "black"
+}
+]
+},
+{
+"key": "armour:boots|plate boots",
+"members": [
+{
+"sid": "525-Expanded Vanilla Armor.mod",
+"color": ""
+},
+{
+"sid": "545-Expanded Vanilla Armor.mod",
+"color": "black"
+}
+]
+},
+{
+"key": "armour:boots|police boots",
+"members": [
+{
+"sid": "36-Expanded Vanilla Armor.mod",
+"color": "grey"
+},
+{
+"sid": "76-Expanded Vanilla Armor.mod",
+"color": "black"
+},
+{
+"sid": "77-Expanded Vanilla Armor.mod",
+"color": "white"
+}
+]
+},
+{
+"key": "armour:hat|ashland hat",
+"members": [
+{
+"sid": "31-Lolu_Customized Headgear Collection.mod",
+"color": "alt style"
+},
+{
+"sid": "55393-rebirth.mod",
+"color": ""
+}
+]
+},
+{
+"key": "armour:hat|barbarian's horn wrap",
+"members": [
+{
+"sid": "10-Barbarian's horn wrap.mod",
+"color": "red"
+},
+{
+"sid": "15-Barbarian's horn wrap.mod",
+"color": "gray"
+},
+{
+"sid": "21-Barbarian's horn wrap.mod",
+"color": "black"
+},
+{
+"sid": "22-Barbarian's horn wrap.mod",
+"color": "blue"
+},
+{
+"sid": "23-Barbarian's horn wrap.mod",
+"color": "green"
+},
+{
+"sid": "24-Barbarian's horn wrap.mod",
+"color": "beige"
+}
+]
+},
+{
+"key": "armour:hat|imperial guard - alarus terminator helmet",
+"members": [
+{
+"sid": "1837-TEXT TEXTURE.mod",
+"color": "gold"
+},
+{
+"sid": "1844-TEXT TEXTURE.mod",
+"color": "black"
+}
+]
+},
+{
+"key": "armour:hat|masked helmet",
+"members": [
+{
+"sid": "2201-gamedata.base",
+"color": ""
+},
+{
+"sid": "37-Lolu_Customized Headgear Collection.mod",
+"color": "alt style"
+}
+]
+},
+{
+"key": "armour:hat|plate helmet",
+"members": [
+{
+"sid": "526-Expanded Vanilla Armor.mod",
+"color": ""
+},
+{
+"sid": "546-Expanded Vanilla Armor.mod",
+"color": "black"
+}
+]
+},
+{
+"key": "armour:hat|police fog mask",
+"members": [
+{
+"sid": "485-Expanded Vanilla Armor.mod",
+"color": "white"
+},
+{
+"sid": "487-Expanded Vanilla Armor.mod",
+"color": "black"
+}
+]
+},
+{
+"key": "armour:hat|police helmet",
+"members": [
+{
+"sid": "2180-gamedata.base",
+"color": ""
+},
+{
+"sid": "96-Expanded Vanilla Armor.mod",
+"color": "black"
+},
+{
+"sid": "97-Expanded Vanilla Armor.mod",
+"color": "grey"
+}
+]
+},
+{
+"key": "armour:hat|ss helmet",
+"members": [
+{
+"sid": "5008547-Crystal City.mod",
+"color": "red"
+},
+{
+"sid": "5008552-Crystal City.mod",
+"color": "green"
+},
+{
+"sid": "5008553-Crystal City.mod",
+"color": "cyan"
+},
+{
+"sid": "5008554-Crystal City.mod",
+"color": "purple"
+}
+]
+},
+{
+"key": "armour:legs|aapolice pants",
+"members": [
+{
+"sid": "39-Expanded Vanilla Armor.mod",
+"color": "grey"
+},
+{
+"sid": "79-Expanded Vanilla Armor.mod",
+"color": "white"
+}
+]
+},
+{
+"key": "armour:legs|hakama trousers",
+"members": [
+{
+"sid": "12-ronin.mod",
+"color": "blue"
+},
+{
+"sid": "26-ronin.mod",
+"color": "grey"
+},
+{
+"sid": "27-ronin.mod",
+"color": "yellow"
+}
+]
+},
+{
+"key": "armour:legs|halfpants",
+"members": [
+{
+"sid": "1273-gamedata.base",
+"color": "colored"
+},
+{
+"sid": "64492-rebirth.mod",
+"color": "colored"
+}
+]
+},
+{
+"key": "armour:legs|hazmat suit pants",
+"members": [
+{
+"sid": "577-Driftmetal Remnants.mod",
+"color": ""
+},
+{
+"sid": "586-Driftmetal Remnants.mod",
+"color": "alt"
+}
+]
+},
+{
+"key": "armour:legs|hazmat suit pants f1",
+"members": [
+{
+"sid": "594-Driftmetal Remnants.mod",
+"color": ""
+},
+{
+"sid": "597-Driftmetal Remnants.mod",
+"color": "alt"
+}
+]
+},
+{
+"key": "armour:legs|hazmat suit pants f2",
+"members": [
+{
+"sid": "606-Driftmetal Remnants.mod",
+"color": "alt"
+},
+{
+"sid": "609-Driftmetal Remnants.mod",
+"color": ""
+}
+]
+},
+{
+"key": "armour:legs|imperial guard - alarus terminator leg armor",
+"members": [
+{
+"sid": "1840-TEXT TEXTURE.mod",
+"color": "gold"
+},
+{
+"sid": "1847-TEXT TEXTURE.mod",
+"color": "black"
+}
+]
+},
+{
+"key": "armour:legs|noble's trousers [sneaky chain]",
+"members": [
+{
+"sid": "1532971-Noble's New Clothes.mod",
+"color": ""
+},
+{
+"sid": "1532987-Noble's New Clothes.mod",
+"color": "pure white"
+},
+{
+"sid": "1533018-Noble's New Clothes.mod",
+"color": "gold"
+},
+{
+"sid": "1533020-Noble's New Clothes.mod",
+"color": "purple"
+}
+]
+},
+{
+"key": "armour:legs|plate legs",
+"members": [
+{
+"sid": "524-Expanded Vanilla Armor.mod",
+"color": ""
+},
+{
+"sid": "547-Expanded Vanilla Armor.mod",
+"color": "black"
+}
+]
+},
+{
+"key": "armour:legs|plate pants",
+"members": [
+{
+"sid": "240-Expanded Vanilla Armor.mod",
+"color": "grey"
+},
+{
+"sid": "246-Expanded Vanilla Armor.mod",
+"color": "black"
+},
+{
+"sid": "247-Expanded Vanilla Armor.mod",
+"color": "white"
+}
+]
+},
+{
+"key": "armour:legs|ronin pants",
+"members": [
+{
+"sid": "45-Custom Personal Armour Pack.mod",
+"color": ""
+},
+{
+"sid": "47-Custom Personal Armour Pack.mod",
+"color": "dyed"
+}
+]
+},
+{
+"key": "armour:legs|ss legplates",
+"members": [
+{
+"sid": "5008546-Crystal City.mod",
+"color": "red"
+},
+{
+"sid": "5008555-Crystal City.mod",
+"color": "green"
+},
+{
+"sid": "5008556-Crystal City.mod",
+"color": "cyan"
+},
+{
+"sid": "5008557-Crystal City.mod",
+"color": "purple"
+}
+]
+},
+{
+"key": "armour:neck|holy lord's cloak",
+"members": [
+{
+"sid": "14-HTT_Cloaks.mod",
+"color": "black"
+},
+{
+"sid": "20-HTT_Cloaks.mod",
+"color": ""
+}
+]
+},
+{
+"key": "armour:backpack|hip bag",
+"members": [
+{
+"sid": "4998359-OMO'S ARMOUR for the World.mod",
+"color": ""
+},
+{
+"sid": "4998360-OMO'S ARMOUR for the World.mod",
+"color": "black"
+}
+]
+}
+]
+}

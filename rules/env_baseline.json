@@ -1,0 +1,22 @@
+{
+ "_doc": "Эталон окружения (verify_all.py). kenshi_x64.exe = откатанный RE_Kenshi 0.3.5 exe 1.0.65; эталон совпадает с backup/pre_rekenshi/kenshi_x64.exe. Менять только после осознанного обновления RE_Kenshi/игры: python tools/verify_all.py --init-env",
+ "game_version": "1.0.65",
+ "files": {
+  "kenshi_x64.exe": {
+   "algo": "sha256",
+   "hash": "a596ab4e407c67b58599c54ffb32dc1bf2b64510cdebd3fa9359ef05a576aeb1",
+   "size": 36718592
+  },
+  "RE_Kenshi.dll": {
+   "algo": "md5",
+   "hash": "b4635ae6a08356b40993fd435b85beae",
+   "size": 1494528
+  },
+  "KenshiLib.dll": {
+   "algo": "md5",
+   "hash": "210344fbf1bacfbd94a2644182a679ed",
+   "size": 951808
+  }
+ },
+ "backup_exe_sha256": "a596ab4e407c67b58599c54ffb32dc1bf2b64510cdebd3fa9359ef05a576aeb1"
+}

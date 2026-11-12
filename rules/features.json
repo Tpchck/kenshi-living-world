@@ -1,0 +1,16 @@
+{
+ "_doc": "Единый файл рубильников. Правится руками; kmm_build.py при каждом запуске раскладывает значения по местам (tools/build/features.py), Lua-код не трогается. После изменения: python tools/build/kmm_build.py --write all --install. Раскладка: native.* -> build/KMM_Native/kmm_native.json; ore_campaign/links2/traces/self -> rules/conductor.json params.* (+ копия build/KMM_Conductor/conductor.json); slots_ext/dedup_pools -> rules/streams/wardrobe.json; merge -> rules/merge.json.",
+ "native": {
+  "enabled": true,
+  "ws_hook": true,
+  "faction_force": true,
+  "tooltip_compact": true
+ },
+ "ore_campaign": false,
+ "slots_ext": true,
+ "dedup_pools": true,
+ "merge": true,
+ "links2": true,
+ "traces": true,
+ "self": true
+}
