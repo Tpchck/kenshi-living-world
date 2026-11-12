@@ -1,0 +1,11 @@
+# WARDROBE v3 прогресс
+- Разведка: Nexus 1838 = папка "Extra Inventory Sections Plugin" (пустой .mod 0 записей + DLL RE_Kenshi, секции создаются кодом в рантайме -> данных RACE нет, расам ничего дописывать не надо).
+- Новые Workshop (11): Poncho 1942123109, Muskets of Kenshi 2180975180, Shoddy Firearm 2360832398, Katanas&Firelock CN 3239840151 + EN 3262178905, Standalone Musket 3387751018, Cat-Lon Gun Framework 3606059222, Muskets for GF 3606978260, HTT_Cloaks_ReKenshiNECK 3698596380, Barbarian cloak 3778343242, BlackPowder 3832765442.
+- Аудит: python -I -X utf8 tools/fast/audit_mods.py <ids> -> tools/fast/out/audit.json
+- ШАГ 1 ГОТОВ: rules/local_mods.json (имя .mod -> папка), tools/fast/lo.py (EXTRA: запись "local:<имя>" + 11 Workshop-модов после Crafting Redux, порядок плагин->GF->Shoddy->Muskets->CN->EN->BlackPowder->Poncho->Barbarian->NECK). mods_cfg.py check: 0 ошибок (warn реестра лаунчера). Исключённых нет. RACE-секции не нужны (плагин создаёт секции в DLL, .mod пуст).
+- Дальше: шаг 2 каталог (tools/catalog.py ATTACH слоты новых аксессуаров), шаг 3 контекст в wardrobe.json/wardrobe.py.
+- ШАГ 2 (часть): tools/catalog.py — ranged_class: allow_first_rx/hard_deny_rx/firearm_rx (rules/streams/wardrobe.json "ranged"), поле каталога "firearm". Группы eyes/gloves в каталоге пусты (в установленных модах нет предметов), neck=23 (HTT NECK плащи). Аксессуары делаем общим кодом по группам armour:eyes/gloves/neck.
+- Дальше: rules wardrobe.json "context" + код в tools/streams/wardrobe.py (после блока clothing и в блоке crossbows).
+- rules/streams/wardrobe.json: раздел context добавлен (lore_hard, climate, bias, firearms, accessories). Дальше: код в tools/streams/wardrobe.py
+- tools/streams/wardrobe.py: код контекста вставлен (power_armor, wear, climate, bias, accessories, firearms). Дальше: catalog.py, kmm_build --write wardrobe, отладка, статистика
+- ШАГ 3 код работает: wardrobe --write ок (power_armor 37, firearm 109 chars, neck 175, eyes/gloves 0: предметов нет). Дальше: полная пробная сборка, отчёт
