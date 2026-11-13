@@ -1,0 +1,632 @@
+{
+ "_doc": "Тексты ветки «What is the word?» (поток diplo): hook (первая реплика NPC), world (о мире и хронике «Сумерки реликтов»), relics (о реликтах и связанной модовой фракции). Английский как в ваниле.",
+ "close": [
+  "Mind how you go.",
+  "That is all I have. Walk carefully.",
+  "Now you know as much as I do."
+ ],
+ "q_world": "What is the word on the world?",
+ "q_relics": "And the strange gear, the relics?",
+ "q_thanks": "I will remember that.",
+ "q_bye": "Never mind.",
+ "bye_ack": "As you wish.",
+ "chance": 35.0,
+ "entries": [
+  {
+   "name": "Emperor Tengu",
+   "mod": null,
+   "hook": "You wish to speak of the realm? Be brief. The cities do not run themselves.",
+   "world": "Caravans, rents, the wall guard. That is the world, stranger. This year the roads smell of iron, and of strangers who belong to no house.",
+   "relics": "Machines and armour out of the dust, they say, from some other war. The cities will pay for them, and the Holy Nation will burn them. Choose who you sell to carefully."
+  },
+  {
+   "name": "Holy Lord Phoenix",
+   "mod": null,
+   "hook": "The faithful are many, and I have little patience. Say what you came to say.",
+   "world": "Okran watches the Nation. Heretics gather and strangers walk our roads in alien steel. A sign, I think, that the faith will be tested.",
+   "relics": "Their relics are unclean. Metal never forged by Okran's people. Bring such things to my gates and they will be broken, and so will you."
+  },
+  {
+   "name": "Esata the Stone Golem",
+   "mod": null,
+   "hook": "Hmm. A small one speaks to stone. Very well.",
+   "world": "The Shek keep their old ways. Strangers come out of the dust with strange blades. We watch them. We do not trust them.",
+   "relics": "A relic is a blade that dies. Every swing costs it something it cannot get back. A true warrior needs a blade that lasts."
+  },
+  {
+   "name": "Bugmaster",
+   "mod": null,
+   "hook": "Shh. You will wake the little ones.",
+   "world": "The nests are restless. New things walk the plains, metal things that hum. The bugs do not like the sound.",
+   "relics": "Whatever fell out of the sky is not of this world. The spiders feel it in the ground. Do not carry it near my nests."
+  },
+  {
+   "name": "Lady Kana",
+   "mod": null,
+   "hook": "Time is money, and you are not buying anything. But go on.",
+   "world": "Ore is short and prices climb. The Guild sees it first: every caravan comes back lighter. Coin always finds the new thing worth selling.",
+   "relics": "Relics sell at three times their weight and break like cheap pottery. Smart merchants sell them quickly. The smartest never use them."
+  },
+  {
+   "name": "Longen",
+   "mod": null,
+   "hook": "I run a tight ledger. If your business is brief, it is welcome.",
+   "world": "Iron is dear, food is dearer. The Guild keeps its roads open, and in return we want a quiet world. A quiet world is a profitable one.",
+   "relics": "The newcomers' wares fetch silly prices. Rich men want them for show. They break, and the buyers come back wanting their cats back."
+  },
+  {
+   "name": "Seto",
+   "mod": null,
+   "hook": "Speak. The Shek do not like to waste words.",
+   "world": "The Kingdom holds its borders. The Holy Nation grows bold, and these strangers with strange steel make everyone nervous.",
+   "relics": "A Shek warrior trusts a blade that has a name and a history. A relic has neither. It comes from nowhere and goes to nowhere."
+  },
+  {
+   "name": "High Inquisitor Seta",
+   "mod": null,
+   "hook": "The Inquisition listens. Confess quickly, or ask what you will.",
+   "world": "The Nation is vigilant. Strange arms, unclean flesh and the old machines walk the land. All of it is noted in our ledgers.",
+   "relics": "Foreign relics are heresy in iron. We confiscate where we can. Where we cannot, we pray, and we mark names."
+  },
+  {
+   "name": "High Inquisitor Valtena",
+   "mod": null,
+   "hook": "You have the look of someone who wants something. Ask, then.",
+   "world": "The faith is strong but the world is changing. The Nation sees alien fire on the horizon, and we have not yet decided what it means.",
+   "relics": "Some of my brothers would burn every relic. I would study one first. Do not repeat that to Phoenix."
+  },
+  {
+   "name": "Protector Of The Flame",
+   "mod": null,
+   "hook": "The flame burns. What do you seek?",
+   "world": "The faith is tested. Strangers come in alien armour, unbowed before Okran. The flame will not die, no matter how bright they burn.",
+   "relics": "A relic burns out in time. The flame of Okran does not. This is the difference between faith and metal."
+  },
+  {
+   "name": "Lady Tsugi",
+   "mod": null,
+   "hook": "I govern Brink, and the day is long. Be quick.",
+   "world": "Reavers on the coast, the cities short of iron, and now these strange soldiers. Brink hopes for peace and plans for war.",
+   "relics": "I have seen their arms. Fine work, and finite. When the last of them wears out, the people who depend on them will be very frightened."
+  },
+  {
+   "name": "Lady Sanda",
+   "mod": null,
+   "hook": "Bark has few visitors. What brings you?",
+   "world": "Bark needs food and honest hands. The world outside keeps offering other things, mostly trouble. Bring me grain and I will listen to anything.",
+   "relics": "Strange arms are turning up in our market stalls. Our guards do not want them, but some of the boys keep buying. I do not like it."
+  },
+  {
+   "name": "Queen of the South",
+   "mod": null,
+   "hook": "The Southern Hive hears you. Speak, small one.",
+   "world": "The Hive survives. New drones arrive from strange places, and we taste something strange on the wind. We keep the colony tight.",
+   "relics": "The Western sister thinks she is the Hive. She is not. And alien metal makes no difference to us, because we do not wear it."
+  },
+  {
+   "name": "The Queen",
+   "mod": null,
+   "hook": "The Western Hive listens. What do you offer?",
+   "world": "The Hive grows slowly and carefully. Outsiders bring both gifts and wounds. We take the gifts and we remember the wounds.",
+   "relics": "Metal from other wars. The workers carry it away to be melted. Hive tools are patient. The relics do not last, and the Hive does."
+  },
+  {
+   "name": "Dust King",
+   "mod": null,
+   "hook": "You walk into my dust and speak. Brave. Or stupid.",
+   "world": "Merchants come, merchants go, I take my share. New men with fancy steel? I take theirs too. The desert feeds those who are quick.",
+   "relics": "A relic pulled from a dead man is worth a hundred of anything else. I wear nothing that wears out. Remember that, and keep your life."
+  },
+  {
+   "name": "Valamon",
+   "mod": null,
+   "hook": "Reavers do not talk. But go on.",
+   "world": "The coast is ours when the tide is right. Brink is weak, the cities are afraid, and strangers who do not know the water make easy work.",
+   "relics": "Iron from the sky, they call it. I call it more steel for my crew, until it breaks. Then I take more."
+  },
+  {
+   "name": "Crab Queen",
+   "mod": null,
+   "hook": "The shore sings to me, little one. Tell me what you have heard.",
+   "world": "The crabs are many. The tide brings new things to the beach: broken metal, strange bones. Everything washes up in the end.",
+   "relics": "A relic is a shell. When the creature inside is gone, only the shell remains. I collect them."
+  },
+  {
+   "name": "Savant",
+   "mod": null,
+   "hook": "Hush. You want to talk of the world? How funny.",
+   "world": "The Skins are not in a hurry. The Skeletons do not tire. The world is going to end up belonging to things that do not tire.",
+   "relics": "Those who wear alien relics wear out with them. Skeleton steel never does. I have told them. They do not listen."
+  },
+  {
+   "name": "Big Al",
+   "mod": null,
+   "hook": "Talk is cheap, but I like it. Go on.",
+   "world": "The Rats hold their rock. The world is changing but it is still the world: take what you can, do not get caught.",
+   "relics": "Fancy foreign gear? I would sell it before it broke. Everyone who keeps it ends up broken too."
+  },
+  {
+   "name": "Big Grim",
+   "mod": null,
+   "hook": "The Hounds hear you. Be quick about it.",
+   "world": "Strangers in the badlands, strange smells, strange metal. The pack is nervous. A nervous pack bites harder.",
+   "relics": "We sniff out what is new. If it is a relic, it will die in your hands. The pack knows what stays and what does not."
+  },
+  {
+   "name": "Big Gray",
+   "mod": null,
+   "hook": "You like to talk, huh? Fine. Sit.",
+   "world": "The bar sees everything. Strange men buy strange things. Business has never been so good.",
+   "relics": "Relics move through here in the dark. I do not ask where they come from. I ask what they pay."
+  },
+  {
+   "name": "Big Darkbrow",
+   "mod": null,
+   "hook": "What do you want to know?",
+   "world": "The farm runs. The world is hungry, and what we grow sells very well. Fear sells even better.",
+   "relics": "The foreigners' metal does not interest me. Hunger does. When iron gets scarce, people want what I grow."
+  },
+  {
+   "name": "Big Fang",
+   "mod": null,
+   "hook": "Say what you came to say.",
+   "world": "The Twinblades fight for pay and for pride. Lately there are more fights, and the pay is better. I do not complain.",
+   "relics": "A relic blade is a clever trap. Beautiful, powerful, and temporary. I stay with steel that can be mended."
+  },
+  {
+   "name": "King Gurgler",
+   "mod": null,
+   "hook": "Gurgle. Speak, dry-skin.",
+   "world": "The sea is ours. The land people keep fighting. New metal things come down to the shore and rot in the salt.",
+   "relics": "Alien metal rusts in our water. The sea takes everything, even gods' gifts."
+  },
+  {
+   "name": "Flying Bull",
+   "mod": null,
+   "hook": "The Chosen of Kral listen to the strong. Are you strong?",
+   "world": "Kral's Chosen see the world as a trial. The weak die, the strong go on. The strangers will be tested like everyone else.",
+   "relics": "Those relics are Kral's gift or Kral's mockery. We will know which when they break."
+  },
+  {
+   "name": "Tora The Fearless",
+   "mod": null,
+   "hook": "I fear nothing. Ask your question.",
+   "world": "The Band of Bones are exiles and proud of it. Everyone else pretends the world is safe. We know better.",
+   "relics": "A blade that cannot be mended is a cursed blade. Take it from a dead man if you must, but know that it is already dying."
+  },
+  {
+   "name": "White Eyebrow",
+   "mod": null,
+   "hook": "A visitor. Speak, while your head is still on.",
+   "world": "The White Eyebrow Clan stays out of the cities' quarrel and the Dragon's too. The world is full of killers. We are simply the best.",
+   "relics": "A blade out of the sky? Yes, I have held one. It cut well and it cracked. I returned it to the dust where it belongs."
+  },
+  {
+   "name": "Red Sabre Boss",
+   "mod": null,
+   "hook": "The sabre listens. What is it?",
+   "world": "Swamp Ninjas on one side, strangers on the other. The Red Sabres hold the middle. Business is bad, and so is the mood.",
+   "relics": "I buy the foreign metal, strip it for parts and sell the rest. Nothing wasted, nothing worn."
+  },
+  {
+   "name": "Boss Simion",
+   "mod": null,
+   "hook": "Farmers and swordsmen both listen. Say it.",
+   "world": "We are the free farmers. We hold our fort and our fields. The world keeps trying to take both, one way or another.",
+   "relics": "A relic in a farmer's hands is a waste. A plough lasts decades. That is real wealth."
+  },
+  {
+   "name": "Yayoi",
+   "mod": null,
+   "hook": "Flotsam listens. Speak softly.",
+   "world": "Flotsam hides what it must and shows what it can. The Holy Nation hates us, and now the strangers are watching. Typical.",
+   "relics": "We know about the relics: quiet things, slow to wear and quick to attract trouble. We keep ours well hidden."
+  },
+  {
+   "name": "Mani",
+   "mod": null,
+   "hook": "The Ninjas of Flotsam watch. What is it?",
+   "world": "The shadows grow longer. Strange men with alien arms walk the roads at night. We follow them and learn what we can.",
+   "relics": "Relics make noise. A ninja wants silence. We leave them to the loud ones."
+  },
+  {
+   "name": "Arc",
+   "mod": null,
+   "hook": "Mongrel hears you. Make it interesting.",
+   "world": "We fought the Holy Nation once and we still do. The newcomers give us new things to fight about.",
+   "relics": "Tech Hunters pay for relics, and we pay in blood to dig them out. Between the two I know exactly what they are worth."
+  },
+  {
+   "name": "Cannibal Hunter Robun",
+   "mod": null,
+   "hook": "I hunt what hunts people. Do you have news?",
+   "world": "The plains grow darker. Cannibals, bandits and now strangers with strange iron. Everyone is armed. Few are friendly.",
+   "relics": "I bring down monsters with ordinary steel. A relic gun jams, a relic blade shatters. I trust my oldest knife."
+  },
+  {
+   "name": "Moll",
+   "mod": null,
+   "hook": "Quiet voice, please. People are listening.",
+   "world": "I stay out of politics. Politics come anyway. Right now everyone is in a hurry, and hurrying people make mistakes.",
+   "relics": "The foreign metal is not worth the trouble it brings. I would rather have bread and a locked door."
+  },
+  {
+   "name": "Lord Mirage",
+   "mod": null,
+   "hook": "The Heroes' League hears all. What do you offer?",
+   "world": "The League stands against slavers, bandits and tyrants alike. New foes appear every season. The League is ready.",
+   "relics": "Whoever wields a relic wields a temporary power. A hero must be prepared for the day it fails."
+  },
+  {
+   "name": "Armour King",
+   "mod": null,
+   "hook": "Armour is my craft. What do you need?",
+   "world": "Everyone wants plate these days. Alien steel, old steel, any steel. The smith's work has never been so well paid.",
+   "relics": "A relic plate is beautiful and cannot be repaired. I have tried. I would rather forge you something humble that lasts."
+  },
+  {
+   "name": "Mukai The Mountain",
+   "mod": null,
+   "hook": "Mountains do not hurry. Speak slowly.",
+   "world": "The world rushes. The mountain has seen it all before. Empires fall, new ones rise, and the dust remains.",
+   "relics": "Strange metal comes and goes. The mountain is still here."
+  },
+  {
+   "name": "Lord Commander Epson",
+   "mod": null,
+   "hook": "Report, soldier. Quickly.",
+   "world": "Order is thin at the borders. Raiders, strangers and cannibals test the line each day. We hold.",
+   "relics": "I have seen relic arms. Effective, until they stop. Soldiers need weapons they can trust in a long war."
+  },
+  {
+   "name": "Crumblejon",
+   "mod": null,
+   "hook": "Tech Hunters like questions. Go ahead.",
+   "world": "We dig. The ruins give up more every season: old things, new things, things that came from nowhere at all.",
+   "relics": "Relics are like old-world finds, except there is no old world behind them. I have never seen their like in the oldest ruin."
+  },
+  {
+   "name": "Chad",
+   "mod": null,
+   "hook": "Hey. Got something for me?",
+   "world": "Digging is hard work these days. There are too many people digging, and too many of them are armed.",
+   "relics": "I found a thing out there, weird and shiny. It stopped working a week later. Now I stick to the old stuff."
+  },
+  {
+   "name": "Finch",
+   "mod": null,
+   "hook": "Ruins keep me busy. What about you?",
+   "world": "I keep the expeditions fed. The Hunters spread out and the ruins are crowded. Everyone is looking for the same few good pieces.",
+   "relics": "If it hums and it is not Skeleton work, it came from beyond the world. I log it and walk away."
+  },
+  {
+   "name": "Shryke",
+   "mod": null,
+   "hook": "Make it quick, I am busy.",
+   "world": "Scrap is the currency now. Every Hunter I know has a story about something they should not have touched.",
+   "relics": "The strange relics are not scrap. They are worse: they look like treasure."
+  },
+  {
+   "name": "Iyo",
+   "mod": null,
+   "hook": "Hm? Oh. A visitor. Speak.",
+   "world": "The Hunters are busy. More ruins open each season, and the Skeletons do not like our digging.",
+   "relics": "If I find a relic, I take notes and leave it. Nobody can repair it, so what is the point of carrying it?"
+  },
+  {
+   "name": "Agnu",
+   "mod": null,
+   "hook": "...Input received. Speak.",
+   "world": "The Skeletons continue. We do not tire. The organic ones fight among themselves and change their minds each year.",
+   "relics": "Their relics decay. Ours do not. This is not pride. It is a measurement."
+  },
+  {
+   "name": "Sadneil",
+   "mod": null,
+   "hook": "...Query accepted.",
+   "world": "Skeletons endure. We observe the new arrivals and note their equipment. Their parts degrade.",
+   "relics": "We use what does not wear out. A relic is not that. We do not need it."
+  },
+  {
+   "name": "Mad Cat-Lon",
+   "mod": null,
+   "hook": "Meow? Speak, small one.",
+   "world": "The wolves and I roam the badlands. Things are changing and I do not like how the air smells.",
+   "relics": "Relics are bad for the pack. They draw bandits and hunters. We stay away."
+  },
+  {
+   "name": "Cannibal Grand Wizard",
+   "mod": null,
+   "hook": "The tribe hears, outlander.",
+   "world": "The Charred Skulls see the world as a feast. Strangers are only meat in a different coat.",
+   "relics": "Fire-metal from the sky? The wizard has seen it. It melts in a good fire, like everything else."
+  },
+  {
+   "name": "Meat Lord",
+   "mod": null,
+   "hook": "Talk. Then leave.",
+   "world": "The Blood Butcher tribe has many hungry mouths. The world has plenty of meat, some in strange armour.",
+   "relics": "Their shiny steel dents like any other when you hit hard enough."
+  },
+  {
+   "name": "Mighty Canhead",
+   "mod": null,
+   "hook": "Canhead hear you. Say.",
+   "world": "Cannibals eat, cannibals fight. New fighters come. Good.",
+   "relics": "Shiny metal, shiny head. Canhead like."
+  },
+  {
+   "name": "Ears",
+   "mod": null,
+   "hook": "Pack hears. Keep it short.",
+   "world": "Strangers in the badlands. We watch them, and we watch the sky.",
+   "relics": "A relic that breaks is just a rock. We keep the useful ones."
+  },
+  {
+   "name": "High Paladin Tyr",
+   "mod": "Bounties Galore.mod",
+   "hook": "The Order hears. Speak, and speak true.",
+   "world": "The Holy Nation marches slowly and surely. Paladins hold the gates while the priests argue. New foes arrive each season.",
+   "relics": "I have seen their arms. Unholy forge-work from beyond Okran's reach. Burn it if you can. Pay the price if you cannot."
+  },
+  {
+   "name": "Paladin Markus",
+   "mod": "Bounties Galore.mod",
+   "hook": "Paladin Markus, at your service. What troubles you?",
+   "world": "The Nation guards the roads and the faithful, while heretics and strangers gather at our borders.",
+   "relics": "Their relics are unclean, and yet powerful. I pray every night that I am not tempted."
+  },
+  {
+   "name": "Inquisitor Zonaras",
+   "mod": "Kaizo.mod",
+   "hook": "The Inquisition is always listening.",
+   "world": "Heresy grows in the dust. Strangers carry it. We follow the trail of foreign steel to its source.",
+   "relics": "A relic in a believer's hand is an offence. An offence has a price."
+  },
+  {
+   "name": "Brother Abelus",
+   "mod": "Social Lives (Holy Nation) ENG.mod",
+   "hook": "Peace be with you, traveller.",
+   "world": "The brothers tend the faithful and the sick. In hard times the Nation grows stronger. In harder times, harsher.",
+   "relics": "Pray for those who carry foreign relics. They will wear out, and their owners with them."
+  },
+  {
+   "name": "Black Templar - Paladin Eckhart",
+   "mod": "TEXT TEXTURE.mod",
+   "hook": "I am Eckhart. I fought for the Emperor. Now I fight for what remains.",
+   "world": "We fell here out of a war. Some of us survive, some of us do not. The locals call us strangers, and they are right.",
+   "relics": "Our armour cannot be mended. Every battle it grows thinner. We know our time is short, and we spend it well."
+  },
+  {
+   "name": "Black Templar Mighty Man - Emperor Champion",
+   "mod": "TEXT TEXTURE.mod",
+   "hook": "The Emperor's Champion hears you.",
+   "world": "I do not know this world, but it has an honest sort of cruelty. I can respect that.",
+   "relics": "My blade is made of the same stuff as my oath: strong, but not unbreakable."
+  },
+  {
+   "name": "Imperial Fist - Enmu",
+   "mod": "TEXT TEXTURE.mod",
+   "hook": "A mortal speaks to me. Interesting.",
+   "world": "The Sanctuary is a ruin of a ruin. We hold it because it is ours.",
+   "relics": "Our war-gear came with us and cannot be replaced. Each piece that breaks is gone forever."
+  },
+  {
+   "name": "Grey Knight - Shield Terminator",
+   "mod": "TEXT TEXTURE.mod",
+   "hook": "The Knights watch for corruption. Speak.",
+   "world": "I have seen chaos in this land. It has found a home here, among desperate people.",
+   "relics": "My armour is sacred and cannot be repaired. When it fails, so do I."
+  },
+  {
+   "name": "Astartes correspondent",
+   "mod": "TEXT TEXTURE.mod",
+   "hook": "Correspondent. I record what I see.",
+   "world": "A strange world, full of knives and hunger. I write down what I learn, in case anyone ever comes looking.",
+   "relics": "Our survivors are few. Each broken piece of gear is a death notice. I keep a list."
+  },
+  {
+   "name": "Midnight Lord - Karl",
+   "mod": "TEXT TEXTURE.mod",
+   "hook": "The night is long. Speak.",
+   "world": "We came out of the dark and found this world waiting. It is hungry, as are we.",
+   "relics": "Our relics are what we have left. They are failing. When they are gone, we will have only claws."
+  },
+  {
+   "name": "Midnight Lord - Zoran the Blasphemer",
+   "mod": "TEXT TEXTURE.mod",
+   "hook": "Blasphemy is my trade. What is yours?",
+   "world": "The Holy Nation burns what it fears. We feed on that fear. A delicious arrangement.",
+   "relics": "Relics of the ancient war. They do not mend, they do not heal. They only fade."
+  },
+  {
+   "name": "Midnight Lord - Apothecary Dacher",
+   "mod": "TEXT TEXTURE.mod",
+   "hook": "Even butchers need healers. Speak.",
+   "world": "I patch the broken. The world has plenty of them, and plenty of fools who wish to become so.",
+   "relics": "A relic cannot be healed. I have tried. It dies, as all things do."
+  },
+  {
+   "name": "Iron Warrior - Collector",
+   "mod": "TEXT TEXTURE.mod",
+   "hook": "I collect what the war leaves behind.",
+   "world": "Everything in this world is salvage, if you know where to look. I know.",
+   "relics": "Relics are the best salvage and the worst. They are priceless until they fail."
+  },
+  {
+   "name": "Master Sarujan",
+   "mod": "Band of Exiles.mod",
+   "hook": "The Second Empire remembers. Do you?",
+   "world": "The Empire fell. Some of us did not. We keep the old forms, the old manners. The world has forgotten them.",
+   "relics": "Skeleton hands built the Empire. They do not wear out. Neither do those who serve them."
+  },
+  {
+   "name": "Sovereign",
+   "mod": "Bounties Galore.mod",
+   "hook": "The Sovereign receives. Speak.",
+   "world": "The Second Empire sleeps, but it does not die. It waits for the world to remember it.",
+   "relics": "I have seen strangers come with their relics. The Empire made relics of its own, once. We know their price."
+  },
+  {
+   "name": "Hideyoshi",
+   "mod": "Adventurers Guild - Lore Friendly Recruitment.mod",
+   "hook": "The Adventurers Guild always has work. Interested?",
+   "world": "The Guild takes cats from clients and lives from adventurers. Business has never been so good: ruins, relics and rewards.",
+   "relics": "Relic hunts pay the best and kill the most. Our rule: if it glows, do not touch it, and if you touch it, do not send us the bill for the funeral."
+  },
+  {
+   "name": "Joseph",
+   "mod": "Guild of Surgeons.mod",
+   "hook": "The Surgeons are always open. Are you hurt?",
+   "world": "Surgeons see every side of the war. We treat anyone who can pay. That keeps us neutral.",
+   "relics": "I have operated on men carrying relic-implants. The body adapts, the metal does not. I do not recommend it."
+  },
+  {
+   "name": "Redman",
+   "mod": "Guild of Surgeons.mod",
+   "hook": "Red Hive does not like questions. Ask anyway.",
+   "world": "The Red Hive is a branch of the great Hive, and not all of us agree with our mothers.",
+   "relics": "Hive workers recycle everything. We have no use for relics. They cannot be eaten, they cannot be reused."
+  },
+  {
+   "name": "Violet",
+   "mod": "Leviathan Ronin (Reloaded).mod",
+   "hook": "The Fluorite welcomes you. Is your heart open?",
+   "world": "The Cult follows its own light. The Holy Nation calls us heretics. We call them blind.",
+   "relics": "The newcomers have relics that glow like Fluorite. We watch them closely. Some of them might be signs."
+  },
+  {
+   "name": "Jean",
+   "mod": "Leviathan Ronin (Reloaded).mod",
+   "hook": "The Ronin do not serve. But they listen.",
+   "world": "A ronin has no lord but his sword. The world is full of masterless men now, and some of them have learned to wear strange steel.",
+   "relics": "I trust my own katana. It has no secrets."
+  },
+  {
+   "name": "Wulfs",
+   "mod": "Leviathan Ronin (Reloaded).mod",
+   "hook": "Final Enforcers hold the line. What now?",
+   "world": "Someone has to keep order. We are the last who still try.",
+   "relics": "A relic weapon is a one-time gift. Real law needs a sword that lasts."
+  },
+  {
+   "name": "Zenith",
+   "mod": "GreatDirewolf.mod",
+   "hook": "The Wolven Order speaks through its elders. Listen well.",
+   "world": "The wolves remember what men forget. The old world is gone, and a newer one is on its way.",
+   "relics": "Alien metal frightens the pack. The wolves know what does not belong."
+  },
+  {
+   "name": "Major Nails",
+   "mod": "Rusty Raiders FACTION.mod",
+   "hook": "Rusty Raiders ride at dawn. Speak.",
+   "world": "Raiders have it good. Strangers drop their stuff in the dust, and we pick it up.",
+   "relics": "The Rusty Raiders are cousins of the Dust crowd, only better armed. We like relics. They are heavy, they are shiny, and they sell."
+  },
+  {
+   "name": "Grandmaster Zephyr",
+   "mod": "Rusty Raiders FACTION.mod",
+   "hook": "The Desert Ninjas do not give lessons for free.",
+   "world": "Shadows travel the dunes. We see the caravans, the raiders and the newcomers. We tell nobody.",
+   "relics": "A relic is the opposite of a ninja's art. Loud, bright, and short-lived."
+  },
+  {
+   "name": "Dark Praetorian Feep",
+   "mod": "Dark Hive.mod",
+   "hook": "The Dark Hive hears. Proceed.",
+   "world": "The Dark Hive is the shadow of the great Hive. We are patient, we are hungry, and we remember.",
+   "relics": "The strangers' metal means nothing to us. We hunt what lives."
+  },
+  {
+   "name": "Warmaster Honk",
+   "mod": "Dark Hive_Queens Squad Extension.mod",
+   "hook": "The Warmaster is listening.",
+   "world": "The colony is strong. The Queen's will is law, and the war goes on.",
+   "relics": "Alien relics are curiosities. Hive claws are older and sharper."
+  },
+  {
+   "name": "Mr. Habu",
+   "mod": "Dark Hive.mod",
+   "hook": "Steel Raiders do business. Do you?",
+   "world": "The Raiders want iron. Everyone wants iron. Iron is the only truth left.",
+   "relics": "Relics? We melt down what we can, resell the rest. Nothing wasted."
+  },
+  {
+   "name": "Mother of the Mist",
+   "mod": "Mist Ghouls.mod",
+   "hook": "The mist whispers. Do you hear?",
+   "world": "The mist eats what it touches. Strangers walk in and do not walk out.",
+   "relics": "Metal from other worlds rusts in the mist. Everything does."
+  },
+  {
+   "name": "Skull Collectors Head",
+   "mod": "Skull Collectors.mod",
+   "hook": "The skulls speak, if you know how to listen.",
+   "world": "The Collectors are patient. Everyone ends up in the collection sooner or later.",
+   "relics": "A skull from another world is a rare prize. I have only seen one."
+  },
+  {
+   "name": "General Jaichong",
+   "mod": "Hiver_Expansion.mod",
+   "hook": "The Southern Hive's general listens.",
+   "world": "Drones are loyal. Queens are patient. Wars are long. The South endures.",
+   "relics": "The Hive learns from every foe. We have learned about relics: they wear out. Hive armour does not."
+  },
+  {
+   "name": "Royal Samurai Tobu",
+   "mod": "Hiver_Expansion.mod",
+   "hook": "The Queen's blade hears you.",
+   "world": "I serve the Western Queen. The Hive is changing. I do not know what it will become.",
+   "relics": "A samurai trusts a blade for a lifetime. A relic is a tool for a season."
+  },
+  {
+   "name": "Hive Prince",
+   "mod": "Kaizo.mod",
+   "hook": "Hive Prince listens. Be useful.",
+   "world": "I will be a queen's heir, perhaps. The world is large, and the Hive small.",
+   "relics": "Relics are just metal. The Hive is more."
+  },
+  {
+   "name": "Grim",
+   "mod": "Bounties Galore.mod",
+   "hook": "...Online. State your query.",
+   "world": "The Old Machines persist. Our directives are unclear. The organic world does not help.",
+   "relics": "Relic components degrade. Ours were built to last. This is the difference between design and accident."
+  },
+  {
+   "name": "Gryf",
+   "mod": "Bounties Galore.mod",
+   "hook": "Drug Peddlers always have time for good customers.",
+   "world": "Business is booming. Hunger, pain, fear: all good for sales. The Holy Nation hates us and uses us.",
+   "relics": "Relics? The kind of men who buy relics also buy my stuff. Convenient."
+  },
+  {
+   "name": "Fogmaster",
+   "mod": "Dark Hive.mod",
+   "hook": "The fog listens. It always has.",
+   "world": "The fog is thick and the Fogmen are patient. Things walk in, but they seldom walk out.",
+   "relics": "Strange metal in the fog turns to rust. All things go to rust."
+  },
+  {
+   "name": "The Crone",
+   "mod": "Bounties Galore.mod",
+   "hook": "Come closer, child. The Crone remembers.",
+   "world": "The witches see further than the priests. The world is turning, and a chill is rising.",
+   "relics": "The relics are bones of another age. They do not heal and they do not forgive."
+  },
+  {
+   "name": "The Goblin",
+   "mod": "Bounties Galore.mod",
+   "hook": "Heh heh. The Goblin has something for you.",
+   "world": "The Cult likes shiny things. The world is full of them now.",
+   "relics": "Relics are shiny, and the Goblin collects shiny. But he does not wear them."
+  },
+  {
+   "name": "Marrow Lord",
+   "mod": "Kaizo.mod",
+   "hook": "The marrow speaks to me.",
+   "world": "The Gnawed Bone Tribe takes what it needs. The world gives plenty.",
+   "relics": "Alien bones, alien metal. I have gnawed on both."
+  }
+ ]
+}
