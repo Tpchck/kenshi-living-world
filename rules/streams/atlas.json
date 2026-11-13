@@ -1,0 +1,307 @@
+{
+ "_doc": "Поток ATLAS: связи локаций TOWN. Расстановка и координаты не трогаются (в файлах карты). Владение: TOWN.faction только у перечисленных записей (без фракции в моде); loot spawn принадлежит fix; residents/roaming/bar не трогаются (town, economy).",
+ "faction_from_squads": {
+  "_doc": "фракция по большинству SQUAD_TEMPLATE.faction отрядов-жителей (residents/bar/roaming, вес = число); ничья или нет данных = пропуск и строка в отчёте",
+  "sids": [
+   "95531-rebirth.mod",
+   "1531900-rebirth.mod",
+   "195-Animal Variations.mod",
+   "2034-TEXT TEXTURE.mod",
+   "5008579-Rusty Raiders FACTION.mod",
+   "2040-TEXT TEXTURE.mod",
+   "5132182-Dark Hive.mod"
+  ]
+ },
+ "faction_from_base": {
+  "_doc": "разрушенные overrides без фракции: ванильная практика (51 из 54 руинных override имеют faction) - фракция базового города, если все базы согласны",
+  "sids": [
+   "1533865-__SE world states.mod",
+   "1533866-__SE world states.mod",
+   "5007702-Oni.mod"
+  ]
+ },
+ "notes": {
+  "service_markers": [
+   "40594-Newwworld.mod MARKER-Nest-Cower (type 8)",
+   "42025-rebirth.mod spider camp marker (type 8)",
+   "NO_TOWN Nowhere",
+   "player_town_template Your Outpost",
+   "1202-gamedata.base Port South (vanilla REMOVED)"
+  ],
+  "removed_by_mod": "Все 'пустые' записи Talkative Kenshi (Kopek, Sakar, Shraff, Waystation *, Narko's Refuge, Drifter's Raceway, The Hub ruins, Ghost Village) имеют REMOVED=true: игра их не использует, населять нельзя и не нужно.",
+  "intended_ruins": [
+   "Fallen Tower",
+   "Armoury Ruin",
+   "Farm Ruin",
+   "Old Village(50243)",
+   "Empty Lab",
+   "Ruined Control Tower",
+   "Ashland Dome Ruin"
+  ],
+  "empty_not_on_map": "Mercenary base, Military Outpost, Empire Village, Drakken, Meep Camp BD, Silent Camp 01FA, Martyrs Pit не имеют экземпляра на карте (GAMESTATE_TOWN_INSTANCE_LIST), у них нет зданий: жители не появятся, отряды не добавлены.",
+  "empty_on_map_left": "The Eternal Laboratory (Cyborgs, секретная лаборатория мода Hive Cybernetics): однозначного донора отряда нет, оставлена пустой.",
+  "dup_real": [
+   {
+    "name": "Post-Ancient Workshop",
+    "sids": [
+     "48446-rebirth.mod",
+     "5007348-Kenshi Aftermath - Base.mod"
+    ],
+    "mods": [
+     "rebirth.mod",
+     "Symbiosis - Grievewraiths.mod (Kenshi Aftermath)"
+    ],
+    "distance": 3,
+    "note": "одно место (3 ед.), две НОВЫЕ записи, обе заселены (1 и 2 отряда): решение о выключении за интегратором"
+   }
+  ],
+  "dup_suspect": [
+   {
+    "names": [
+     "Blood Butcher Camp",
+     "Charred Skull Camp",
+     "Gnawed Bone Camp"
+    ],
+    "pairs": "5000122/5000121/5000120-Bandit Variety.mod vs 1535138/1535139/1535140-Kaizo.mod",
+    "note": "обе тройки в пакете Kaizo, на карте нет экземпляров ни у одной (позиции не определены): вероятно шаблоны лагерей разных спавнеров, не дубль; проверить в игре нельзя - только отчёт"
+   }
+  ],
+  "dup_generic": "Fishing Village, Old Village, Holy Farm, Silent Camp, Ruined Mine, White Eyebrow Tower, Port South - разные места (расстояния 12k..240k); Dust Bandit Camp/Slaver Camp/Reaver Camp/Exile Camp/White Eyebrow/Goat Herder/Black Dragon Camp (ваниль/rebirth + Bandit Variety) и Nest of Beak Things (Lovely Gutter x5) - родовые шаблоны лагерей без экземпляров на карте."
+ },
+ "stronghold": {
+  "_doc": "Оплоты: крупные города (TOWN type 2/5/6/7, не override-варианты) сильных фракций. (1) охрана: у существующих отрядов-жителей с охранным AI-пакетом поднимается val0 (число отрядов) в TOWN.residents, либо в residents добавляется охранный шаблон фракции по умолчанию; не больше max_add_per_town на город. Если residents города уже менял более ранний поток (семя ECONOMY, 50% городов за сборку), то поле не трогаем (конфликт владения): запасной путь - bar squads (val0 число, val1 шанс %) для шаблона с AI guard town/patrol town, иначе пропуск. (2) путники: в roaming squads добавляются существующие нейтральные/свои отряды с AI «Wandering from town to town» + «hang out in a bar» (идут по городам, заходят в бар). Город с roaming, изменённым ранее потоком (караваны ECONOMY), пропускается. Новых персонажей нет, только ссылки на существующие шаблоны.",
+  "enabled": true,
+  "guard_ai_regex": "gate guard|guard town|patrol town|_security_24hr",
+  "guard_ai_exclude": "thug|tax collector|building|shop",
+  "guard_name_exclude": "^(daniel|boris)$|vagrant|prisoner",
+  "fallback_bar_regex": "guard town|patrol town",
+  "factor": {
+   "2": 1.3,
+   "5": 1.5,
+   "6": 1.75,
+   "7": 2.0
+  },
+  "max_add_per_town": 1,
+  "world_growth_cap_pct": 15,
+  "traveller_roaming_v0": 1,
+  "traveller_tiers": [
+   [
+    0,
+    1
+   ],
+   [
+    10,
+    2
+   ],
+   [
+    20,
+    3
+   ]
+  ],
+  "traveller_min_for_type": {
+   "6": 2,
+   "7": 2
+  },
+  "factions": {
+   "1083-gamedata.base": {
+    "name": "The Holy Nation",
+    "pool": "holy"
+   },
+   "defaultEmpireFactionSID": {
+    "name": "United Cities",
+    "pool": "uc"
+   },
+   "11624-Dialogue (10).mod": {
+    "name": "Shek Kingdom",
+    "pool": "shek"
+   },
+   "1088-gamedata.base": {
+    "name": "Traders Guild",
+    "pool": "tg"
+   },
+   "1233-gamedata.base": {
+    "name": "Tech Hunters",
+    "pool": "th"
+   },
+   "1084-gamedata.base": {
+    "name": "Slave Traders",
+    "pool": null
+   }
+  },
+  "pools": {
+   "holy": [
+    [
+     "SQUAD_TEMPLATE",
+     "The pilgrims",
+     "409-social lives (Holy Nation).mod"
+    ],
+    [
+     "SQUAD_TEMPLATE",
+     "Caravan NW",
+     "43970-rebirth.mod"
+    ],
+    [
+     "SQUAD_TEMPLATE",
+     "Merchant Nomads Holy Nation",
+     "5007432-NPCs Equip Robot Limbs.mod"
+    ],
+    [
+     "SQUAD_TEMPLATE",
+     "Lost Wanderer",
+     "3330-gamedata.base"
+    ]
+   ],
+   "uc": [
+    [
+     "SQUAD_TEMPLATE",
+     "Empire Bounty hunters",
+     "10778-Dialogue (10).mod"
+    ],
+    [
+     "SQUAD_TEMPLATE",
+     "Merchant Nomads",
+     "63537-rebirth.mod"
+    ],
+    [
+     "SQUAD_TEMPLATE",
+     "Drifter squad TH",
+     "3950-gamedata.base"
+    ],
+    [
+     "SQUAD_TEMPLATE",
+     "Mercenary wanderers",
+     "43388-rebirth.mod"
+    ],
+    [
+     "SQUAD_TEMPLATE",
+     "Lost Wanderer",
+     "3330-gamedata.base"
+    ],
+    [
+     "SQUAD_TEMPLATE",
+     "Caravan",
+     "1161-gamedata.base"
+    ]
+   ],
+   "shek": [
+    [
+     "SQUAD_TEMPLATE",
+     "TC Shek Warrior Patrol",
+     "101-Travelling Civilians.mod"
+    ],
+    [
+     "SQUAD_TEMPLATE",
+     "Caravan Shek",
+     "53576-Faction Caravans.mod"
+    ],
+    [
+     "SQUAD_TEMPLATE",
+     "Mercenary wanderers",
+     "43388-rebirth.mod"
+    ],
+    [
+     "SQUAD_TEMPLATE",
+     "Merchant Nomads",
+     "63537-rebirth.mod"
+    ],
+    [
+     "SQUAD_TEMPLATE",
+     "Drifter squad TH",
+     "3950-gamedata.base"
+    ]
+   ],
+   "tg": [
+    [
+     "SQUAD_TEMPLATE",
+     "Caravan",
+     "1161-gamedata.base"
+    ],
+    [
+     "SQUAD_TEMPLATE",
+     "Merchant Nomads",
+     "63537-rebirth.mod"
+    ],
+    [
+     "SQUAD_TEMPLATE",
+     "Mercenary wanderers",
+     "43388-rebirth.mod"
+    ]
+   ],
+   "th": [
+    [
+     "SQUAD_TEMPLATE",
+     "Drifter squad TH",
+     "3950-gamedata.base"
+    ],
+    [
+     "SQUAD_TEMPLATE",
+     "Drifter solo",
+     "2206-gamedata.base"
+    ],
+    [
+     "SQUAD_TEMPLATE",
+     "Tech Hunter Merc barflies",
+     "44859-rebirth.mod"
+    ],
+    [
+     "SQUAD_TEMPLATE",
+     "Samurai with Horse",
+     "5008234-Sailback.mod"
+    ],
+    [
+     "SQUAD_TEMPLATE",
+     "Merchant Nomads",
+     "63537-rebirth.mod"
+    ]
+   ]
+  },
+  "_diet": "2026-11-13 плейтест: в городах слишком много NPC при загрузке -> охраны +1 отряд максимум (было 4: Rebirth бар 7->64), путники в roaming вес 1 (было 3). Путники в roaming выключены (travellers_enabled=false): они спавнились при загрузке города; теперь приходят через Traces arrive.",
+  "travellers_enabled": false
+ },
+ "townlife": {
+  "_doc": "TOWNLIFE: жизнь города данными (только TOWN.bar squads / roaming squads / residents и CHARACTER.named; новых записей нет). Ядро (охрана, лавочники, уникальные лавки, Pacifier-вышибалы, сборщики налогов) не трогается. (1) калеки/ветераны-инвалиды Live Streets: в городе остаётся один шаблон из класса с шансом amputee_chance; (2) уличные Live Streets (слепой, водонос, собаки, кости) - шанс не выше street_chance; (3) приходящие (списки рекрутов, бродяги, громилы, путники, наёмники): шанс не выше visitor_chance и число отрядов не выше visitor_cap, лишние типы сверх visitor_types_max убираются (самые частые в мире первыми), если меньше visitor_types_min в городе с баром - добавляются самые редкие из соседних городов той же фракции (шанс added_chance); убранное из бара частично переезжает в roaming squads (вес roaming_v0, до roaming_max на город); (4) уникальные рекруты (CHARACTER unique) остаются максимум в unique_keep барах мира (записи отряда и персонажа не меняются - диалоги живы); (5) CHARACTER.named=true у неуникальных обычных персонажей приходящих/уличных/калек (в игре имя выбирается случайно из списка имён); (6) ротация лавок: у неуникальных лавочников residents (без world state, не KMM) с вероятностью swap_p отряд заменяется торговым отрядом той же фракции и такого же здания/AI-набора другой специализации (самая редкая в мире специализация первой). Города, где residents/bar/roaming уже менял другой поток (ECONOMY), пропускаются (конфликт владения). Семя: ctx.world_seed (новое при каждой пересборке).",
+  "enabled": true,
+  "amputee_regex": "^cripple|^veteran \\(.*\\) \\((leg|arm)\\)",
+  "amputee_chance": 25,
+  "street_names": [
+   "Blind",
+   "Water carrier",
+   "Stray Dogs",
+   "Dice Dealer"
+  ],
+  "street_chance": 35,
+  "visitor_regex": "vagrant|thug|barfl|traveller|squatter|criminals|drifter|mercenary|merc |outcast",
+  "recruit_regex": "recruit",
+  "protect_regex": "pacifier|guard|tax collector|patrol|bouncer|police|headhunter|bounty",
+  "visitor_chance": 35,
+  "visitor_cap": 2,
+  "visitor_types_min": 2,
+  "visitor_types_max": 6,
+  "added_chance": 30,
+  "big_town_types": [
+   2,
+   5,
+   6,
+   7
+  ],
+  "min_bar_entries_for_fill": 4,
+  "roaming_v0": 1,
+  "roaming_max": 0,
+  "roaming_min_removed_persons": 2,
+  "roaming_ai_regex": "town to town|wander|hang out|bar",
+  "unique_keep": 2,
+  "named_for_classes": [
+   "amputee",
+   "street",
+   "visitor",
+   "recruit"
+  ],
+  "swap_p": 0.4,
+  "monopoly_cap_pct": 25,
+  "civ_regex": "civilian|citizen|peasant|townsfolk|commoner|farmer|worker|labou?rer|beggar|slum|family|pilgrim|\bpeople\b|resident|drunk|bar indie",
+  "civ_bar_mult": 0.5,
+  "civ_min_chance": 10,
+  "civ_res_mult": 0.5,
+  "_diet": "2026-11-13 плейтест: «города при загрузке почти пустые, люди приходят извне (беженцы, банды, торговцы)». Гости бара: шанс 60->35, не больше 2 отрядов, минимум типов 3->2, добавленные 50->30; уличные 60->35; калеки 35->25; гражданский наполнитель (civ_regex) в барах шанс x0.5, в FACTION.residents число x0.5 (мин. 1). Охрана, лавки, уникальные, HQ, рекруты-уники не трогаются. Приток компенсирует Traces arrive (conductor.json traces.arrive_*)."
+ }
+}
