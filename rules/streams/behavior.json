@@ -137,13 +137,9 @@
     "cloak shop(test)"
    ],
    "bandit": [
-    "Shinobi Thieves",
     "Rusty Raiders",
     "Black Dog",
-    "Slave Traders",
-    "Slave Hunters",
-    "Skeleton Bandits",
-    "Bar Thugs"
+    "Skeleton Bandits"
    ],
    "savage": [
     "Cannibals",
@@ -210,6 +206,12 @@
    "xeno": [
     "Space Necromancer - Sora Dynasty",
     "Greenskins"
+   ],
+   "underworld": [
+    "Shinobi Thieves",
+    "Slave Traders",
+    "Slave Hunters",
+    "Bar Thugs"
    ]
   },
   "override_by_name": {
@@ -280,7 +282,11 @@
    "chaos|settler": -80,
    "chaos|xeno": -80,
    "xeno|xeno": -60,
-   "xeno|settler": -30
+   "xeno|settler": -30,
+   "underworld|savage": -40,
+   "underworld|chaos": -80,
+   "underworld|xeno": -50,
+   "underworld|religion": -30
   },
   "exceptions": [
    [
@@ -321,7 +327,8 @@
    [
     "Police",
     "Shinobi Thieves",
-    -70
+    -70,
+    "force"
    ],
    [
     "Police",
@@ -366,7 +373,8 @@
    [
     "Adventurers Guild",
     "Traders Guild",
-    50
+    50,
+    "force"
    ],
    [
     "Cult of Fluorite",
@@ -376,7 +384,8 @@
    [
     "Old Machines",
     "Skeleton Legion",
-    70
+    70,
+    "force"
    ],
    [
     "Skeleton Sultans",
@@ -384,6 +393,8 @@
     70
    ]
   ],
-  "_doc_branches": "2026-11-13 LORE: ветви фракций (docs\\STORY.md «Ветви фракций») — родитель↔ветвь."
+  "_doc_branches": "2026-11-13 LORE: ветви фракций (docs\\STORY.md «Ветви фракций») — родитель↔ветвь.",
+  "_force_note": "2026-11-13: force — точное значение поверх явного того же знака. Fluorite↔HN без force: явные −100 из мода по лору (ересь) оставлены; Shinobi Thieves↔Police force −70 (было −1).",
+  "_doc_underworld": "2026-11-14 баг Mongrel: городской криминал, который в ванили живёт в городах рядом со стражей и лавками (Shinobi Thieves, Slave Traders +100 к Traders Guild/UC, Slave Hunters, Bar Thugs). Как «bandit» матрица дописывала им −60 ко всем модовым торговцам → драки в городах. Свой архетип: с торговцами, государствами, поселенцами — ничего не дописываем (ванильные явные отношения и default)."
  }
 }
