@@ -1,0 +1,211 @@
+{
+ "_doc": "Чистка карты (мод KMM_Cleanup, ТОЛЬКО для новой игры). camps: лагерь (TOWN) -> хост-TOWN. Отряды лагеря (squads, пусто = все собственные из residents/bar squads/roaming squads лагеря, кроме override-копий) переезжают в хост; если у хоста есть бары (bar squads) — как bar squads (v0=1, v1=100), иначе как residents с исходными числами лагеря. refaction: фракцию отряда, если она задана и отличается от фракции хоста, заменить на фракцию хоста (иначе отряд враждебен жителям). TOWN лагеря и его override-варианты REMOVED=true; здания лагеря (instance'ы зон, впервые введённые модом-источником лагеря, в радиусе radius от позиции лагеря) удаляются (target ''). REVIEW — только рекомендации, в сборку не входят. mode=\"roam\": разыскиваемый уник становится кочевником региона лагеря (BIOME_GROUP по areasmap) — homeless spawns (1,0,0) + AI-пакеты «hang out in a bar»(0)/«Wandering from town to town»(1); отряд питомцев без лидера вливается в отряд хозяина; фракция не меняется.",
+ "version": 1,
+ "radius": 2000,
+ "refaction": true,
+ "camps": [
+  {
+   "camp": "1535490-Bounties Galore.mod",
+   "host": "55660-rebirth.mod",
+   "who": "Adidan (каннибал-отшельник)",
+   "why": "Smugglers Bar (Grayflayers, публичный бар на краю закона): единственное нейтральное место, где изгой-каннибал не вызывает войны; рекрутируется в баре."
+  },
+  {
+   "camp": "1724-TEXT TEXTURE.mod",
+   "host": "1033-TEXT TEXTURE.mod",
+   "who": "Black Shield - Brand Warrior",
+   "why": "Astartes outpost (Astartes survivors, отношение к игроку +20): Black Shield — космодесант-отступник того же мира, убежище для своих."
+  },
+  {
+   "camp": "1535811-Bounties Galore.mod",
+   "host": "1082-gamedata.base",
+   "who": "Snip-Snap + краб",
+   "why": "Flats Lagoon (Tech Hunters, публичный город): лагуна у воды — естественное место для крабовода; Crab Raiders враждебны игроку, поэтому не их города."
+  },
+  {
+   "camp": "1536648-Bounties Galore.mod",
+   "host": "1536421-Bounties Galore.mod",
+   "who": "Houndmaster + Bonedog + гончие",
+   "why": "Разыскиваемый (награда Bounties Galore/мода): не сидит в логове и не в баре хоста, а родным кочевником ходит по своему региону от города к городу и бывает в барах (BIOME_GROUP.homeless spawns + AI «Wandering from town to town»/«hang out in a bar», как Poacher Kingpin в Heng). Убит — исчезает навсегда (уник); замену даёт KMM_Outlaws. Хост в записи — запасной. (решение 2026-11-14 по идее владельца о живых разыскиваемых)",
+   "mode": "roam"
+  },
+  {
+   "camp": "947-TEXT TEXTURE.mod",
+   "host": "1033-TEXT TEXTURE.mod",
+   "who": "Grey Knight - Shield Terminator",
+   "why": "Astartes outpost: Серый Рыцарь — охотник на хаос, как и Astartes survivors (ambition hunt_chaos)."
+  },
+  {
+   "camp": "3198-TEXT TEXTURE.mod",
+   "host": "18919-Newwworld.mod",
+   "who": "Midnight Lord - Karl",
+   "why": "Разыскиваемый (награда Bounties Galore/мода): не сидит в логове и не в баре хоста, а родным кочевником ходит по своему региону от города к городу и бывает в барах (BIOME_GROUP.homeless spawns + AI «Wandering from town to town»/«hang out in a bar», как Poacher Kingpin в Heng). Убит — исчезает навсегда (уник); замену даёт KMM_Outlaws. Хост в записи — запасной. (решение 2026-11-14 по идее владельца о живых разыскиваемых)",
+   "mode": "roam"
+  },
+  {
+   "camp": "1535808-Bounties Galore.mod",
+   "host": "1201-gamedata.base",
+   "who": "Blaze + Blood Spider",
+   "why": "Mud Town (Swampers, публичная деревня): болотные жители живут рядом с пауками и жуками, укротитель уместен."
+  },
+  {
+   "camp": "1535810-Bounties Galore.mod",
+   "host": "49386-rebirth.mod",
+   "who": "Sarin + Captcha + торговый отряд (3)",
+   "why": "World's End (Tech Hunters, бар, машинисты уже живут): Spider Workshop — лавка Sarin (протезы); Errol's Workshop сам одинокая лавка и тоже переезжает сюда. Режим shop: уличный торговец в баре (образец Live Street).",
+   "mode": "shop"
+  },
+  {
+   "camp": "1536328-Bounties Galore.mod",
+   "host": "18919-Newwworld.mod",
+   "who": "Watcher + Apprentice + собаки",
+   "why": "Разыскиваемый (награда Bounties Galore/мода): не сидит в логове и не в баре хоста, а родным кочевником ходит по своему региону от города к городу и бывает в барах (BIOME_GROUP.homeless spawns + AI «Wandering from town to town»/«hang out in a bar», как Poacher Kingpin в Heng). Убит — исчезает навсегда (уник); замену даёт KMM_Outlaws. Хост в записи — запасной. (решение 2026-11-14 по идее владельца о живых разыскиваемых)",
+   "mode": "roam"
+  },
+  {
+   "camp": "1535809-Bounties Galore.mod",
+   "host": "66517-Dialogue.mod",
+   "who": "Wendigo (каннибал-вождь)",
+   "why": "Rot (Hounds, публичная деревня дикарей, лидер Big Grim): дикая банда терпит каннибала; Adidan и Wendigo разведены по разным хостам."
+  },
+  {
+   "camp": "1535850-Bounties Galore.mod",
+   "host": "97071-Dialogue.mod",
+   "who": "The Crone + 2 дочери (3 отряда)",
+   "why": "Cult Village (Preacher Cult, публичная деревня): ведьмы среди сектантов — культ принимает ковен."
+  },
+  {
+   "camp": "5007423-Bounties Galore.mod",
+   "host": "18925-Newwworld.mod",
+   "who": "Taunt (гринлендер, Drifters)",
+   "why": "Разыскиваемый (награда Bounties Galore/мода): не сидит в логове и не в баре хоста, а родным кочевником ходит по своему региону от города к городу и бывает в барах (BIOME_GROUP.homeless spawns + AI «Wandering from town to town»/«hang out in a bar», как Poacher Kingpin в Heng). Убит — исчезает навсегда (уник); замену даёт KMM_Outlaws. Хост в записи — запасной. (решение 2026-11-14 по идее владельца о живых разыскиваемых)",
+   "mode": "roam"
+  },
+  {
+   "camp": "2757600-GreatDirewolf.mod",
+   "host": "14-Holy Mines.mod",
+   "who": "Seth + волчица Brooke",
+   "why": "Busted Wall (Holy Nation, бар, 7.3 тыс.): ближайший публичный город людей; отряд без фракции — рекрут в баре вместе с волком."
+  },
+  {
+   "camp": "1536409-Bounties Galore.mod",
+   "host": "5007297-Town of Shem.mod",
+   "who": "Zander + Band of Bones (4, шек)",
+   "why": "Разыскиваемый (награда Bounties Galore/мода): не сидит в логове и не в баре хоста, а родным кочевником ходит по своему региону от города к городу и бывает в барах (BIOME_GROUP.homeless spawns + AI «Wandering from town to town»/«hang out in a bar», как Poacher Kingpin в Heng). Убит — исчезает навсегда (уник); замену даёт KMM_Outlaws. Хост в записи — запасной. (решение 2026-11-14 по идее владельца о живых разыскиваемых)",
+   "mode": "roam"
+  },
+  {
+   "camp": "128-cook_set.mod",
+   "host": "12628-Newwworld.mod",
+   "mode": "shop",
+   "who": "Romi, Alan, Jakes — пекарня «Mostly Harmony»",
+   "why": "Blister Hill (Holy Nation, 8.7 тыс.): одинокая пекарня той же фракции у дороги -> уличные пекари в городе; охрана не переезжает."
+  },
+  {
+   "camp": "30-BlackPowder.mod",
+   "host": "18022-Newwworld.mod",
+   "mode": "shop",
+   "who": "Dreg Gunsmith — оружейная Dreg Gunworks",
+   "why": "Mongrel (15 тыс., осаждён туманниками): оружейнику место в городе, которому нужны стволы; охрана не переезжает."
+  },
+  {
+   "camp": "16-HeatCoilCleaver.mod",
+   "host": "49386-rebirth.mod",
+   "mode": "shop",
+   "who": "Errol — мастерская Errol's Workshop",
+   "why": "World's End (Tech Hunters, 27 тыс.): технический город, машинисты уже живут; Errol торгует экспериментальным оружием из бара."
+  }
+ ],
+ "review": [
+  {
+   "sid": "95755-__december17.mod",
+   "name": "Ark",
+   "rec": "оставить",
+   "why": "база Reavers (15 жителей, Valamon — лидер из world states), на неё ссылается NEW_GAME_STARTOFF и карта."
+  },
+  {
+   "sid": "424-TEXT TEXTURE.mod",
+   "name": "Black Sanctuary Camp",
+   "rec": "оставить",
+   "why": "база фракции The Lost Black Sanctuary: 35 зданий, гарнизон 8, закрытая; не лагерь-одиночка."
+  },
+  {
+   "sid": "462-TEXT TEXTURE.mod",
+   "name": "Death Watch landing point",
+   "rec": "оставить",
+   "why": "26 зданий, три рекрута и отряд из 3 — место крушения, а не лагерь; слияние оставит руины без смысла. Можно позже перенести рекрутов в Astartes outpost."
+  },
+  {
+   "sid": "1535140-Kaizo.mod",
+   "name": "Gnawed Bone Camp",
+   "rec": "оставить",
+   "why": "нет позиции в leveldata, появляется только как гнездо (SQUAD_TEMPLATE.nest) — на карте не мусорит."
+  },
+  {
+   "sid": "3654-TEXT TEXTURE.mod",
+   "name": "Human Research Institute",
+   "rec": "оставить",
+   "why": "штаб Midnight Lord: 56 жителей + 23 в баре при 1 здании; без него фракция теряет базу."
+  },
+  {
+   "sid": "1069-TEXT TEXTURE.mod",
+   "name": "Man-eating Shark Outpost",
+   "rec": "оставить",
+   "why": "74 здания, форпост фракции Man-eating shark, закрытый; слияние снесло бы крупную постройку."
+  },
+  {
+   "sid": "1536033-ChildrenOfKenshi.mod",
+   "name": "Old Wreckage",
+   "rec": "оставить",
+   "why": "45 зданий, сюжетная база The Hollow Feast с работорговым караваном."
+  },
+  {
+   "sid": "1536940-Bounties Galore.mod",
+   "name": "Reapers Due",
+   "rec": "оставить",
+   "why": "61 член Old Machines в 3 зданиях — босс-локация охоты за головой; Grim не рекрутируется."
+  },
+  {
+   "sid": "128-cook_set.mod",
+   "name": "Roadside Bakery",
+   "rec": "слито (2026-11-14, режим shop -> Blister Hill)",
+   "why": "3 здания, рядом (8781 ед.) Blister Hill той же фракции Holy Nation; хост — Blister Hill. Романи (Romi) — слабый рекрут."
+  },
+  {
+   "sid": "5007922-Oni.mod",
+   "name": "Ruined Tower of Trial",
+   "rec": "убрать",
+   "why": "1 здание, без уников; в 9155 ед. стоит основной Tower of Trial (Oni); отряд из трёх «imprisoned oni» можно не переносить."
+  },
+  {
+   "sid": "68-cook_set.mod",
+   "name": "Seaside Restaurant",
+   "rec": "оставить",
+   "why": "23 здания, торговый город United Cities (45 человек), функциональный."
+  },
+  {
+   "sid": "10-Sultans Outpost 1.mod",
+   "name": "Sultan Outpost",
+   "rec": "оставить",
+   "why": "на него ссылается NEW_GAME_STARTOFF (старт новой игры), торговец-рекрут."
+  },
+  {
+   "sid": "1535133-Guild of Surgeons.mod",
+   "name": "The Apothecary",
+   "rec": "оставить",
+   "why": "78 зданий, торговые отряды гильдии хирургов."
+  },
+  {
+   "sid": "794-TEXT TEXTURE.mod",
+   "name": "The Collector's Nest",
+   "rec": "оставить",
+   "why": "64 здания, закрытая база Lost Chaos Space Marines; рекрут есть, но место крупное."
+  },
+  {
+   "sid": "201-Towns Expansion.mod",
+   "name": "World's Ruin",
+   "rec": "оставить",
+   "why": "464 здания, 14 отрядов — это город, не лагерь."
+  }
+ ]
+}
