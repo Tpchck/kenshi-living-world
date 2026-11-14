@@ -47,7 +47,8 @@ do
 end
 KMM_TEST = true
 local real_open = io.open
-io.open = function(p, m) p = tostring(p):gsub("^C:/KenshiModMap/logs/", TMP .. "/"); return real_open(p, m) end
+io.open = function(p, m) p = tostring(p):gsub("^C:/KenshiModMap/logs/", TMP .. "/"):gsub("^C:/KenshiModMap/state/", TMP .. "/"); return real_open(p, m) end
+local __rr = os.remove; os.remove = function(p) p = tostring(p):gsub("^C:/KenshiModMap/state/", TMP .. "/"); return __rr(p) end
 LOGS = {}
 KenshiLua = { log = function(s) LOGS[#LOGS + 1] = s end }
 Events = { h = {} }
