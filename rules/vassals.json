@@ -1,0 +1,680 @@
+{
+ "_doc": "ПРЕДЛОЖЕНИЕ начальных вассалитетов/союзов (не подключено). Имена = conductor.json factions[*].name. Договор vassal: a = сюзерен, b = вассал. tier: vassal | client (мягкий, тип defense) . sleeper=true: фракция спит, договор ждёт раскола. Проверка: python -I -X utf8 tools/vassals_audit.py | Принято 2026-11-14 (из palette… vassals_proposal): Adventurers Guild — нейтральный мост, только nonaggression.",
+ "version": 1,
+ "vassals": [
+  {
+   "vassal": "Police",
+   "overlord": "United Cities",
+   "why": "городская стража ОС, лор: полиция ОС; уже союзники в реестре (Police-UC)"
+  },
+  {
+   "vassal": "Bounty Hunters",
+   "overlord": "United Cities",
+   "why": "охотники за головами работают по ордерам ОС; реестр: союз UC/Police"
+  },
+  {
+   "vassal": "Empire Peasants",
+   "overlord": "United Cities",
+   "why": "крестьяне империи под защитой ОС; общий враг Holy Nation (реестр: союз UC, вражда HN)"
+  },
+  {
+   "vassal": "Catun",
+   "overlord": "United Cities",
+   "why": "город Catun (Bonefields) принадлежит ОС; союзник UC/Traders Guild/Slave Traders"
+  },
+  {
+   "vassal": "Imperial Bank",
+   "overlord": "United Cities",
+   "tier": "client",
+   "why": "банк империи; союзник UC, Traders Guild, Police"
+  },
+  {
+   "vassal": "Manhunters",
+   "overlord": "Slave Traders",
+   "why": "Manhunters (The Hook) - союзники и ловчие Slave Traders, общий враг Anti-Slavers"
+  },
+  {
+   "vassal": "Slave Hunters",
+   "overlord": "Slave Traders",
+   "sleeper": true,
+   "why": "лорный осколок Slave Traders (SHARDS), союзники Slave Traders"
+  },
+  {
+   "vassal": "Trade Ninjas",
+   "overlord": "Traders Guild",
+   "why": "Border Zone/Flats Lagoon; союзник Traders Guild; скупщик-фенс"
+  },
+  {
+   "vassal": "Sultans Wares",
+   "overlord": "Traders Guild",
+   "tier": "client",
+   "why": "торговый дом, союзник Trade Ninjas и Traders Guild"
+  },
+  {
+   "vassal": "Free Traders",
+   "overlord": "Traders Guild",
+   "sleeper": true,
+   "why": "осколок Traders Guild (SHARDS)"
+  },
+  {
+   "vassal": "Missionaries",
+   "overlord": "The Holy Nation",
+   "why": "миссионеры веры, союзник HN (30), вражда с теми же"
+  },
+  {
+   "vassal": "Preacher Cult",
+   "overlord": "The Holy Nation",
+   "tier": "client",
+   "why": "Stormgap Coast, союз HN (28), общие враги Chaos"
+  },
+  {
+   "vassal": "Kral's Chosen",
+   "overlord": "Shek Kingdom",
+   "why": "осколок Shek (SHARDS), Shek-раса, соседи (-96013,28453 / -87621,32922)"
+  },
+  {
+   "vassal": "Berserkers",
+   "overlord": "Shek Kingdom",
+   "tier": "client",
+   "why": "Berserker Country/Bast, Shek-раса, враги Slave Traders; Shek-клиент"
+  },
+  {
+   "vassal": "Steel Raiders",
+   "overlord": "Western Hive",
+   "tier": "client",
+   "why": "Dreg: рейдеры-ульевики (Hive drone), соседи Western Hive"
+  },
+  {
+   "vassal": "Red Hive",
+   "overlord": "Western Hive",
+   "sleeper": true,
+   "why": "осколок ульев (SHARDS)"
+  },
+  {
+   "vassal": "Second Empire Exile",
+   "overlord": "Second Empire",
+   "why": "изгнанники той же империи (реестр: союз), Leviathan Coast"
+  },
+  {
+   "vassal": "Skeleton Legion",
+   "overlord": "Second Empire",
+   "tier": "client",
+   "why": "скелеты-легион, реестр: союз Second Empire/Final Enforcers"
+  },
+  {
+   "vassal": "Swamp Ninjas",
+   "overlord": "Swampers",
+   "tier": "client",
+   "why": "общая болотная торговля наркотиками (FLOW_ROLES drugs), The Swamp"
+  },
+  {
+   "vassal": "Lost Oni",
+   "overlord": "Oni",
+   "why": "осколок Oni (50560,16547 рядом с 39088,19784)"
+  }
+ ],
+ "regional_allies": [
+  {
+   "a": "United Cities",
+   "b": "Traders Guild",
+   "why": "торговый союз городов; Catun/Slave Traders/Imperial Bank общие"
+  },
+  {
+   "a": "United Cities",
+   "b": "Slave Traders",
+   "why": "рынок рабов ОС; реестр: союзники"
+  },
+  {
+   "a": "United Cities",
+   "b": "Mercenary Guild",
+   "why": "наёмники работают на ОС (реестр: союз)"
+  },
+  {
+   "a": "Traders Guild",
+   "b": "Adventurers Guild",
+   "why": "реестр: союз, Border Zone",
+   "type": "nonaggression"
+  },
+  {
+   "a": "Shek Kingdom",
+   "b": "Adventurers Guild",
+   "why": "реестр: союз",
+   "type": "nonaggression"
+  },
+  {
+   "a": "Shek Kingdom",
+   "b": "Mercenary Guild",
+   "why": "реестр: союз; Shek-раса наёмников"
+  },
+  {
+   "a": "The Holy Nation",
+   "b": "Adventurers Guild",
+   "why": "реестр: союз 100",
+   "type": "nonaggression"
+  },
+  {
+   "a": "Tech Hunters",
+   "b": "Machinists",
+   "why": "техники-ремесленники, реестр: союз"
+  },
+  {
+   "a": "Tech Hunters",
+   "b": "Desert Divers",
+   "why": "реестр: союз"
+  },
+  {
+   "a": "Tech Hunters",
+   "b": "Gunsmiths",
+   "why": "оружейники Sinkuun, реестр: союз"
+  },
+  {
+   "a": "Tech Hunters",
+   "b": "Cannibal Hunters",
+   "why": "реестр: союз"
+  },
+  {
+   "a": "Tech Hunters",
+   "b": "Shem Residents",
+   "why": "Shem рядом с Flats Lagoon; реестр: союз"
+  },
+  {
+   "a": "Shem Residents",
+   "b": "Nomads",
+   "why": "реестр: союз, соседи"
+  },
+  {
+   "a": "Swampers",
+   "b": "Grayflayers",
+   "why": "The Swamp; реестр: союз"
+  },
+  {
+   "a": "Swampers",
+   "b": "Blackshifters",
+   "why": "реестр: союз"
+  },
+  {
+   "a": "Swampers",
+   "b": "Free Traders",
+   "why": "реестр: союз; поставки в ОС"
+  },
+  {
+   "a": "Western Hive",
+   "b": "Adventurers Guild",
+   "why": "реестр: союз",
+   "type": "nonaggression"
+  },
+  {
+   "a": "Dust Bandits",
+   "b": "Rusty Raiders",
+   "why": "реестр: союз, пустыня"
+  },
+  {
+   "a": "Dust Bandits",
+   "b": "Steel Raiders",
+   "why": "реестр: союз"
+  },
+  {
+   "a": "Reavers",
+   "b": "Sysus Bandits",
+   "why": "реестр: союз, восток"
+  },
+  {
+   "a": "Sysus Bandits",
+   "b": "Grass Pirates",
+   "why": "реестр: союз"
+  },
+  {
+   "a": "Second Empire",
+   "b": "Final Enforcers",
+   "why": "реестр: союз, Leviathan Coast"
+  },
+  {
+   "a": "Second Empire",
+   "b": "Old Machines",
+   "why": "реестр: союз"
+  },
+  {
+   "a": "Cyborgs",
+   "b": "Skeletons",
+   "why": "машинные: реестр: союз"
+  },
+  {
+   "a": "Cyborgs",
+   "b": "Nomadic Skeletons",
+   "why": "реестр: союз"
+  },
+  {
+   "a": "Cult of Fluorite",
+   "b": "Levi Ronin",
+   "why": "Purple Sands; реестр: союз"
+  },
+  {
+   "a": "The Lost Black Sanctuary",
+   "b": "Grey Knight",
+   "why": "имперская группа (Astartes/Death Watch/Lost Warrior)"
+  },
+  {
+   "a": "The Lost Black Sanctuary",
+   "b": "Astartes survivors",
+   "why": "имперская группа"
+  },
+  {
+   "a": "Daemons",
+   "b": "Lost Chaos Space Marines",
+   "why": "хаос-группа"
+  },
+  {
+   "a": "Daemons",
+   "b": "World Devourer War Gang",
+   "why": "хаос-группа"
+  },
+  {
+   "a": "Anti-Slavers",
+   "b": "Flotsam Ninjas",
+   "why": "лига мятежников: реестр союз"
+  },
+  {
+   "a": "Anti-Slavers",
+   "b": "Holy Nation Outlaws",
+   "why": "лига мятежников: реестр союз"
+  },
+  {
+   "a": "Flotsam Ninjas",
+   "b": "Holy Nation Outlaws",
+   "why": "оба мятежники против HN; реестр: союз"
+  },
+  {
+   "a": "Flotsam Ninjas",
+   "b": "Deadcat",
+   "why": "соседи (-42446,-82595 / -59432,-88156); реестр: союз"
+  },
+  {
+   "a": "Holy Nation Outlaws",
+   "b": "Mongrel",
+   "why": "оба вне закона у HN (-100); Fog Islands/Border Zone"
+  },
+  {
+   "a": "Holy Nation Outlaws",
+   "b": "Tech Hunters",
+   "why": "реестр: союз; The Hub у Border Zone"
+  }
+ ],
+ "never_ally": {
+  "_doc": "Жёсткий запрет подписи ЛЮБОГО договора (в т.ч. nonaggression/trade). closure=true: также с вассалами и договорными союзниками второй стороны (проверять живые S.treaties и этот список). Рынки (black_markets) запретом НЕ закрываются, кроме указанных 'market_ban'.",
+  "rebels": [
+   {
+    "rebel": "Holy Nation Outlaws",
+    "against": [
+     "The Holy Nation"
+    ],
+    "closure": true,
+    "market_ban": false,
+    "why": "мятежники HN (реестр -100); не мирятся с HN, ни с Missionaries/Preacher Cult"
+   },
+   {
+    "rebel": "Flotsam Ninjas",
+    "against": [
+     "The Holy Nation"
+    ],
+    "closure": true,
+    "market_ban": false,
+    "why": "Flotsam: мятежные ниндзя против HN"
+   },
+   {
+    "rebel": "Mongrel",
+    "against": [
+     "The Holy Nation",
+     "Slave Traders"
+    ],
+    "closure": true,
+    "market_ban": true,
+    "why": "Mongrel -100 к HN, вражда Slave Traders; рабов не покупает и не продаёт"
+   },
+   {
+    "rebel": "Anti-Slavers",
+    "against": [
+     "United Cities",
+     "Slave Traders",
+     "Manhunters",
+     "Slave Hunters"
+    ],
+    "closure": true,
+    "market_ban": true,
+    "why": "борются с рабством; не берут ничего у рабовладельцев, ни у союзников ОС"
+   },
+   {
+    "rebel": "Rebel Farmers",
+    "against": [
+     "United Cities",
+     "Slave Traders"
+    ],
+    "closure": true,
+    "market_ban": true,
+    "why": "осколок ОС (SHARDS); враг Slave Traders"
+   },
+   {
+    "rebel": "Rebel Swordsmen",
+    "against": [
+     "United Cities"
+    ],
+    "closure": true,
+    "market_ban": false,
+    "sleeper": true,
+    "why": "осколок ОС (SHARDS)"
+   },
+   {
+    "rebel": "Yabuta Outlaws",
+    "against": [
+     "United Cities",
+     "The Holy Nation"
+    ],
+    "closure": true,
+    "market_ban": false,
+    "sleeper": true,
+    "why": "осколок ОС; реестр -50..-100 к HN"
+   },
+   {
+    "rebel": "Dark Reavers",
+    "against": [
+     "Dark Hive"
+    ],
+    "closure": true,
+    "market_ban": false,
+    "why": "ренегаты Dark Hive; реестр: вражда с Dark Hive, Mongrel, HN"
+   },
+   {
+    "rebel": "Band of Blades",
+    "against": [
+     "Shek Kingdom",
+     "The Holy Nation",
+     "Slave Traders"
+    ],
+    "closure": true,
+    "market_ban": false,
+    "why": "Shek-повстанцы; реестр: враги Shek, HN, Slave Traders"
+   }
+  ],
+  "state_wars": [
+   {
+    "a": "United Cities",
+    "b": "The Holy Nation",
+    "why": "реестр -100: лорная война"
+   },
+   {
+    "a": "Shek Kingdom",
+    "b": "The Holy Nation",
+    "why": "реестр: вражда"
+   },
+   {
+    "a": "Dark Hive",
+    "b": "The Holy Nation",
+    "why": "реестр -200"
+   },
+   {
+    "a": "Dark Hive",
+    "b": "Southern Hive",
+    "why": "реестр: вражда ульев"
+   },
+   {
+    "a": "Second Empire",
+    "b": "United Cities",
+    "why": "реестр: Final Enforcers/Second Empire против ОС и Traders Guild"
+   },
+   {
+    "a": "Second Empire",
+    "b": "Traders Guild",
+    "why": "реестр (через Final Enforcers)"
+   },
+   {
+    "a": "Slave Traders",
+    "b": "Mongrel",
+    "why": "реестр: вражда"
+   },
+   {
+    "a": "Reavers",
+    "b": "United Cities",
+    "why": "реестр: вражда"
+   },
+   {
+    "a": "Dust Bandits",
+    "b": "United Cities",
+    "why": "реестр: вражда"
+   },
+   {
+    "a": "Oni",
+    "b": "United Cities",
+    "why": "реестр: вражда"
+   },
+   {
+    "a": "Oni",
+    "b": "The Holy Nation",
+    "why": "реестр: вражда"
+   },
+   {
+    "a": "Berserkers",
+    "b": "Slave Traders",
+    "why": "реестр: вражда"
+   }
+  ],
+  "blocs": [
+   {
+    "name": "Chaos",
+    "members": [
+     "Daemons",
+     "Hatred of intelligence",
+     "Lost Chaos Space Marines",
+     "Midnight Lord",
+     "World Devourer War Gang"
+    ],
+    "never_with": [
+     "The Lost Black Sanctuary",
+     "Grey Knight",
+     "Astartes survivors",
+     "Death Watch",
+     "Lost Warrior",
+     "Nameless",
+     "United Cities",
+     "The Holy Nation",
+     "Shek Kingdom",
+     "Traders Guild",
+     "Tech Hunters"
+    ],
+    "why": "хаос враждебен всем остальным, реестр -90..-200"
+   }
+  ]
+ },
+ "black_markets": [
+  {
+   "hub": "Slave Farm",
+   "owner": "Slave Traders",
+   "region": "Heng",
+   "goods": [
+    "slaves",
+    "stolen"
+   ],
+   "why": "рабовладельческая ферма; тип 5 (лагерь)"
+  },
+  {
+   "hub": "Slave Farm South",
+   "owner": "Slave Traders",
+   "region": "The Hook",
+   "goods": [
+    "slaves"
+   ],
+   "why": "второй рынок рабов, у Manhunters"
+  },
+  {
+   "hub": "Port North",
+   "owner": "Slave Traders",
+   "region": null,
+   "goods": [
+    "slaves",
+    "stolen"
+   ],
+   "why": "порт: рабы морем"
+  },
+  {
+   "hub": "Port South",
+   "owner": "Slave Traders",
+   "region": "The Great Desert",
+   "goods": [
+    "slaves",
+    "stolen"
+   ],
+   "why": "порт: пустыня"
+  },
+  {
+   "hub": "Eyesocket",
+   "owner": "Slave Traders",
+   "region": "Stormgap Coast",
+   "goods": [
+    "slaves"
+   ],
+   "why": "побережье, рядом Preacher Cult"
+  },
+  {
+   "hub": "Stone Camp",
+   "owner": "Slave Traders",
+   "region": "The Great Desert",
+   "goods": [
+    "slaves"
+   ],
+   "why": "лагерь рабов"
+  },
+  {
+   "hub": "South Stone Camp",
+   "owner": "Slave Traders",
+   "region": "Heng",
+   "goods": [
+    "slaves"
+   ],
+   "why": "лагерь рабов"
+  },
+  {
+   "hub": "Clownsteady",
+   "owner": "United Cities",
+   "region": "The Hook",
+   "goods": [
+    "slaves",
+    "drugs",
+    "stolen"
+   ],
+   "why": "город ОС у The Hook: нейтральный базар рядом со Slave Farm South"
+  },
+  {
+   "hub": "Catun",
+   "owner": "United Cities",
+   "region": "Bonefields",
+   "goods": [
+    "slaves",
+    "drugs",
+    "stolen"
+   ],
+   "why": "союзник Slave Traders/UC/Traders Guild, Bonefields (Shinobi Thieves регион)"
+  },
+  {
+   "hub": "Flats Lagoon",
+   "owner": "Tech Hunters",
+   "region": "Flats Lagoon",
+   "goods": [
+    "drugs",
+    "stolen"
+   ],
+   "why": "регион Shinobi Thieves и Trade Ninjas; без рабов"
+  },
+  {
+   "hub": "Shark",
+   "owner": "Swampers",
+   "region": "The Swamp",
+   "goods": [
+    "drugs"
+   ],
+   "why": "болото: производство и сбыт гашиша"
+  },
+  {
+   "hub": "Squin",
+   "owner": "Shek Kingdom",
+   "region": "Border Zone",
+   "goods": [
+    "stolen"
+   ],
+   "why": "Border Zone: перекрёсток ворья; без рабов (Shek)"
+  }
+ ],
+ "market_rules": {
+  "_doc": "Ограничение: сделка идёт только если продавец и покупатель НЕ в never_ally (rebels/state_wars/blocs) друг с другом по closure и rel(buyer,hub_owner) >= -20. Покупка на рынке не создаёт договор.",
+  "sellers": {
+   "slaves": [
+    "Slave Traders",
+    "Hounds",
+    "Manhunters",
+    "Slave Hunters",
+    "Dust Bandits",
+    "Starving Bandits",
+    "Reavers",
+    "Sysus Bandits",
+    "Skin Bandits",
+    "Bloodraiders",
+    "Black Dragon Ninjas",
+    "Dark Reavers",
+    "Outlaw"
+   ],
+   "drugs": [
+    "Swampers",
+    "Swamp Ninjas",
+    "Trade Ninjas",
+    "Drug Peddlers",
+    "Shinobi Thieves"
+   ],
+   "stolen": [
+    "Shinobi Thieves",
+    "Dust Bandits",
+    "Starving Bandits",
+    "Empire Criminals",
+    "Black Dog",
+    "Sand ninjas",
+    "The Syndicate"
+   ]
+  },
+  "buyers": {
+   "slaves": [
+    "United Cities",
+    "Traders Guild",
+    "Slave Traders",
+    "The Holy Nation",
+    "Second Empire"
+   ],
+   "drugs": [
+    "United Cities",
+    "Traders Guild",
+    "Mercenary Guild",
+    "Tech Hunters",
+    "Nomads",
+    "Drifters"
+   ],
+   "stolen": [
+    "Shinobi Thieves",
+    "Trade Ninjas",
+    "Traders Guild",
+    "United Cities",
+    "Imperial Bank",
+    "Tech Hunters"
+   ]
+  },
+  "buyer_forbidden": {
+   "slaves": [
+    "Anti-Slavers",
+    "Mongrel",
+    "Rebel Farmers",
+    "Holy Nation Outlaws",
+    "Flotsam Ninjas",
+    "Berserkers",
+    "Kral's Chosen"
+   ],
+   "drugs": [
+    "The Holy Nation"
+   ]
+  },
+  "note": "The Holy Nation: рабов покупает (роль slave_markets уже есть), но drug_ban: гашиш только через фенсов, не напрямую. Shek Kingdom рабов не покупает (нет в buyers). Мосты-нейтралы (Adventurers Guild, Mercenary Guild, Shinobi Thieves) могут дружить с обеими сторонами, но только nonaggression/trade, не defense/military."
+ }
+}
