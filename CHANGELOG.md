@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-11-14
+- Map cleanup mod (`KMM_Cleanup`): dead and duplicate locations, lone shops become street traders.
+- Herds on real regions from the game's biome map.
+- Outlaws: rackets, raids on wanted gangs by law enforcement, bounty balance over two simulated years.
+- Town trade price multipliers read from the engine.
+- Test isolation: stubs no longer write into the real state folder; flaky tests rerun once.
+
 ## 2026-11-13
 - `api_audit`: engine calls checked against signatures; `session_report` and `save_replay` for offline checks on real saves.
 - Performance governor (`KMM_Gov`) with a shared character snapshot and per-module budgets.
