@@ -280,6 +280,44 @@ TOWNNAME = "TownA"; setevents({ ev{ type = "raid", day = 80, attacker = "Saved",
 at(80.2); tick()
 check(#SAID == 1 and text(1):find("Fresh", 1, true), "старый ключ id|town — глобально рассказано: " .. text(1))
 
+-- 9b. чистка памяти рассказанного: исчезнувшие из журнала, старше TOLD_KEEP_DAYS, сверх TOLD_MAX; старый формат цел
+reset_state(); TOWNNAME = "TownA"
+setevents({ ev{ type = "raid", day = 100, attacker = "K1", defender = "F" }, ev{ type = "raid", day = 300, attacker = "K2", defender = "F" },
+            ev{ type = "raid", day = 300, attacker = "K3", defender = "F" }, ev{ type = "raid", day = 300, attacker = "K4", defender = "F" } })
+at(300.2); tick()   -- журнал дирижёра прочитан
+R.told = { ["1|OldTown"] = true, ["2|TownA"] = true, ["3|=TownA"] = true, ["99|Gone"] = true }
+R.heard = { ["4"] = true, ["98"] = true }
+local nrm = R.prune(300.2)
+check(not R.told["99|Gone"] and not R.heard["98"], "событий нет в журнале — удалены")
+check(not R.told["1|OldTown"], "старше TOLD_KEEP_DAYS — удалено")
+check(R.told["2|TownA"] and R.told["3|=TownA"] and R.heard["4"], "живые записи (и слитые, и heard) целы")
+check(nrm == 3 and logtext():find("told prune: removed=3 gone=2 old=1 cap=0", 1, true), "маркер told prune: " .. tostring(nrm))
+R.CFG.TOLD_MAX = 2
+R.prune(300.2)
+local nk = 0; for _ in pairs(R.told) do nk = nk + 1 end; for _ in pairs(R.heard) do nk = nk + 1 end
+check(nk == 2 and not R.told["2|TownA"] and R.heard["4"], "потолок: остаются самые новые id")
+R.CFG.TOLD_MAX = 3000
+-- на сохранении — тоже; источник не дирижёр — не трогаем
+R.told = { ["2|TownA"] = true, ["77|Gone"] = true }; R.heard = {}
+local gd2 = { sdata = {} }; FIRE("PlayerInterface::serialise", nil, gd2)
+check(gd2.sdata.kmm_rumors_told == "2|TownA", "в сейв — только нужное: " .. tostring(gd2.sdata.kmm_rumors_told))
+local src = R.src; R.src = "file"; R.told = { ["77|Gone"] = true }
+check(R.prune(300.2) == 0 and R.told["77|Gone"], "источник-файл: чистки нет")
+R.src = src
+
+-- 9c. хроника Nemesis уже записала событие — журнал слухов его не дублирует
+reset_state(); TOWNNAME = "TownA"
+rawset(_G, "KMM_Nemesis", { chronicled = function(id) ASKED = id; return id == 1 end })
+setevents({ ev{ type = "raid", day = 310, attacker = "C1", defender = "F" }, ev{ type = "raid", day = 310, attacker = "C2", defender = "F" } })
+at(310.2); tick(); tick()
+check(#SAID == 2 and #MSGS == 1 and not MSGS[1].msg:find("C1", 1, true) and logtext():find("journal skip event=1 reason=chronicled", 1, true),
+      "chronicled -> без дубля: msgs=" .. #MSGS)
+check(R.journaled("2") and not R.journaled("1"), "KMM_Rumors.journaled")
+rawset(_G, "KMM_Nemesis", { chronicled = function() error("nemesis boom") end })
+reset_state(); setevents({ ev{ type = "raid", day = 311, attacker = "C3", defender = "F" } }); at(311.2); tick()
+check(#MSGS == 1 and not R.journalOff, "ошибка chronicled — как раньше")
+rawset(_G, "KMM_Nemesis", nil)
+
 -- 10. переопределение чисел из правил дирижёра
 R.cfgApplied = nil
 local P = C.cfg().params; local save = P.rumors

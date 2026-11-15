@@ -138,19 +138,19 @@ check(#SAID == 2 and SAID[2]:find("Far", 1, true), "потом дальнее")
 
 -- 5. сейв: heard пишется отдельными строками "@id"; старый формат читается; повторная загрузка
 reset_state()
-R.told["7|TownA"] = true; R.heard["9"] = true
+R.told["1|TownA"] = true; R.heard["2"] = true   -- id есть в журнале дирижёра (раздел 4): сохранение чистит только исчезнувшие
 local gd = { sdata = {} }
 FIRE("PlayerInterface::serialise", nil, gd)
 local blob = gd.sdata.kmm_rumors_told
-check(blob and blob:find("@9", 1, true) and blob:find("7|TownA", 1, true), "сохранено в sdata")
+check(blob and blob:find("@2", 1, true) and blob:find("1|TownA", 1, true), "сохранено в sdata")
 R.told, R.heard = {}, {}
 FIRE("PlayerInterface::loadFromSerialise", nil, gd)
-check(R.told["7|TownA"] and R.heard["9"], "восстановлено")
+check(R.told["1|TownA"] and R.heard["2"], "восстановлено")
 R.told, R.heard = {}, {}
 gd.sdata.kmm_rumors_told = "1|TownA\n2|TownB"      -- старый сейв без heard
 FIRE("PlayerInterface::loadFromSerialise", nil, gd)
 check(R.told["1|TownA"] and R.told["2|TownB"] and next(R.heard) == nil, "старый сейв читается")
-check(not R.told["@9"], "heard не попал в told")
+check(not R.told["@2"], "heard не попал в told")
 
 io.write(string.format("checks=%d fails=%d\n", N, #FAILS))
 for _, f in ipairs(FAILS) do io.write("FAIL: " .. f .. "\n") end
