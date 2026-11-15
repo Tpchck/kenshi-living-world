@@ -94,8 +94,14 @@ function T.slow_mult(f)   -- плавная ступень; всегда в [1-S
   return 1 - smax * x * x * (3 - 2 * x)
 end
 
+function T.hkey(ch)   -- ключ персонажа между опросами: hand:toString(); tostring(hand) у sol2 — адрес новой userdata на каждый вызов (ревью 2026-11-15)
+  local h = ch:getHandle()
+  local ok, s = pcall(function() return h:toString() end)
+  if ok and type(s) == "string" then return s end
+  return tostring(h)   -- офлайн-заглушки без toString
+end
 local function char_state(ch)
-  local ok, key = pcall(function() return tostring(ch:getHandle()) end)
+  local ok, key = pcall(T.hkey, ch)
   if not ok or not key then return nil end
   local s = RT.chars[key]
   if not s then s = { f = 0 }; RT.chars[key] = s end
@@ -388,7 +394,7 @@ local function calibrate(h)
     local ok, err = pcall(function()
       local v = ch:getMedical().hunger
       if type(v) ~= "number" then return end
-      local key = tostring(ch:getHandle())
+      local key = T.hkey(ch)
       local o = HG.pobs[key]
       if not o then HG.pobs[key] = { h0 = h, v0 = v, last = v, sign = 0, max = v }; return end
       if v > o.max then o.max = v end
