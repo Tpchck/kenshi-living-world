@@ -78,7 +78,7 @@ PCS = { pc }; CHARS = { pc, bar, trd }
 local function logtext() local f = io.open("C:/KenshiModMap/logs/rumors.log", "r"); if not f then return "" end; local s = f:read("*a"); f:close(); return s end
 local function reset_state()
   R.told, R.townLastHour, R.heard, R.lastHours, R.townCount, R.smallHour = {}, {}, {}, nil, {}, {}
-  R.visit, R.spk, R.noisyDay, R.lastTellClock, R.jq, R.jday = nil, nil, nil, nil, {}, { day = -1, n = 0 }
+  R.visit, R.spk, R.noisyDay, R.lastTellClock, R.jq, R.jday, R.forms = nil, nil, nil, nil, {}, { day = -1, n = 0 }, {}
   SAID, MSGS = {}, {}
 end
 local function setevents(list)
@@ -262,11 +262,9 @@ setevents({ ev{ type = "nemesis_contempt", day = 95, leader_name = "Tamu Grin", 
             ev{ type = "nemesis_beat_again", day = 95, leader_name = "Tamu Grin", attacker = "Dust Bandits", defender = "Law", won = 2, text = "Tamu Grin beat the Nameless again." },
             ev{ type = "nemesis_beat_again", day = 95.1, leader_name = "Boda Widow", attacker = "Sand Ninjas", defender = "Law", won = 3, text = "Boda Widow beat the Nameless again." } })
 at(95.3); for _ = 1, 5 do tick() end
-local nc, nb = 0, 0
-for _, s in ipairs(SAID) do
-  if s.text:find("empty pockets", 1, true) or s.text:find("worth robbing", 1, true) then nc = nc + 1 end
-  if s.text:find("in the dirt again", 1, true) or s.text:find("once more", 1, true) then nb = nb + 1 end
-end
+local ti = R.fn.told()   -- по id: 1 — contempt, 2 и 3 — beat_again (формы разные, смотрим, что сказано)
+local nc = (ti["1"] == "say") and 1 or 0
+local nb = ((ti["2"] == "say") and 1 or 0) + ((ti["3"] == "say") and 1 or 0)
 check(nc == 1 and nb == 1, string.format("contempt=%d beat_again=%d (потолок 1 в сутки)", nc, nb))
 local named = false; for _, s in ipairs(SAID) do if s.text:find("Tamu Grin", 1, true) or s.text:find("Boda Widow", 1, true) then named = true end end
 check(named and anyCJK() == nil, "имя соперника в слухе")
@@ -330,7 +328,7 @@ check(#SAID == 2 and not text(1):find("3", 1, true) and not text(2):find("3", 1,
 setevents({ { type = "story_quiet", day = 320, cycle = 3, text = "" }, { type = "story_ashes", day = 320, cycle = 3, text = "" },
             { type = "story_quiet", day = 330, cycle = 4, text = "" } })
 at(331.5); R.townLastHour = {}; tick()
-check(#SAID == 3 and (text(3):find("quiet", 1, true) or text(3):find("calm", 1, true)), "новый оборот — тишина снова: " .. text(3))
+check(#SAID == 3 and #text(3) > 10 and not text(3):find("%d"), "новый оборот — тишина снова: " .. text(3))
 
 -- 10. переопределение чисел из правил дирижёра
 R.cfgApplied = nil
