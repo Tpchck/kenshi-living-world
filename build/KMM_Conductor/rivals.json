@@ -1,0 +1,60 @@
+{
+"_doc": "RIVALS Q1 (fix.py rivals): шаблоны отрядов-искателей с пакетом LOOTING, по ним KMM_RelicRace узнаёт грабителей руин (X4)",
+"prospectors": {
+"19-Minor Faction Overhaul - Scavengers.mod": {
+"name": "Scavenger Small",
+"pw": 20,
+"tier": "weak"
+},
+"39-Minor Faction Overhaul - Scavengers.mod": {
+"name": "Scavengers (HN)",
+"pw": 38,
+"tier": "weak"
+},
+"40-Minor Faction Overhaul - Scavengers.mod": {
+"name": "Scavengers (UC)",
+"pw": 38,
+"tier": "weak"
+},
+"5007302-Dadao.mod": {
+"name": "Ancient Adventurer",
+"pw": 0,
+"tier": "weak"
+},
+"5008573-HTDEnforcers.mod": {
+"name": "Tech Hunter Roaming Mercs",
+"pw": 55,
+"tier": "mid"
+},
+"56003-Dialogue.mod": {
+"name": "Tech Hunters Ruins",
+"pw": 35,
+"tier": "weak"
+},
+"62658-Dialogue.mod": {
+"name": "Traveller",
+"pw": 10,
+"tier": "weak"
+},
+"95749-rebirth.mod": {
+"name": "Bounty hunters ",
+"pw": 45,
+"tier": "mid"
+},
+"95750-rebirth.mod": {
+"name": "Treasure hunters",
+"pw": 48,
+"tier": "mid"
+},
+"95751-rebirth.mod": {
+"name": "Treasure hunters aggressive",
+"pw": 48,
+"tier": "mid"
+},
+"95754-rebirth.mod": {
+"name": "Scavengers",
+"pw": 38,
+"tier": "weak"
+}
+}
+}
