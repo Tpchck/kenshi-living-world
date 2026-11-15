@@ -176,5 +176,37 @@ check(mode == "offset" and ls == ["smell: blood deed:defeated at 1,2"], f"лог
 st, _, _ = S.marker_status(M[("predators.log", "smell api unavailable")], t0)
 check(st == " ", "старый отказ до сессии не считается")
 
+# --- 5. самопроверка KMM_Probe: формат строк совпадает с исходником, раздел печатает fail/absent, итог, сломалось/починилось
+PSRC = open(os.path.join(BUILD, r"KMM_Conductor\scripts\init\KMM_Probe.lua"), encoding="utf-8").read()
+check('" PROBE " .. name .. " " .. st .. " "' in PSRC and "PROBE summary ok=%d fail=%d absent=%d pass=%d" in PSRC and "logs/probe.log" in PSRC,
+      "KMM_Probe пишет «PROBE <имя> <статус> <значение>» и summary в logs/probe.log — тот формат, что разбирает session_report")
+S.STATE = tmp
+prev_t, cur_t = t0 - datetime.timedelta(days=1), t0 + datetime.timedelta(minutes=2)
+pl = [f"{ts(prev_t)} PROBE money ok money=0 via=Character:getMoney",
+      f"{ts(prev_t)} PROBE smell fail ZoneMap.zoneSmell = nil at the player",
+      f"{ts(prev_t)} PROBE update_list ok n=40 has(player)=true",
+      f"{ts(prev_t)} PROBE summary ok=2 fail=1 absent=0 pass=1 ms=1.0 slow=smell:0.4",
+      f"{ts(cur_t)} PROBE money ok money=10 via=Character:getMoney",
+      f"{ts(cur_t)} PROBE smell ok zoneSmell ok addSmell=yes level=0.00",
+      f"{ts(cur_t)} PROBE update_list fail n=40 has(player)=false (expected true)",
+      f"{ts(cur_t)} PROBE item_value absent no items on player characters",
+      f"{ts(cur_t)} PROBE summary ok=2 fail=1 absent=1 pass=1 ms=1.0 slow=smell:0.4",
+      f"{ts(cur_t + datetime.timedelta(minutes=5))} PROBE update_list ok n=41 has(player)=true",
+      f"{ts(cur_t + datetime.timedelta(minutes=5))} PROBE summary ok=1 fail=0 absent=0 pass=2 ms=0.5 slow=update_list:0.5"]
+open(os.path.join(tmp, "probe.log"), "w", encoding="utf-8").write("\n".join(pl) + "\n")
+sec = S.probe_section(t0)
+txt = "\n".join(sec)
+check(sec[0].startswith("итог: ok=3 fail=0 absent=1"), f"итог по последнему статусу каждой пробы (проход 2 уточняет 1): {sec[0][:60]}")
+check("[?] absent item_value" in txt and "FAIL update_list" not in txt, "absent с причиной; fail, починенный проходом 2, не висит")
+check("ПОЧИНИЛОСЬ smell" in txt and "сломалось 0, починилось 1" in txt, "сравнение с прошлой сессией: smell починился")
+open(os.path.join(tmp, "probe.log"), "w", encoding="utf-8").write("\n".join(pl[:9]) + "\n")
+sec = S.probe_section(t0)
+txt = "\n".join(sec)
+check("[!] FAIL update_list: n=40 has(player)=false" in txt and "СЛОМАЛОСЬ update_list" in txt, "fail печатается и попадает в «сломалось»")
+open(os.path.join(tmp, "probe.log"), "w", encoding="utf-8").write("\n".join(pl[:4]) + "\n")
+check("за сессию строк самопроверки нет" in S.probe_section(t0)[0], "проходов в сессии нет -> сказано прямо")
+os.remove(os.path.join(tmp, "probe.log"))
+check("probe.log нет" in S.probe_section(t0)[0], "нет probe.log -> сказано прямо")
+
 print("ALL OK" if not FAILS else "FAIL %d" % len(FAILS))
 sys.exit(1 if FAILS else 0)
