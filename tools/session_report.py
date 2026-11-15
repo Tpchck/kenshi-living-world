@@ -1,15 +1,10 @@
 """Отчёт после игровой сессии (только чтение, игру не запускает): одна команда вместо ручного разбора.
 python tools\\session_report.py   -> печать + logs\\session_last.txt
 Разделы: health (логи, краши, отключения модулей); активность модулей по debug.log/chronicle за последнюю сессию;
-память (logs\\mem.csv); одежда NPC по свежему сейву (save_report).
-Маркеры: [+] подтверждено, [!] СЛОМАНО (явный отказ в логе), [0] строки есть, но значение везде 0, [ ] строк нет; ≈ — лог без меток
-времени посчитан целиком. Логи без меток (predators, chronicle) режутся по размеру на момент прошлого отчёта (logs/session_offsets.json).
-Всплески >= 5 одинаковых строк в секунду (офлайн-тесты) в счёт не идут. Маркеры сверяет с исходниками tools/test/test_session_report.py.
-  --no-offsets   не записывать размеры логов (повторный разбор той же сессии)"""
+память (logs\\mem.csv); одежда NPC по свежему сейву (save_report)."""
 import collections
 import datetime
 import glob
-import json
 import os
 import re
 import subprocess
@@ -63,7 +58,7 @@ def activity(t0):
     if os.path.exists(p):
         kinds = collections.Counter(l.split("\t")[2] for l in open(p, encoding="utf-8", errors="replace") if l.count("\t") >= 3)
         out.append("хроника мира (типы событий): " + ", ".join(f"{k} {v}" for k, v in kinds.most_common(12)))
-    lua = "\n".join(session_lines("KenshiLua.log", t0)[0])
+    lua = open(LUALOG, encoding="utf-8", errors="replace").read() if os.path.exists(LUALOG) else ""
     out.append(f"KenshiLua: реплик диалогового моста {lua.count('DialogueScriptBridge: Triggered')}, решений дипломатии {lua.count('[KMM_Diplo] decision')}, "
                f"ошибок {len(re.findall(r'(?i)error|attempt to|bad argument', lua))}")
     return out
@@ -73,13 +68,8 @@ STATE = os.path.join(ROOT, "state")
 # что должно появиться в логах, если модуль реально работает в игре (файл, подстрока, смысл)
 MARKERS = [
     ("debug.log", "override registered at load", "побеждённый лежит: перехват ядра зарегистрирован при загрузке"),
-    ("debug.log", "override calls=", "побеждённый лежит: сколько раз ядро спросило (calls>0 и asks>0 — окно работает)", r"override calls=(\d+)"),
+    ("debug.log", "override calls=", "побеждённый лежит: сколько раз ядро спросило (calls>0 и asks>0 — окно работает)"),
     ("debug.log", "dropped:", "след Traces отменён: игрок ушёл от места планирования"),
-    ("debug.log", "herald said:", "глашатай: житель сказал игроку о событии мира (ok=)"),
-    ("debug.log", "PACE: player squad down", "темп: отряд игрока лёг — враждебные встречи ждут"),
-    ("predators.log", "smell skipped (attack_on_player)", "запах: удар по игроку не оставил запаха (причина в строке)"),
-    ("nemesis.log", "beaten:", "побеждённый: персонаж игрока лёг — кто победил (соперник из этого или нет)"),
-    ("nemesis.log", "-> contempt", "соперник презрел слабый отряд игрока без добычи (ушёл, не напал)"),
     ("predators.log", "smell api ok", "запах крови/трупов работает"),
     ("predators.log", "soul echo: death", "эхо павших: смерти копятся у места бойни"),
     ("predators.log", "soul echo", "эхо павших: Soulbodies пришли к месту бойни ночью (spawned/request)"),
@@ -91,13 +81,12 @@ MARKERS = [
     ("relicrace.log", "ruinloot moved", "руины: искатели вынесли лут — он у лидера (убей и забери)"),
     ("relicrace.log", "ruinloot removed", "руины: экспедиция вскрыла руины — ящики беднеют"),
     ("relicrace.log", "DISABLED forever", "ВНИМАНИЕ: разбор руин выключен навсегда"),
-    ("relicrace.log", "free containers", "руины: ящиков без хозяина у места (0 при owned>0 — разбор руин пуст)", r"free containers (\d+)"),
     ("debug.log", "KO hold:", "окно после нокаута: побеждённый не встаёт (связать/обыскать/добить)"),
-    ("debug.log", "KO release:", "окно после нокаута: отпущен (asks= — частота override ядра)", r"asks=(\d+)"),
-    ("KenshiLua.log", "DUEL offer added", "поединок: лидерам-конкурентам добавлена реплика вызова"),
-    ("KenshiLua.log", "DUEL start", "поединок: вызов принят, бой до нокаута"),
-    ("KenshiLua.log", "DUEL end", "поединок: исход (победа/поражение/убийство/таймаут)"),
-    ("KenshiLua.log", "DUEL clear", "поединок: временная вражда снята"),
+    ("debug.log", "KO release:", "окно после нокаута: отпущен (asks= — частота override ядра)"),
+    ("debug.log", "DUEL offer added", "поединок: лидерам-конкурентам добавлена реплика вызова"),
+    ("debug.log", "DUEL start", "поединок: вызов принят, бой до нокаута"),
+    ("debug.log", "DUEL end", "поединок: исход (победа/поражение/убийство/таймаут)"),
+    ("debug.log", "DUEL clear", "поединок: временная вражда снята"),
     ("debug.log", "PROSPERITY probe", "процветание: проба notifySquadDefeated ok/FAIL"),
     ("debug.log", "PROSPERITY defeated:", "процветание: разгром отряда снизил процветание фракции в ядре"),
     ("debug.log", "PROSPERITY no effect", "процветание: вызов ядра без эффекта — вызовы прекращены"),
@@ -138,16 +127,14 @@ MARKERS = [
     ("outlaws.log", "persistent orphan", "постоянный отряд-сирота отпущен/забыт"),
     ("outlaws.log", "world changed", "смена мира: живые отряды и таймеры подхвата сброшены"),
     ("fates.log", "world changed", "судьбы: смена мира, живые отряды сброшены"),
-    ("KenshiLua.log", "DIPLO_RIVAL world changed", "диалоги: смена мира, отряды прошлого мира не вызываются"),
+    ("debug.log", "DIPLO_RIVAL world changed", "диалоги: смена мира, отряды прошлого мира не вызываются"),
     ("debug.log", "[KMM_Gov] summary:", "нагрузка: сводка снимка NPC (сборки/с, стоимость, переиспользование)"),
     ("debug.log", "[KMM_Gov] modules:", "нагрузка по модулям: средняя/пик мс и доля троттлинга"),
     ("debug.log", "set:has unavailable", "нагрузка: проверка снимка недоступна — правило одного кадра"),
     ("debug.log", "DIPLO_COND hook live", "диалоги: перехват условий ядра работает (реплики по состоянию мира)"),
     ("debug.log", "DIPLO_COND fallback", "диалоги: перехват не работает — Diplo вернулся к жетонам"),
     ("debug.log", "DIPLO_WORLD town=", "диалоги: флаги мира для города игрока (голод/осада/беспорядки/соперник)"),
-    ("debug.log", "DIPLO_COND stats:", "диалоги: счётчики перехвата условий (calls/cond6/reserved)", r"DIPLO_COND stats: calls=(\d+)"),
-    ("debug.log", "DIPLO_COND asked", "диалоги: ядро спросило зарезервированный код условия мира"),
-    ("KenshiLua.log", "DIPLO_RIVAL threat talk added", "диалоги: соперник получил ванильный разговор-угрозу"),
+    ("debug.log", "DIPLO_RIVAL threat talk added", "диалоги: соперник получил ванильный разговор-угрозу"),
     ("outlaws.log", "persistent ok", "банда стала постоянным отрядом движка (живёт вне видимости)"),
     ("outlaws.log", "persistent FAIL", "банда осталась временным отрядом — setPersistentSquad не сработал"),
     ("outlaws.log", "package ok", "банде задан ванильный пакет ИИ (рэкет/бродяги/охота)"),
@@ -169,10 +156,6 @@ MARKERS = [
     ("rumors.log", "map squad ok", "слух-наводка: отряд разыскиваемого показан на карте"),
     ("rumors.log", "map place miss", "слух-наводка: место не найдено (no_xz/no_town) — смотреть причину"),
     ("rumors.log", "map disabled until restart", "ВНИМАНИЕ: метки карты выключились ошибкой — смотреть rumors.log"),
-    ("rumors.log", "VISIBILITY day=", "заметность слухов: доля событий мира, дошедших до игрока (последняя строка ниже)", r"VISIBILITY day=\d+ events=\d+ shown=(\d+)"),
-    ("rumors.log", "journal: addMessage ok", "слухи: услышанное записано в журнал сообщений окна управления"),
-    ("rumors.log", "smalltalk town=", "слухи: мелочь города при входе (житель сказал о месте)"),
-    ("rumors.log", "merge kind=", "слухи: шум однотипных событий слит в один слух"),
     ("tempo.log", "TILL town", "касса: богатство города посчитано (pop/беспорядки/еда/осада/процветание)"),
     ("tempo.log", "TILL poor", "касса: торговец бедного города обеднел — игроку искать другой рынок"),
     ("tempo.log", "TILL probe", "касса: ванильное процветание фракции прочитано"),
@@ -182,8 +165,8 @@ MARKERS = [
     ("predators.log", "addSmell DISABLED", "ВНИМАНИЕ: крэш-сторож выключил addSmell навсегда (state/probe_addSmell.off)"),
     ("herds.log", "smell took:", "запах сработал: хищники ядра пришли на след стада без нашего спавна"),
     ("herds.log", "smell fallback spawn", "запах не дал эффекта — наш фолбэк-спавн хищника"),
-    ("KenshiLua.log", "world state loaded via", "дирижёр загрузил состояние мира из сейва (KC.log -> KenshiLua.log)"),
-    ("KenshiLua.log", "no v1 state", "дирижёр НЕ нашёл состояние в сейве (первый запуск — норма)"),
+    ("debug.log", "world state loaded via", "дирижёр загрузил состояние мира"),
+    ("debug.log", "no v1 state", "дирижёр НЕ нашёл состояние (первый запуск — норма)"),
     ("debug.log", "TGM probe", "чтение родной таблицы цен города"),
     ("debug.log", "arrival ", "приходящие в город"),
     ("debug.log", "campaign: triggerCampaign ok", "родная кампания фракции запущена (FactionWarMgr:triggerCampaign)"),
@@ -209,7 +192,7 @@ MARKERS = [
     ("outlaws.log", "outlaw_epithet", "заслуженное прозвище"),
     ("outlaws.log", "DISABLED forever", "нативный вызов отключён после краша"),
     ("debug.log", "brawl:", "драки NPC против NPC (кто кого бил, у какого города)"),
-    ("chronicle.log", "\tblack_market\t", "сделки чёрных рынков (вассалы/рынки 14.11)"),
+    ("chronicle.log", "	black_market	", "сделки чёрных рынков (вассалы/рынки 14.11)"),
     ("nemesis.log", "nemesis_born", "немезис: родился соперник игрока (избит и оставлен жить / сбежал / мститель)"),
     ("nemesis.log", "said:", "немезис: главарь сказал игроку реплику при встрече"),
     ("nemesis.log", "nemesis_dead", "немезис: соперник погиб"),
@@ -255,168 +238,47 @@ MARKERS = [
     ("deeds.log", "first callback:", "дела: ядро вызвало колбэк (строка: код события, кто > кому — проверить направление a/b)"),
     ("deeds.log", "deed:", "дела: событие deed ушло в шину дирижёра (кто кого убил/пленил/спас)"),
     ("deeds.log", "disabled until restart", "ВНИМАНИЕ: шина дел (или её колбэк) выключилась ошибкой — смотреть deeds.log"),
+    ("outlaws.log", "probe", "крэш-сторож нативных вызовов (награда, память ядра)"),
+    ("KenshiLua.log", "world state loaded via", "дирижёр загрузил мир (KenshiLua.log)"),
 ]
 
 
-TS = re.compile(r"^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}")
-OFFSETS = os.path.join(LOGS, "session_offsets.json")   # размеры логов на момент прошлых отчётов: начало сессии для логов без меток
-SPIKE = 5    # >= 5 одинаковых строк в одну секунду (тесты давали пачки по 5 и 26) — всплеск офлайн-теста (B3 И9), в счёт не идёт
-FAIL_RX = re.compile(r"disabled until restart|DISABLED|unavailable|off until restart|FAIL\b")
-_CACHE = {}
-
-
-def log_path(name):
-    """KenshiLua.log лежит в папке KenshiLua (3817000612/logs), остальные — в C:\\KenshiModMap\\logs."""
-    return LUALOG if name == "KenshiLua.log" else os.path.join(LOGS, name)
-
-
-def _ts(l):
-    try:
-        return datetime.datetime.strptime(l[:19], "%Y-%m-%d %H:%M:%S")
-    except ValueError:
-        return None
-
-
-def _offsets():
-    try:
-        return json.load(open(OFFSETS, encoding="utf-8"))
-    except Exception:
-        return {}
-
-
-def session_lines(name, t0):
-    """(строки сессии, режим). Режимы: ts — по меткам времени; offset — лог без меток, с размера на момент прошлого отчёта (до t0);
-    approx — лог без меток, изменён в сессии, точного начала нет: весь файл (счёт с «≈»); old — не менялся с начала сессии; none — нет файла.
-    Всплески (>= SPIKE одинаковых строк в одну секунду) выбрасываются, их число — в _CACHE[(name, 'spikes')]."""
-    key = (name, t0)
-    if key in _CACHE:
-        return _CACHE[key]
-    path = log_path(name)
-    try:
-        raw = open(path, "rb").read()
-        mtime = datetime.datetime.fromtimestamp(os.path.getmtime(path))
-    except OSError:
-        _CACHE[key] = ([], "none")
-        return _CACHE[key]
-    text = raw.decode("utf-8", "replace")
-    lines = text.splitlines()
-    stamped = sum(1 for l in lines[:400] if TS.match(l))
-    if stamped * 2 >= min(len(lines), 400) and stamped:
-        out, cur = [], None
-        for l in lines:
-            t = _ts(l) if TS.match(l) else None
-            if t:
-                cur = t
-            if cur and (not t0 or cur >= t0):   # строки без метки (продолжения) идут с последней меткой
-                out.append(l.rstrip())
-        groups = collections.Counter(l[:19] + "|" + l[19:].strip() for l in out if TS.match(l))
-        spikes = {k for k, v in groups.items() if v >= SPIKE} if name != "KenshiLua.log" else set()   # KenshiLua.log тесты не пишут
-        if spikes:
-            out = [l for l in out if not (TS.match(l) and l[:19] + "|" + l[19:].strip() in spikes)]
-        _CACHE[(name, "spikes")] = sum(groups[k] for k in spikes)
-        _CACHE[key] = (out, "ts")
-        return _CACHE[key]
-    if t0 and mtime < t0:
-        _CACHE[key] = ([], "old")
-        return _CACHE[key]
-    hist = _offsets().get(name, [])
-    best = None
-    for when, size in hist:
-        try:
-            w = datetime.datetime.strptime(when, "%Y-%m-%d %H:%M:%S")
-        except ValueError:
-            continue
-        if t0 and w < t0 and size <= len(raw) and (best is None or w > best[0]):
-            best = (w, size)
-    if best:
-        _CACHE[key] = ([l.rstrip() for l in raw[best[1]:].decode("utf-8", "replace").splitlines()], "offset")
-    else:
-        _CACHE[key] = ([l.rstrip() for l in lines], "approx")
-    return _CACHE[key]
-
-
 def since(path, t0):
-    """Совместимость: строки сессии лога по пути."""
-    return session_lines(os.path.basename(path) if os.path.dirname(path) != os.path.dirname(LUALOG) else "KenshiLua.log", t0)[0]
-
-
-def save_offsets():
-    """Запомнить размеры логов без меток (берутся следующим отчётом как начало новой сессии); хранится 6 последних записей."""
-    now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    data = _offsets()
-    for f in sorted(os.listdir(LOGS)):
-        if f.endswith(".log") and not f.startswith(("_", "verify_fail_", "install")):
-            try:
-                data.setdefault(f, []).append([now, os.path.getsize(os.path.join(LOGS, f))])
-                data[f] = data[f][-6:]
-            except OSError:
-                pass
+    out = []
     try:
-        json.dump(data, open(OFFSETS, "w", encoding="utf-8"), ensure_ascii=False, indent=0)
+        for l in open(path, encoding="utf-8", errors="replace"):
+            try:
+                t = datetime.datetime.strptime(l[:19], "%Y-%m-%d %H:%M:%S")
+            except ValueError:
+                continue
+            if not t0 or t >= t0:
+                out.append(l.rstrip())
     except OSError:
         pass
-
-
-def marker_status(m, t0):
-    """(значок, счёт, пояснение). [+] подтверждено, [!] СЛОМАНО (явный отказ в логе), [0] строки есть, но значение везде 0,
-    [ ] строк нет. ≈ — лог без меток времени: посчитан весь файл."""
-    f, sub, what = m[:3]
-    val = m[3] if len(m) > 3 else None
-    ls, mode = session_lines(f, t0)
-    hits = [l for l in ls if sub in l]
-    n = len(hits)
-    approx = "≈" if mode == "approx" else ""
-    fail = "ВНИМАНИЕ" in what or bool(FAIL_RX.search(sub))
-    if not n:
-        return " ", f"{approx}0", ""
-    if fail:
-        return "!", f"{approx}{n}", " СЛОМАНО: " + hits[-1][-160:].strip()
-    if val:
-        vals = [int(x) for l in hits for x in re.findall(val, l) if x.isdigit()]
-        if vals and max(vals) == 0:
-            return "0", f"{approx}{n}", " (везде 0 — повод был, эффекта нет)"
-    return "+", f"{approx}{n}", ""
+    return out
 
 
 def modules(t0):
     """По каждому логу KMM: строк за сессию, самоотключения, ошибки, последняя строка; маркеры работы; крэш-сторож state/."""
     out = []
     names = sorted(f for f in os.listdir(LOGS) if f.endswith(".log") and not f.startswith(("_", "verify_fail_", "install")))
-    silent, spikes = [], []
+    silent = []
     for f in names:
-        ls, mode = session_lines(f, t0)
-        if _CACHE.get((f, "spikes")):
-            spikes.append(f"{f} {_CACHE[(f, 'spikes')]}")
+        ls = since(os.path.join(LOGS, f), t0)
         if not ls:
-            silent.append(f + (" (без меток, не менялся с начала сессии)" if mode == "old" else ""))
+            silent.append(f)
             continue
-        cut = 20 if mode == "ts" else 0
-        off = [l for l in ls if FAIL_RX.search(l) and not re.search(r"\bok\b", l)]
-        err = [l for l in ls if re.search(r"(?i)\berror\b|traceback|attempt to", l)]
-        tag = {"ts": "", "offset": " (без меток: с прошлого отчёта)", "approx": " (без меток времени: ≈ весь файл, начала сессии не знаем)"}[mode]
-        out.append(f"{f}: {len(ls)} строк{tag}" + (f", ОТКАЗОВ/ОТКЛЮЧЕНИЙ {len(off)}" if off else "") + (f", ошибок {len(err)}" if err else ""))
+        off = [l for l in ls if "disabled until restart" in l or "DISABLED" in l]
+        err = [l for l in ls if re.search(r"(?i)error|traceback|attempt to", l)]
+        out.append(f"{f}: {len(ls)} строк" + (f", ОТКЛЮЧЕНИЙ {len(off)}" if off else "") + (f", ошибок {len(err)}" if err else ""))
         for l in (off + err)[:3]:
-            out.append("    ! " + l[cut:cut + 200])
-        out.append("    последняя: " + ls[-1][cut:cut + 180])
+            out.append("    ! " + l[20:220])
+        out.append("    последняя: " + ls[-1][20:200])
     if silent:
         out.append("молчали за сессию: " + ", ".join(silent))
-    if spikes:
-        out.append("отброшены всплески (>= %d одинаковых строк в секунду, похоже на офлайн-тесты): %s" % (SPIKE, ", ".join(spikes)))
-    broken = []
-    for m in MARKERS:
-        st, n, note = marker_status(m, t0)
-        out.append(f"  [{st}] {m[2]}: {n}{note}")
-        if st in ("!", "0"):
-            broken.append(f"  [{st}] {m[0]}: {m[2]}{note}")
-    vis = [l for l in session_lines("rumors.log", t0)[0] if "VISIBILITY day=" in l]
-    if vis:
-        mv = re.search(r"events=(\d+) shown=(\d+) merged=(\d+) pct=([\d.]+).*?types=(\S*)", vis[-1])
-        if mv:
-            out.append(f"заметность слухов (последняя VISIBILITY): событий {mv.group(1)}, дошло {mv.group(2)} ({mv.group(4)}%), слито {mv.group(3)}; types={mv.group(5)[:200]}")
-    if broken:
-        out.insert(0, "СЛОМАНО / БЕЗ ЭФФЕКТА (%d):" % len(broken))
-        for i, b in enumerate(broken):
-            out.insert(1 + i, b)
+    for f, sub, what in MARKERS:
+        n = sum(1 for l in since(os.path.join(LOGS, f), t0) if sub in l)
+        out.append(f"  [{'+' if n else ' '}] {what}: {n}")
     offs = sorted(glob.glob(os.path.join(STATE, "probe_*.off")))
     locks = sorted(glob.glob(os.path.join(STATE, "probe_*.lock")))
     out.append("крэш-сторож: " + ("чисто" if not (offs or locks) else ""))
@@ -457,8 +319,6 @@ def main():
     parts += ["--- одежда NPC (свежий сейв) ---", run("save_report.py").strip()]
     txt = "\n".join(parts)
     open(os.path.join(LOGS, "session_last.txt"), "w", encoding="utf-8").write(txt)
-    if "--no-offsets" not in sys.argv:
-        save_offsets()
     print(txt)
 
 
