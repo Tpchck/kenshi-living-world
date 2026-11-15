@@ -2094,7 +2094,9 @@ KMM_Nemesis = {
   greet_off = function() return N.greet_off end,
   -- greet за ТЕКУЩИЙ визит в город tsid: said = житель уже сказал (реплика в очереди/сказана); pending = игрок в этом городе и greet ещё может
   -- сказать (ждёт greet_delay_s или жителя рядом). Визит кончается, когда игрок вышел из города. Для KMM_Rumors: не говорить вторым подряд.
-  greet_said = function(tsid) return N.greet_visit ~= nil and N.greet_visit == tsid, (N.greet_town == tsid and N.greet_at ~= nil and N.greet_visit == nil) end,
+  greet_said = function(tsid)   -- Nemesis выключен (ошибка/greet_off) — greet не скажет: false, false (иначе «ждём» навсегда глушит мелочь Rumors)
+    if N.off or N.greet_off then return false, false end
+    return N.greet_visit ~= nil and N.greet_visit == tsid, (N.greet_town == tsid and N.greet_at ~= nil and N.greet_visit == nil) end,
   chronicle_off = function() return N.chron_off end,
   on_trade = function(a, b) return N.on_trade(a, b) end,
   player_title = function() local C = rawget(_G, "KMM_Conductor"); return C and N.title(C) end,

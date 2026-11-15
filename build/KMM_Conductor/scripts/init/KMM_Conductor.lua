@@ -285,10 +285,11 @@ KMM_Conductor = {   -- консоль KenshiLua (Ctrl+Shift+L) и офлайн-�
   know = function(fid) local f = KC.S and KC.S.F[fid]; return f and f.know end,
   -- ROBBERY: добыча фракции (категория cat в единицах склада, жертва victim_fid) → через robbery.sell_days сбыт в ближайшем союзном/нейтральном городе
   loot_add = function(fid, cat, n, victim)
-    if not KC.S or KC.XDIS.loot_add then return false end
+    if not KC.S or KC.GL.h_live(KC.XDIS, "loot_add") then return false end
     KC.DAY = math.max(KC.DAY, KC.S.last_day or KC.DAY)
     local ok, r = pcall(KC.loot_add_impl, fid, cat, n, victim)
-    if not ok then KC.XDIS.loot_add = true; KC.guard_log("loot_add disabled until restart: " .. tostring(r)); return false end
+    if not ok then KC.GL.h_bad(KC.XDIS, "loot_add", "KMM_Conductor.loot_add", r, "loot_add", KC.guard_log); return false end
+    KC.GL.h_done(KC.XDIS, "loot_add")
     return r
   end,
   loot_of = function(fid) local L = KC.S and KC.S.loot and KC.S.loot[fid]; local out = {}; for _, e in ipairs(L or {}) do out[#out + 1] = { c = e.c, n = e.n, day = e.day, b = e.b } end; return out end,
