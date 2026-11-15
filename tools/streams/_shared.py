@@ -1,5 +1,6 @@
 """Общие нормы для потоков (владелец — интегратор). Единственный источник норм денег — rules/streams/economy.json."""
 import json
+import re
 
 _ECON = r"C:\KenshiModMap\rules\streams\economy.json"
 _mr = None
@@ -10,6 +11,11 @@ def money_norm(it):
     global _mr
     if _mr is None:
         _mr = json.load(open(_ECON, encoding="utf-8"))["money_by_role"]
+    for cap in _mr.get("cap_by_name_rx", []):   # B4 Н10: голодные — пара монет (понижение, единственное исключение из «только повышаем»)
+        if re.search(cap["rx"], it.name or "", re.I):
+            want = {"money min": cap["min"], "money max": cap["max"]}
+            cur = {"money min": int(it.values.get("money min", 0)), "money max": int(it.values.get("money max", 200))}
+            return want if want != cur else {}
     rule = _mr.get(str(it.values.get("NPC class")))
     if not rule or it.values.get("slave", 0) or any(x.lower() in it.name.lower() for x in _mr["skip_name_contains"]):
         return {}

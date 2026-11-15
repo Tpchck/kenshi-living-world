@@ -3,15 +3,36 @@
 Семя пересборки (rules/world_seed.json): стартовые отношения фракций дрожат в рамках лора — сильная вражда/дружба
 (|v| ≥ lock_abs) не трогается, остальные ±jitter у доли share пар; знак не меняется."""
 import collections
+import json
+import os
 import random
 import re
 
 from kmod import F32, Ref
 
 
+_CULTURE = None
+CULTURE_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "rules", "culture.json")
+
+
+def culture():
+    """rules/culture.json (B4 И12): явные архетипы/амбиции/отношения фракций и выравнивание двойников. Нет файла — пусто."""
+    global _CULTURE
+    if _CULTURE is None:
+        try:
+            _CULTURE = json.load(open(CULTURE_PATH, encoding="utf-8"))
+        except FileNotFoundError:
+            _CULTURE = {}
+    return _CULTURE
+
+
 def archetype_of(f, origin, wr):
-    """Архетип фракции для world_relations (None — не участвует). origin — имя мода-источника."""
+    """Архетип фракции для world_relations (None — не участвует). origin — имя мода-источника.
+    Порядок: rules/culture.json factions[имя].archetype > override_by_name > archetype_by_name > regex > ftype."""
     n = f.name
+    ca = (culture().get("factions", {}).get(n) or {}).get("archetype")
+    if ca:
+        return ca
     if n in wr["override_by_name"]:
         return wr["override_by_name"][n]
     for a, names in wr["archetype_by_name"].items():
@@ -48,8 +69,9 @@ def cohab_pairs(ctx):
     return out
 
 
-def plan_world_relations(factions, origin, used, wr, cohab=frozenset()):
+def plan_world_relations(factions, origin, used, wr, cohab=frozenset(), cult=None):
     """factions: список записей FACTION (в игре); origin: sid->мод; used: множество sid используемых фракций.
+    cult — rules/culture.json (None — читается файл): vs_archetype/vs_name как исключения, only_vs — без матрицы.
     Возвращает ({sid: {target_sid: значение}}, статистика). Только добавления и исправления противоречий."""
     arch = {}
     for f in factions:
@@ -76,6 +98,23 @@ def plan_world_relations(factions, origin, used, wr, cohab=frozenset()):
                         force.add((x, y))
                         force.add((y, x))
     fac = {f.sid: f for f in factions}
+    # паспорт культуры: исключения по архетипу/имени для конкретной фракции (явные exceptions behavior.json важнее)
+    cf = (culture() if cult is None else cult).get("factions", {})
+    only_vs = set()
+    for x in sorted(arch):
+        spec = cf.get(fac[x].name)
+        if not spec:
+            continue
+        if spec.get("only_vs"):
+            only_vs.add(x)
+        for y in sorted(arch):
+            if y == x or (x, y) in exc:
+                continue
+            v = (spec.get("vs_name") or {}).get(fac[y].name)
+            if v is None:
+                v = (spec.get("vs_archetype") or {}).get(arch[y])
+            if v is not None:
+                exc[(x, y)] = exc[(y, x)] = v
     plan = collections.defaultdict(dict)
     st = collections.Counter()
     delta = wr["min_delta"]
@@ -114,6 +153,8 @@ def plan_world_relations(factions, origin, used, wr, cohab=frozenset()):
     for i, x in enumerate(sids):
         for y in sids[i + 1:]:
             e = exc.get((x, y))
+            if e is None and (x in only_vs or y in only_vs):
+                continue
             m = e if e is not None else mat.get((arch[x], arch[y]))
             if m is None:
                 continue
@@ -124,6 +165,94 @@ def plan_world_relations(factions, origin, used, wr, cohab=frozenset()):
                     st[r] += 1
     st["participants"] = len(arch)
     return plan, st, arch
+
+
+def twin_groups(ctx):
+    """Двойники: фракции в игре (не KMM_*) с одним именем. [(канон, [двойники])], канон как в fix.faction_merge:
+    ваниль > больше ссылок из не-FACTION записей > реальная."""
+    van = {n for n, _, _ in ctx.van}
+    creator = lambda sid: sid.split("-", 1)[1] if "-" in sid else sid  # noqa: E731
+    groups = collections.defaultdict(list)
+    for f in ctx.all("FACTION"):
+        if not creator(f.sid).startswith("KMM_") and (f.name or "").strip():
+            groups[f.name.strip()].append(f)
+    groups = {n: fs for n, fs in groups.items() if len(fs) > 1}
+    if not groups:
+        return []
+    want = {f.sid for fs in groups.values() for f in fs}
+    cnt = collections.Counter()
+    for it in ctx.M.values():
+        if it.type_name == "FACTION" or not ctx.in_game(it.sid):
+            continue
+        for xs in it.refs.values():
+            for x in xs:
+                if x.target in want:
+                    cnt[x.target] += 1
+    out = []
+    for n, fs in sorted(groups.items()):
+        canon = max(fs, key=lambda f: (creator(f.sid) in van, cnt[f.sid], not f.values.get("not real", False), f.sid))
+        out.append((canon, sorted((f for f in fs if f.sid != canon.sid), key=lambda f: f.sid)))
+    return out
+
+
+def align_twins(ctx, s, plan, TW, min_delta):
+    """TWINS (B4 Н4, rules/culture.json twins): политика двойника = политика канона. Пишет в plan (дальше общий путь с дрожанием
+    семени) и default relation двойника (значение FACTION, других писателей нет)."""
+    if not TW.get("enabled"):
+        return
+    M = ctx.M
+    skip = set(TW.get("skip_names", []))
+    facs = ctx.all("FACTION")
+    expl = {f.sid: {r.target: r.v0 for r in f.refs.get("relations", []) if isinstance(r.v0, int)} for f in facs}
+
+    def dflt(f):
+        v = f.values.get("default relation", 0)
+        return v if isinstance(v, (int, float)) else 0
+
+    def rel(a, b):
+        if b in plan.get(a, {}):
+            return plan[a][b]
+        return expl.get(a, {}).get(b)
+
+    def put(a, b, v):
+        cur = rel(a, b)
+        if cur is None:
+            cur = dflt(M[a])
+        if cur != v and (abs(cur - v) >= min_delta or (cur > 0) != (v > 0)):
+            plan.setdefault(a, {})[b] = v
+            return 1
+        return 0
+
+    for canon, twins in twin_groups(ctx):
+        if canon.name.strip() in skip:
+            continue
+        c = canon.sid
+        for tw in twins:
+            t = tw.sid
+            n = 0
+            for y in sorted(set(expl.get(c, {})) | set(plan.get(c, {}))):
+                if y in (t, c) or y not in M or M[y].type_name != "FACTION" or not ctx.in_game(y):
+                    continue
+                n += put(t, y, rel(c, y))
+            for y in sorted(set(expl.get(t, {})) - set(expl.get(c, {})) - set(plan.get(c, {}))):   # своя дружба/вражда двойника, которой нет у канона
+                if y not in (t, c) and y in M and M[y].type_name == "FACTION" and ctx.in_game(y):
+                    n += put(t, y, dflt(canon))
+            for f in facs:
+                y = f.sid
+                if y in (t, c):
+                    continue
+                v = rel(y, c)
+                if v is None and rel(y, t) is not None:   # к канону отношения нет, к двойнику есть — как к канону: по умолчанию
+                    v = dflt(f)
+                if v is not None:
+                    n += put(y, t, v)
+            cv = TW.get("twin_canon_value", 100)
+            n += put(t, c, cv) + put(c, t, cv)
+            if dflt(tw) != dflt(canon):
+                s.change(t, values={"default relation": canon.values.get("default relation", 0)})
+                s.report["twins_default_relation"] += 1
+            s.report["twins_pairs"] += n
+            s.report["twins:" + canon.name.strip() + " <- " + t.split("-", 1)[-1]] = n
 
 
 def build(ctx, s, rules):
@@ -157,6 +286,7 @@ def build(ctx, s, rules):
         plan, st, _ = plan_world_relations(ctx.all("FACTION"), ctx.origin, used, wr, cohab)
         for k, v in sorted(st.items()):
             s.report[f"world:{k}"] += v
+        align_twins(ctx, s, plan, culture().get("twins") or {}, wr["min_delta"])
 
     # --- семя пересборки: стартовые отношения в рамках лора ------------------------------------------------------
     ws = ctx.world_seed_rules["relations"]

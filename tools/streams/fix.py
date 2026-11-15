@@ -419,11 +419,12 @@ def faction_merge(ctx, s, rules):
             if f.sid != canon.sid:
                 crel = {r.target: r.v0 for r in canon.refs.get("relations", []) if isinstance(r.v0, int)}
                 cdef = canon.values.get("default relation", 0) or 0
-                clash = [r.target for r in f.refs.get("relations", []) if isinstance(r.v0, int)
+                clash = [r.target for r in f.refs.get("relations", []) if isinstance(r.v0, int) and r.target not in (f.sid, canon.sid)
                          and abs(r.v0 - crel.get(r.target, cdef)) >= 40 and (r.v0 > 0) != (crel.get(r.target, cdef) > 0)]
                 if clash or f.values.get("fundamental type") != canon.values.get("fundamental type"):
                     # 2026-11-14 баг Mongrel: Gunsmiths BlackPowder (торговцы, свои отношения) ушли в копию Cannibal Hunters из Shoddy Firearm —
                     # сливаем только пустого двойника того же типа, иначе это другая фракция с тем же именем
+                    # (2026-11-15: отношение двойника к канону/себе не в счёт — behavior.align_twins ставит им +100)
                     s.report["faction_merge_skip:" + name + " <- " + creator(f.sid)] = cnt[f.sid]
                     continue
                 remap[f.sid] = canon.sid
@@ -478,9 +479,96 @@ def junk_unlink(ctx, s, rules):
             if hit:
                 s.change(it.sid, del_refs={cat: hit})
                 s.report["junk_unlinked_refs"] += len(hit)
+    done = set()
     for x in JU.get("rename", []):
         if x["sid"] in M and s.change(x["sid"], rename=x["name"]) is not None:
             s.report["junk_renamed"] += 1
+            done.add(x["sid"])
+    rename_auto(ctx, s, JU.get("rename_auto") or {}, done)
+
+
+_LATIN_OK = lambda ch: ch < "\x7f" or "À" <= ch <= "ÿ"  # noqa: E731  ASCII + буквы Latin-1: то, что точно есть в шрифте игры
+
+
+def is_nonlatin(name):
+    """Флаг nonlatin (как в data/catalog.json): в имени есть символ вне ASCII/Latin-1 (иероглифы, кана, хангыль, кириллица, типографика)."""
+    return any(not _LATIN_OK(ch) for ch in (name or ""))
+
+
+def foreign_script(text):
+    """В тексте есть буквы нелатинского письма (иероглифы, кана, хангыль, кириллица); типографика не в счёт."""
+    return any(ch.isalpha() and not _LATIN_OK(ch) for ch in (text or ""))
+
+
+def latin_name(name, punct):
+    """Имя без нелатиницы: типографика по словарю punct, остальное снимается. None, если латинского смысла не осталось
+    (меньше 4 латинских букв) — такое имя нужно в словарь."""
+    import re
+    t = "".join(punct.get(ch, ch) for ch in name)
+    t = "".join(ch if _LATIN_OK(ch) else " " for ch in t)
+    t = re.sub(r"\(\s*\)|\[\s*\]", " ", t)
+    t = re.sub(r"\s+", " ", t).strip(" -_|")
+    return t if sum(ch.isalpha() for ch in t) >= 4 else None
+
+
+def rename_auto(ctx, s, RA, done=frozenset()):
+    """RENAME_AUTO (B4 Н1/Н2, 2026-11-15): видимые игроку имена без нелатиницы и без чужих франшиз. Автосбор по всем записям
+    видимых типов (types) в игре, включая копии из своих потоков (Traces копирует уников с именем): 1) имя в dict (точное имя -> новое; франшизные латинские имена тоже) или
+    sid в dict_sid; 2) нелатинское имя, которое поверх ванили/основы переписал другой мод (Metro переименовал Tinfist HQ, медящик) —
+    возвращается последнее латинское имя из нижних слоёв; 3) смешанное имя («机械师外骨骼MK1 Machinists exoskeleton MK1») —
+    латинская часть; 4) иначе — в отчёт nonlatin_left:<тип>|<имя> (тест падает). Ключ словаря — имя, а не sid: после обновления
+    мода в Workshop переименование не слетает."""
+    if not RA.get("enabled"):
+        return
+    M = ctx.M
+    types = set(RA.get("types", []))
+    punct = RA.get("punct", {})
+    by_name = RA.get("dict", {})
+    by_sid = {k: v for k, v in RA.get("dict_sid", {}).items() if not k.startswith("_")}
+    todo = {}
+    for it in M.values():
+        if it.type_name not in types or it.sid in done or not ctx.in_game(it.sid):
+            continue
+        n = it.name or ""
+        d = it.values.get("description")
+        if it.sid in by_sid or n in by_name or n.strip() in by_name or is_nonlatin(n) or (isinstance(d, str) and foreign_script(d)):
+            todo[it.sid] = n
+    hist = {}   # sid -> последнее латинское имя в слоях до того, кто поставил нелатиницу
+    for _, m, _ in ctx.layers:
+        for it in m.items:
+            if it.sid in todo and it.name:
+                if is_nonlatin(it.name):
+                    hist.setdefault(it.sid + "\0bad", True)
+                elif it.sid + "\0bad" not in hist:
+                    hist[it.sid] = it.name
+    for sid, n in sorted(todo.items()):
+        it = M[sid]
+        spec = by_sid.get(sid)
+        if isinstance(spec, dict):
+            new, desc = spec.get("name"), spec.get("description")
+        else:
+            new, desc = (spec if isinstance(spec, str) else None), None
+        how = "sid"
+        if new is None and (n in by_name or n.strip() in by_name):
+            new, how = by_name.get(n, by_name.get(n.strip())), "dict"
+        if new is None and is_nonlatin(n) and sid in hist:
+            new, how = hist[sid], "restore"
+        if new is None and is_nonlatin(n):
+            new, how = latin_name(n, punct), "strip"
+        if new is None and not is_nonlatin(n):
+            new, how = n, "keep"
+        if new is None:
+            s.report["nonlatin_left:" + it.type_name + "|" + n] += 1
+            continue
+        od = it.values.get("description")
+        if desc is None and isinstance(od, str) and foreign_script(od):   # описание иероглифами/кириллицей: английский текст или пусто
+            ld = latin_name(od, punct) or ""
+            letters = sum(ch.isalpha() for ch in od) or 1
+            desc = ld if sum(ch.isalpha() for ch in ld) >= 0.6 * letters else ""
+            s.report["rename_auto:description"] += 1
+        vals = {"description": desc} if desc is not None else None
+        if (new != n or vals) and s.change(sid, rename=new if new != n else None, values=vals) is not None:
+            s.report["rename_auto:" + how] += 1
 
 
 def homeless_faction(ctx, s, rules):

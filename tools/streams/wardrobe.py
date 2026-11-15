@@ -453,7 +453,8 @@ def build(ctx, s, rules):
                 break
         if key is None and fname in FAC_N:
             n_, f_ = fname, FAC_N[fname]
-            a_ = WRB["override_by_name"].get(n_)
+            import behavior as _bh   # rules/culture.json archetype — выше override_by_name (тот же порядок, что в behavior.archetype_of)
+            a_ = (_bh.culture().get("factions", {}).get(n_) or {}).get("archetype") or WRB["override_by_name"].get(n_)
             if a_ is None:
                 a_ = next((a for a, names in WRB["archetype_by_name"].items() if n_ in names), None)
             if a_ is None:
@@ -872,19 +873,29 @@ def build(ctx, s, rules):
                 stat["backpack_chars"] += 1
                 stat["backpack_p_sum"] += ch_p
         # хлам и лут: поле CHARACTER «inventory» (ITEM, количество 1, шанс %, 0) — по ярусу богатства
+        # пустые карманы (B4 Н10/И9): голодные бандиты — без еды, роскоши и денег; только дешёвый хлам, своя еда/деньги шаблона снимаются
+        EP = LT.get("empty_pockets") or {}
+        starving = bool(EP.get("enabled")) and (bool(re.search(EP["faction_rx"], fname or "")) or bool(re.search(EP["name_rx"], cname, re.I)))
+        if starving:
+            ep_rx = re.compile(EP["strip_rx"], re.I)
+            strip = [r.target for r in ch.refs.get("inventory", []) if r.target in M and ep_rx.search(M[r.target].name or "")]
+            if strip:
+                dels["inventory"] = strip
+                s.report["empty_pockets_stripped"] += len(strip)
+            s.report["empty_pockets_chars"] += 1
         if not is_wh and LOOT and rng.random() < LT["share"]:
-            kw = LT["kinds_by_wealth"][cls]
-            vcap = LT["value_cap"][cls]
+            kw = EP["kinds"] if starving else LT["kinds_by_wealth"][cls]
+            vcap = EP["value_cap"] if starving else LT["value_cap"][cls]
             have_i = {r.target for r in ch.refs.get("inventory", [])}
             gl = []
-            for _ in range(rng.randint(*LT["items"])):
+            for _ in range(rng.randint(*(EP["items"] if starving else LT["items"]))):
                 kind = rng.choices(list(kw), weights=list(kw.values()))[0]
                 cand = [x for x in LOOT if x["kind"] == kind and x["value"] <= vcap and x["sid"] not in have_i]
                 x = pick(rng, cand, counter=use_l, cap=LT["cap_soft"]) if cand else None
                 if x:
                     have_i.add(x["sid"])
                     gl.append(Ref(x["sid"], 1, LT["item_chance"], 0))
-            if PB.get("enabled"):
+            if PB.get("enabled") and not starving:
                 bkey, bset = belong_set(fname)
                 if bset:
                     bl = []
