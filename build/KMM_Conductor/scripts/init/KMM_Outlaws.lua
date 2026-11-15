@@ -103,15 +103,17 @@ function M.log(msg)
   pcall(function() if KenshiLua and KenshiLua.log then KenshiLua.log(TAG .. tostring(msg)) end end)
 end
 function M.fail(where, err) M.off = true; M.log("disabled until restart in " .. where .. ": " .. tostring(err)) end
+-- Конфиг: params.outlaws поверх M.DEF без копирования ключей на каждый вызов. Прокси на ту же таблицу params: чтение — params, иначе M.DEF;
+-- запись в прокси уходит в params. Правка params.outlaws.X видна сразу; новая таблица params — новый прокси.
 function M.cfg()
-  local c = M.DEF
   local ok, p = pcall(function() return KMM_Conductor.cfg().params.outlaws end)
-  if ok and type(p) == "table" then
-    c = {}
-    for k, v in pairs(M.DEF) do c[k] = v end
-    for k, v in pairs(p) do c[k] = v end
-  end
-  return c
+  if not (ok and type(p) == "table") then return M.DEF end
+  if M.cfg_p == p and M.cfg_px then return M.cfg_px end
+  local D = M.DEF
+  M.cfg_p = p
+  M.cfg_px = setmetatable({}, { __index = function(_, k) local v = p[k]; if v == nil then v = D[k] end; return v end,
+                                __newindex = function(_, k, v) p[k] = v end })
+  return M.cfg_px
 end
 function M.pick(t) return t[math.random(1, #t)] end
 function M.today(C)

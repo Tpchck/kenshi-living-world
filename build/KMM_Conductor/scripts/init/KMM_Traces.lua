@@ -681,6 +681,7 @@ local function dest_town(plan, fid)   -- объект города назнач�
   return town_of(plan.owner or fid, x, z) or town_of(fid, x, z)
 end
 local function trv_register(kind, fid, pl, sx, sz, plan, id, tx, tz, nat)   -- nat: отряд ведёт ядро (U1) — без своего деспавна
+  if pl == nil then return end   -- спавна не было (нет шаблона): путника без отряда не заводим
   if #TRV >= (RP().max_live or 6) then table.remove(TRV, 1) end
   if not tx then tx, tz = dest_xz(plan and plan.to) end
   TRV[#TRV + 1] = { kind = kind, fid = fid, key = pl and plat_key(pl) or nil, sx = sx, sz = sz, tx = tx, tz = tz, from = plan and plan.from, to = plan and plan.to,
@@ -889,6 +890,7 @@ local function do_job(job, px, pz, py, pc)
       local pl = spawn(job.fid, sid, bx, py, bz, P.tier_squad_size or 5, h, nil); local k = pl and plat_key(pl); if k then keys[#keys + 1] = k end
       NAT.apply(pl, "base_raid", job.fid, "assault", false)   -- U1: штурм цели (AItarget = персонаж игрока) ведёт ядро
     end
+    if #keys == 0 and (stats.spawn_calls or 0) == sc0 then return false, "notemplate" end
     BR[#BR + 1] = { fid = job.fid, keys = keys, t0 = os.clock(), x = bx, z = bz }
     while #BR > 4 do table.remove(BR, 1) end
   elseif job.kind == "ext" then   -- EXT API (2026-11-13): заявка внешнего модуля (KMM_Fates/Relic race/Predators/Siege/Herds) через общую очередь и лимиты
@@ -903,6 +905,7 @@ local function do_job(job, px, pz, py, pc)
       local jx, jz = jit(bx, bz, 150, pcs)
       pls[#pls + 1] = spawn(job.fid, sid, jx, py, jz, job.size or P.tier_squad_size or 5, h, tt)
     end
+    if #pls == 0 then return false, "notemplate" end   -- заказчику не отдаём пустой список
     local xpk = job.pkg or NAT.EXT[job.tag or ""]   -- U1: пакет по тегу/заявке до on_spawn (модуль-заказчик может поставить свой поверх)
     if xpk and ((xpk == "assault" and h) or (xpk ~= "assault" and tt)) then for _, pl in ipairs(pls) do NAT.apply(pl, "ext:" .. tostring(job.tag), job.fid, xpk, false) end end
     if job.on_spawn then local okc, e = pcall(job.on_spawn, pls, bx, bz); if not okc then dlog("ext on_spawn error (" .. tostring(job.tag) .. "): " .. tostring(e)) end end
@@ -927,13 +930,18 @@ local function do_job(job, px, pz, py, pc)
     if not sid then return false end
     local h = pc:getHandle()
     local k = (ti >= 3) and 2 or 1
+    local got = 0
     for i = 1, k do
       local jx, jz = jit(sx, sz, 150, pcs)
       local hpl = spawn(hfid, sid, jx, py, jz, P.tier_squad_size or 5, h, nil)
-      PACE.label(hpl, "bounty_hunt", hfid)
-      NAT.apply(hpl, "bounty_hunt", hfid, "assault", false)   -- U1: охоту на отряд игрока (AItarget) ведёт ядро
-      if i == 1 and hpl and NM and NM.on_hunt then pcall(NM.on_hunt, hpl, hfid, job.fid, job.amount) end
+      if hpl then
+        got = got + 1
+        PACE.label(hpl, "bounty_hunt", hfid)
+        NAT.apply(hpl, "bounty_hunt", hfid, "assault", false)   -- U1: охоту на отряд игрока (AItarget) ведёт ядро
+        if got == 1 and NM and NM.on_hunt then pcall(NM.on_hunt, hpl, hfid, job.fid, job.amount) end
+      end
     end
+    if got == 0 then return false, "notemplate" end   -- без отряда нет ни счёта охоты, ни вести
     BNT.act[#BNT.act + 1] = os.clock(); BNT.n = BNT.n + 1
     if hfid ~= job.fid then name = C.name(hfid) .. " (for " .. C.name(job.fid) .. ")" end
     C.emit({ type = "bounty_hunters", a = job.fid, fid = job.fid, amount = job.amount, tier = TIERS[ti],
@@ -964,6 +972,7 @@ local function do_job(job, px, pz, py, pc)
     if not csid then return false, "noplan" end
     local ctt = dest_town(plan, job.fid)
     local pl = spawn(job.fid, csid, sx, py, sz, 2, nil, ctt)
+    if not pl then return false, "notemplate" end   -- гонца нет — и вести о нём нет
     PACE.label(pl, "courier", job.fid, { town = PACE.tname(plan.to, plan.to), ev = job.ev })
     local led = ctt and NAT.apply(pl, "courier", job.fid, "travel", false)
     trv_register("courier", job.fid, pl, sx, sz, plan, nil, nil, nil, led)
@@ -1456,7 +1465,7 @@ local function visible_materialize(px, pz, py)
             PACE.label(pl, "caravan", fid, { ev = ev.id })
             local led = plan and ctt and NAT.apply(pl, "caravan", fid, nil, true)   -- U1: караван с грузом — постоянный отряд ядра
             if plan then trv_register("caravan", fid, pl, sx, sz, plan, C.road_depart(plan), nil, nil, led) end
-            ok = true
+            ok = pl ~= nil
           else nopoint = true end
         end
       elseif q.kind == "vrefugees" then
@@ -1472,7 +1481,7 @@ local function visible_materialize(px, pz, py)
             PACE.label(pl, "refugees", fid, { town = PACE.tname(ev.town_sid, ev.town_name), ev = ev.id })
             local led = rtt and NAT.apply(pl, "refugees", fid, "refugee", plan ~= nil)
             if plan then trv_register("refugees", fid, pl, sx, sz, plan, plan.id, nil, nil, led) end
-            ok = true
+            ok = pl ~= nil
           else nopoint = true end
         end
       elseif q.kind == "vfreed" then   -- освободители ведут отбитых пленников к своему городу: колонна + малый конвой
@@ -1486,21 +1495,21 @@ local function visible_materialize(px, pz, py)
             settle(pl, rtt)
             PACE.label(pl, "freed", fid, { ev = ev.id })
             if rtt then NAT.apply(pl, "freed", fid, "refugee", false) end
-            if es then local epl = spawn(fid, es, sx + 60, py, sz + 60, 2, nil, rtt); if rtt then NAT.apply(epl, "escort", fid, "travel", false) end end
-            ok = true
+            if es and pl then local epl = spawn(fid, es, sx + 60, py, sz + 60, 2, nil, rtt); if rtt then NAT.apply(epl, "escort", fid, "travel", false) end end
+            ok = pl ~= nil
           else nopoint = true end
         end
       elseif q.kind == "vexpedition" then
         local sid = tier_sid(fid, 0, true)
         if sid then
           local sx, sz = at_event(300)
-          if sx then PACE.label(spawn(fid, sid, sx, py, sz, 3, nil, nil), "expedition", fid, { ev = ev.id }); ok = true else nopoint = true end
+          if sx then local epl = spawn(fid, sid, sx, py, sz, 3, nil, nil); PACE.label(epl, "expedition", fid, { ev = ev.id }); ok = epl ~= nil else nopoint = true end
         end
       elseif q.kind == "vsmuggle" then
         local sid = tier_sid(fid, -9)   -- самый бедный тир фракции: малый отряд без блеска
         if sid then
           local sx, sz = at_event(400)
-          if sx then PACE.label(spawn(fid, sid, sx, py, sz, 2, nil, nil), "smugglers", fid, { ev = ev.id }); ok = true else nopoint = true end
+          if sx then local spl = spawn(fid, sid, sx, py, sz, 2, nil, nil); PACE.label(spl, "smugglers", fid, { ev = ev.id }); ok = spl ~= nil else nopoint = true end
         end
       end
       if nopoint then return end   -- нет допустимой точки: остаётся в очереди, повтор в следующем тике (не ближе)
@@ -1616,6 +1625,7 @@ local function amb_materialize(px, pz, py)
   local h = nil
   if mode == "track" then pcall(function() h = cp:getSquadLeader():getHandle() end) end   -- выслеживание: цель - лидер каравана
   local rp = spawn(job.a, rsid, rx, py, rz, P.ambush_size or 3, h, nil)                   -- засада заранее: стоят на месте
+  if not (cp and rp) then dlog(string.format("visible ambush skipped: %s / %s - no squad template", C.name(job.a), C.name(job.b))); return end
   local led = h and NAT.apply(rp, "ambush", job.a, "assault", false)   -- U1: выслеживание — к отряду каравана ведёт ядро
   AMB[job.id] = { id = job.id, a = job.a, b = job.b, x = rx, z = rz, t0 = now, mode = mode, ckey = cp and plat_key(cp), rkey = rp and plat_key(rp),
                   nat = led or nil }   -- attackTarget остаётся поверх пакета: пакет враждебности не создаёт
@@ -1695,6 +1705,7 @@ local function arrive_materialize(px, pz, py)
   if not sx then return end   -- нет допустимой точки вне видимости: повтор через опрос
   local att = town_of(fid, town.x, town.z)
   local apl = spawn(fid, sid, sx, py, sz, size, nil, att)
+  if not apl then ARR.last = now; return end   -- нет шаблона: без счёта прихода, повтор через обычную паузу
   if kind == "vagrant" and att then NAT.apply(apl, "arrive_vagrant", fid, "travel", false) end   -- U1: бедный отряд идёт в город сам (торговцы — пакет шаблона)
   ARR.n, ARR.last, last_spawn, day_count = ARR.n + 1, now, now, day_count + 1
   VLIVE[#VLIVE + 1] = now + (P.visible_ttl_seconds or 900)
@@ -2004,6 +2015,7 @@ local function scout_step(job, now)   -- "go" | "hold" | "spawned"
   if not fx then for _, t in ipairs(C.towns()) do if t.owner == job.fid and t.x then fx, fz = t.x, t.z; break end end end   -- нет центра фракции: любой её город
   local home = fx and town_of(job.fid, fx, fz) or nil
   local pl = spawn(job.fid, sid, sx, 0, sz, math.random(1, 2), nil, home)   -- 1-2 разведчика, цель - свой город (уходят обратно)
+  if not pl then job.rel_day = vday(); return "go" end   -- разведчиков нет (шаблон): рейд идёт без предвестника, как при отказе точки
   local led = home and NAT.apply(pl, "scout", job.fid, "travel", false)
   trv_register("scout", job.fid, pl, sx, sz, nil, nil, fx, fz, led)
   local lead = (RP().scout_lead_min or 1) + math.random() * ((RP().scout_lead_max or 2) - (RP().scout_lead_min or 1))
