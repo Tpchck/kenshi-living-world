@@ -64,6 +64,8 @@ M.DEF = {
   b1_add_max = 15000,        -- доплата за одно дело не больше
   b1_recid = 0.15, b1_recid_max = 1.6,   -- каждое следующее дело перед той же фракцией дороже на 15 % (до x1.6)
   b1_w_law = 1.6, b1_w_unique = 1.5, b1_w_trader = 1.3, b1_w_lawless = 0.25,   -- вес жертвы: страж / уникальный / торговец / без закона
+  b1_w_hungry = 0.25,        -- кража/мародёрство голодным (ванильное MedicalSystem:isReallyHungry вора): вес x — почти без доплаты
+  -- ставки b1_* правятся в rules/conductor.json params.outlaws (перекрывают эти значения ключ за ключом; нет ключа — значение отсюда)
   b1_rate = 0.05, b1_rate_recid = 0.01, b1_rate_max = 0.10,   -- скрылся: рост в игровой день (+1 % за дело сверх первого, до 10 %)
   b1_cap_mult = 3,           -- рост не выше x3 от честной награды (без роста)
   b1_window = 12,            -- растёт не дольше стольких дней после последнего дела (дальше след остывает, ваниль сама гасит)
@@ -1286,6 +1288,10 @@ function M.b1_on_crime(bm, fac, who, expiry, crime)   -- колбэк ядра: 
   local okb, b0 = pcall(function() return bm:getActualBounty(lfo) end)
   local D = M.D or nil
   local w, why = M.b1_weight(cfg, D, who, vf)
+  if (cn == "stealing" or cn == "looting") and cfg.b1_w_hungry then   -- голодный берёт хлеб, а не меч: ядро какой предмет не говорит, говорит голод вора
+    local okh, hg = pcall(function() return me:getMedical():isReallyHungry() end)
+    if okh and hg == true then w, why = w * cfg.b1_w_hungry, tostring(why) .. "+hungry" end
+  end
   local okn, nm = pcall(function() return me:getName() end)
   M.b1.pend[#M.b1.pend + 1] = { pk = pk, nm = okn and nm or "?", lf = lf, vf = vf, c = c, cn = cn, w = w, why = why,
                                 b0 = okb and tonumber(b0) or nil, t = now }
