@@ -4,8 +4,7 @@
 --   leader_sid, leader_name, status, text
 -- Доставка (то, что подтверждено рабочими примерами CK/Bloodlines или биндингами — см. docs/streams/RUMORS.md):
 --   * реплика NPC рядом с игроком: Character:say(text)              [подтверждено: CKBloodlines.lua]
---   * журнал услышанного (V3):     ManagementScreen.getSingleton():addMessage(owner, msg, ML_NORMAL)   [✓код BindingsReference ManagementScreen; в игре — маркер «journal: addMessage ok»]
---   * мелочь города при входе (V4), чистые имена и слияние шума (V6), глобальная память рассказанного (V2), метрика VISIBILITY (B1)
+--   * дубль в журнал сообщений:    GameWorld:showPlayerAMessage_withLog(text, queued)   [по биндингам, не проверено]
 -- Задержка: слух доступен через расстояние(событие, игрок)/NEWS_SPEED дней (0..NEWS_MAX_DAYS), крупные события быстрее, вестники (беженцы/караван рядом) — сразу.
 -- Искажение: зависит от роли рассказчика (имя шаблона персонажа) и расстояния до места события.
 
@@ -25,44 +24,11 @@ local CFG = {
   HERALD_NEWS_RADIUS   = 45000,    -- вестник приносит вести о событиях не дальше стольких ед. от места, откуда он идёт
   MAX_AGE_DAYS         = 90,       -- старше — уже не новость
   FAR_DISTANCE         = 150000,   -- дальше — искажение +1 уровень
-  CHECK_INTERVAL_SEC   = 20,       -- как часто (реальные секунды) проверять, есть ли кому рассказать
+  CHECK_INTERVAL_SEC   = 60,       -- как часто (реальные секунды) проверять, есть ли кому рассказать
   TALK_RADIUS          = 900,      -- рассказчик должен быть ближе стольких единиц к персонажу игрока
-  -- B1/V2 пропускная способность: окно города TOWN_COOLDOWN_HOURS игровых часов, в нём до MAX_PER_TOWN слухов,
-  -- между слухами не меньше RUMOR_GAP_SEC реальных секунд (пузыри не налезают друг на друга)
-  TOWN_COOLDOWN_HOURS  = 8,
-  MAX_PER_TOWN         = 3,
-  RUMOR_GAP_SEC        = 40,
+  TOWN_COOLDOWN_HOURS  = 48,       -- не чаще одного слуха на город за столько игровых часов
   MAX_PER_CHECK        = 1,        -- слухов за одну проверку
-  SPEAKER_MAX_DAY      = 2,        -- один рассказчик — не больше стольких слухов за игровой день; повторный рассказчик в визите — штраф
-  -- приоритет кандидата: вес типа x свежесть x близость (близость к игроку/городу), тай-брейк — расстояние, потом свежесть
-  FRESH_DAYS           = 2,        -- свежесть = 1/(1 + возраст/FRESH_DAYS)
-  NEAR_SCALE           = 20000,    -- близость = 1/(1 + расстояние/NEAR_SCALE); без координат — 0.5
-  BIG_WEIGHT           = 3,        -- вес крупных событий (тип есть в BIG_SPEED_MULT)
-  HERALD_WEIGHT        = 1.5,      -- весть принёс путник
-  -- V6 шум: однотипные события одной пары за MERGE_DAYS сливаются в один слух (остальные помечаются рассказанными),
-  -- суточный потолок рассказанного и пониженный вес; дело самого игрока (by_player) потолком не режется
-  MERGE_DAYS           = 1,
-  NOISY                = { deed = { cap = 2, weight = 0.35 }, loot_carried = { cap = 1, weight = 0.25 },
-                           nemesis_contempt = { cap = 1, weight = 0.8 }, nemesis_beat_again = { cap = 1, weight = 0.8 } },   -- соперник и игрок: не чаще слуха в сутки на вид
-  -- V3 журнал услышанного: каждый сказанный слух — строка во вкладке сообщений (ManagementScreen:addMessage, ML_NORMAL)
-  JOURNAL_ON           = true,
-  JOURNAL_MAX_DAY      = 15,       -- строк за игровой день
-  JOURNAL_MAX_CHARS    = 200,
-  JOURNAL_QUEUE        = 6,        -- окна ещё нет (ранняя загрузка) — строки ждут
-  SHOW_IN_MESSAGE_LOG  = false,    -- фолбэк, если класса ManagementScreen нет: GameWorld:showPlayerAMessage_withLog
-  -- V4 город всегда говорит при входе: в визите не прозвучал слух — через ENTRY_DELAY_SEC местная мелочь из модели
-  SMALLTALK_ON         = true,
-  ENTRY_DELAY_SEC      = 45,       -- после приветствия Nemesis (greet_delay_s 25)
-  SMALLTALK_CD_HOURS   = 6,        -- не чаще раза на город
-  NEAR_OUTLAW_R        = 25000,    -- разыскиваемый ближе к игроку — «бродит рядом»
-  NEAR_TRAVELER_R      = 15000,
-  STOCK_LOW            = 0.5,      -- полка KMM_Stock ниже доли нормы — «дорого»
-  STOCK_HIGH           = 1.4,      -- выше — «дёшево»
-  VIS_LOG_SEC          = 300,
-  -- ревью: память рассказанного в сейве не растёт годами — раз в игровой день и при сохранении удаляются записи о событиях,
-  -- которых нет в журнале дирижёра или которые старше TOLD_KEEP_DAYS, и самые старые сверх TOLD_MAX (только при источнике-дирижёре)
-  TOLD_KEEP_DAYS       = 120,      -- > MAX_AGE_DAYS: такие события слухом уже не станут
-  TOLD_MAX             = 3000,     -- ключей told + heard      -- B1 метрика: строка VISIBILITY в rumors.log не чаще (и при сохранении)
+  SHOW_IN_MESSAGE_LOG  = false,    -- дублировать в журнал сообщений игрока
   WRONG_OUTCOME_CHANCE = 0.3,      -- уровень искажения 2: шанс перепутать исход (убит <-> пленён / отбились <-> пал)
   -- роль рассказчика по имени шаблона (data.name), первое совпадение; уровень: 0 точно, 1 без имён, 2 преувеличивает/путает
   ROLES = {
@@ -149,27 +115,6 @@ local T = {
     hedge = { " Or so they say.", " Don't quote me.", "" },
     herald = "Newcomers off the road say: ",
     msg = "Rumour (%WHO%): %TEXT%",
-    nemesis_contempt   = { "%LEADER% caught the Nameless with empty pockets and let them crawl off. Not worth the bother, he says.",
-                           "They say %LEADER% spat at the Nameless and walked away. Come back when you are worth robbing, he told them." },
-    nemesis_beat_again = { "%LEADER% put the Nameless in the dirt again. He has stopped counting.",
-                           "Heard %LEADER% beat the Nameless once more. %ATT% drink to it every night." },
-    trade_route     = { "%ATT% caravans run to %TOWN% now. Steady trade with %DEF%.", "New trade road to %TOWN%: %ATT% and %DEF% are doing business." },
-    loot_carried = { "A band of %ATT% went by, hauling plunder from a fight.", "%ATT% are dragging loot off a battlefield to the markets." },
-    merged = " And not for the first time, either.",
-    place_dir = "a place to the %DIR%", place_any = "somewhere out in the wastes",
-    journal_owner = "Rumour", journal_day = "Day %d, %s: %s", journal_day0 = "Day %d: %s",
-    small = {
-      owner = { "%OWNER% run this town. Their law, their prices.", "This is %OWNER% ground. Keep your nose clean." },
-      low   = { "%CAT% is dear here this week. The stalls are near empty.", "Good luck finding %CAT% in this town. Everyone is short." },
-      high  = { "Plenty of %CAT% in the stalls. Cheap, for once.", "Traders here are sitting on piles of %CAT%." },
-      outlaw = { "There is a price on %NAME%, %BOUNTY% cats. Seen around these parts.", "%NAME% was spotted not far from here. %BOUNTY% cats on that head." },
-      refugees = { "Refugees came through on the road. Hungry and quiet." },
-      caravan = { "A caravan passed by not long ago. Guards looked nervous." },
-      column = { "A column of %FAC% marched past. In a hurry, too." },
-      courier = { "A %FAC% runner went by at full tilt. Something is up." },
-      traveler = { "Drifters on the road again. More every week." },
-      quiet = { "Quiet week. Caravans come, caravans go.", "Nothing much happens here. That is how we like it.", "Same dust, same faces. Buy something or move on." },
-    },
   },
   ru = {
     leader_killed   = { "Говорят, %LEADER% убит у %TOWN%. Это всё %ATT%.", "Слыхал? %LEADER% мёртв — %ATT% ударили по %TOWN%." },
@@ -242,27 +187,6 @@ local T = {
     hedge = { " Так говорят.", " Только я тебе этого не говорил.", "" },
     herald = "Путники с дороги рассказывают: ",
     msg = "Слух (%WHO%): %TEXT%",
-    nemesis_contempt   = { "%LEADER% поймал Безымянных с пустыми карманами и отпустил ползти дальше. Не стоят хлопот, говорит.",
-                           "Говорят, %LEADER% плюнул Безымянным под ноги и ушёл. Приходите, когда будет что взять, — так и сказал." },
-    nemesis_beat_again = { "%LEADER% снова уложил Безымянных в пыль. Уже со счёта сбился.",
-                           "Слыхал, %LEADER% опять побил Безымянных. %ATT% пьют за это каждый вечер." },
-    trade_route     = { "Караваны %ATT% теперь ходят в %TOWN%. Торгуют с %DEF%.", "Новый торговый путь в %TOWN%: %ATT% и %DEF% ведут дела." },
-    loot_carried = { "Мимо прошли %ATT% — тащили добычу после драки.", "%ATT% волокут добро с поля боя на рынок." },
-    merged = " И уже не в первый раз.",
-    place_dir = "одно место на %DIR%", place_any = "где-то в пустошах",
-    journal_owner = "Слух", journal_day = "День %d, %s: %s", journal_day0 = "День %d: %s",
-    small = {
-      owner = { "Здесь правят %OWNER%. Их закон, их цены.", "Это земля %OWNER%. Веди себя тихо." },
-      low   = { "%CAT% тут нынче в цене. Прилавки почти пустые.", "%CAT% в этом городе не найти. Всем не хватает." },
-      high  = { "%CAT% на прилавках завались. Дёшево, для разнообразия.", "Торговцы тут сидят на горах: %CAT%." },
-      outlaw = { "За голову %NAME% дают %BOUNTY%. Видели в этих краях.", "%NAME% видели неподалёку. %BOUNTY% за голову." },
-      refugees = { "По дороге прошли беженцы. Голодные и молчаливые." },
-      caravan = { "Недавно прошёл караван. Охрана нервничала." },
-      column = { "Мимо прошла колонна %FAC%. Спешили." },
-      courier = { "Гонец %FAC% пронёсся во весь опор. Что-то стряслось." },
-      traveler = { "Опять бродяги на дороге. Что ни неделя — больше." },
-      quiet = { "Тихая неделя. Караваны приходят, караваны уходят.", "Ничего тут не происходит. Нам так и нравится.", "Та же пыль, те же лица. Покупай или иди дальше." },
-    },
   },
 }
 
@@ -271,11 +195,8 @@ _G.KMM_Rumors = _G.KMM_Rumors or {}
 local R = _G.KMM_Rumors
 R.events = R.events or {}          -- event_id -> событие (последняя строка с этим id)
 R.order = R.order or {}            -- порядок event_id
-R.told = R.told or {}              -- "event_id|town" -> true (сказано в town); "event_id|=town" — слито с рассказанным (V6). Рассказано = любой ключ с этим id
-R.townLastHour = R.townLastHour or {}   -- начало окна города (игровые часы)
-R.townCount = R.townCount or {}         -- слухов в текущем окне города
-R.smallHour = R.smallHour or {}         -- V4: когда город последний раз говорил мелочь
-R.vstat = R.vstat or { journal = 0, small = 0, journal_fail = 0 }   -- B1 метрика (за сессию)
+R.told = R.told or {}              -- "event_id|town" -> true
+R.townLastHour = R.townLastHour or {}
 R.fileSize = R.fileSize or -1
 R.lastCheck = R.lastCheck or 0
 
@@ -329,7 +250,6 @@ local function readChronicle()
   end
   f:close()
   R.fileSize = size
-  R.src = "file"
   log(string.format("chronicle read: %d event lines, %d known events", n, #R.order))
 end
 
@@ -346,12 +266,11 @@ local function readConductor()
     events[id] = { day = ev.day or 0, id = id, type = ev.type, town_sid = ev.town_sid or "", town = ev.town_name or "",
                    att = ev.attacker or "", def = ev.defender or "", leader_sid = ev.leader_sid or "", leader = ev.leader_name or "",
                    status = ev.status or "", cat = ev.cat or "", text = (type(ev.text) == "string" and #ev.text < 300) and ev.text or "", a = ev.a, b = ev.b, fid = ev.fid,
-                   x = tonumber(ev.x), z = tonumber(ev.z),    -- R2: точка события (место боя и т.п.) для метки на карте
-                   kind = ev.kind, by_player = ev.by_player and true or nil }   -- V6: вид дела ядра (слияние однотипного шума)
+                   x = tonumber(ev.x), z = tonumber(ev.z) }   -- R2: точка события (место боя и т.п.) для метки на карте
     order[#order + 1] = id
    end
   end
-  R.events, R.order, R.src = events, order, "conductor"
+  R.events, R.order = events, order
   return true
 end
 
@@ -438,80 +357,7 @@ local function direction(fromX, fromZ, toX, toZ)
   return dz > 0 and "s" or "n"   -- в Kenshi север — отрицательный z (не проверено; при ошибке поменять местами)
 end
 
------------------------------------------------------------------------ V6 ЧИСТЫЕ ИМЕНА: никаких иероглифов и служебных хвостов в тексте
--- Допустимы ASCII, латиница-1/расширенная (U+00A0..U+024F), типографская пунктуация (U+2010..U+2027), при LANG=ru — кириллица.
--- Прочее (CJK и т.п.) — «грязный» отрезок: в имени места имя целиком заменяется описанием («a place to the north»),
--- в готовом тексте события — только сам отрезок. Служебное: «(defunct and broken)», хвостовой номер « 103».
-local function cpAt(s, i)
-  local c = s:byte(i)
-  if c < 0x80 then return c, 1 end
-  local b2, b3, b4 = s:byte(i + 1, i + 3)
-  if c >= 0xF0 then return (c % 8) * 262144 + ((b2 or 128) % 64) * 4096 + ((b3 or 128) % 64) * 64 + (b4 or 128) % 64, 4 end
-  if c >= 0xE0 then return (c % 16) * 4096 + ((b2 or 128) % 64) * 64 + (b3 or 128) % 64, 3 end
-  if c >= 0xC0 then return (c % 32) * 64 + (b2 or 128) % 64, 2 end
-  return 0xFFFD, 1   -- оборванный байт продолжения
-end
-local function okCp(cp)
-  if cp < 0x80 or (cp >= 0xA0 and cp <= 0x24F) or (cp >= 0x2010 and cp <= 0x2027) then return true end
-  return CFG.LANG == "ru" and cp >= 0x400 and cp <= 0x4FF
-end
-local DIRTY = "\1"
-local function markDirty(s)   -- грязные символы -> \1; соседние грязные отрезки (через пробелы) -> один
-  local out, i, n, any = {}, 1, #s, false
-  while i <= n do
-    local cp, len = cpAt(s, i)
-    if okCp(cp) then out[#out + 1] = s:sub(i, i + len - 1) else out[#out + 1] = DIRTY; any = true end
-    i = i + len
-  end
-  if not any then return s, false end
-  local r = table.concat(out):gsub("\1[%s\1]*\1", "\1")
-  return r, true
-end
-local function stripService(s)
-  s = s:gsub("%s*%b()", "")       -- «(defunct and broken)» и подобные пометки редактора
-  s = s:gsub("%s+%d+$", "")       -- хвостовой номер экземпляра
-  return (s:gsub("^%s+", ""):gsub("%s+$", ""))
-end
-local function placeDesc(dir)
-  local L = T[CFG.LANG] or T.en
-  if dir and L.dirs[dir] then return (L.place_dir:gsub("%%DIR%%", L.dirs[dir])) end
-  return L.place_any
-end
--- имя места/фракции/лидера: чистое имя или fallback (описание места, «someone»...)
-local function cleanName(s, fallback)
-  if type(s) ~= "string" or s == "" or s == "?" then return fallback, true end
-  local m, dirty = markDirty(s)
-  if dirty then return fallback, true end
-  m = stripService(m)
-  if m == "" then return fallback, true end
-  return m, m ~= s
-end
--- готовый текст: грязные отрезки -> описание места, служебные пометки места убраны, первая буква заглавная
-local function cleanText(s, dir)
-  if type(s) ~= "string" or s == "" then return s, false end
-  local m, dirty = markDirty(s)
-  local s2 = m:gsub("%s*%([^)]*defunct[^)]*%)%s*%d*", ""):gsub("%s*%([^)]*broken[^)]*%)%s*%d*", "")
-  if dirty then
-    local desc = placeDesc(dir):gsub("%%", "%%%%")
-    s2 = s2:gsub("\1", desc)
-  end
-  s2 = s2:gsub("^%l", string.upper)
-  return s2, s2 ~= s
-end
-R.clean = { name = cleanName, text = cleanText, place = placeDesc }   -- офлайн-тест
-
--- слух можно сложить из события: есть шаблон, или тип внешнего модуля с готовым текстом
-local PFX = { "fate_", "relic_", "predator_", "siege_", "herd", "veteran", "bounty_hunters", "slave_caravan", "famine_refugees", "outlaw_", "nemesis_", "debt_", "deed", "base_raid_", "recruit_", "settlement_", "goal_milestone", "lie_low" }   -- deed: дела мира из KMM_Deeds (ядро affectRelations); B1: settlement_/goal_milestone/lie_low — готовый текст мира
-local function tellable(e)
-  local L = T[CFG.LANG] or T.en
-  local kind = tostring(e.type)
-  if type(L[kind]) == "table" and kind ~= "cats" and kind ~= "dirs" and kind ~= "hedge" and kind ~= "small" then return true end
-  if not (e.text and e.text ~= "") then return false end
-  for _, p in ipairs(PFX) do if kind:sub(1, #p) == p then return true end end
-  return false
-end
-
-local function compose(e, level, dist, dir, merged)
+local function compose(e, level, dist, dir)
   local L = T[CFG.LANG] or T.en
   local kind = e.type
   if level >= 2 and math.random() < CFG.WRONG_OUTCOME_CHANCE then
@@ -520,27 +366,26 @@ local function compose(e, level, dist, dir, merged)
     kind = swap[kind] or kind
   end
   local pool = L[kind]
-  local tail = (merged and merged > 1 and L.merged) or ""   -- V6: слитая группа однотипного шума
-  if type(pool) ~= "table" or kind == "small" then   -- ЖИВОЙ МИР (2026-11-13): типы внешних модулей без шаблона — готовый текст события (en), с оговоркой по дальности
-    if not tellable({ type = kind, text = e.text }) then return nil end
-    local s0 = cleanText(e.text, dir)
-    s0 = s0 .. tail
+  if not pool then   -- ЖИВОЙ МИР (2026-11-13): типы внешних модулей без шаблона — готовый текст события (en), с оговоркой по дальности
+    local pfx = { "fate_", "relic_", "predator_", "siege_", "herd", "veteran", "bounty_hunters", "slave_caravan", "famine_refugees", "outlaw_", "nemesis_", "debt_", "deed", "base_raid_", "recruit_" }   -- deed: дела мира из KMM_Deeds (ядро affectRelations)
+    local ok_t = false
+    for _, p in ipairs(pfx) do if kind:sub(1, #p) == p then ok_t = true; break end end
+    if not (ok_t and e.text and e.text ~= "") then return nil end
+    local s0 = e.text
     if level >= 1 and L.hedge then s0 = s0 .. L.hedge[math.random(#L.hedge)] end
     return s0, kind
   end
   local s = pool[math.random(#pool)]
-  local leader = cleanName(e.leader, L.some_leader)
-  if level >= 1 then leader = L.some_leader end
-  local town = cleanName(e.town, placeDesc(dir))
+  local leader = (level >= 1 or e.leader == "") and L.some_leader or e.leader
+  local town = (e.town ~= "" and e.town) or "?"
   if (level >= 2 or (dist and dist > CFG.FAR_DISTANCE)) and dir then town = L.far:gsub("%%DIR%%", L.dirs[dir]) end
-  local att = cleanName(e.att, L.some_faction)
-  local def = cleanName(e.def, L.some_faction)
+  local att = (e.att ~= "" and e.att) or L.some_faction
+  local def = (e.def ~= "" and e.def) or L.some_faction
   if level >= 2 and math.random() < 0.5 then if math.random() < 0.5 then att = L.some_faction else def = L.some_faction end end   -- путает, кто это был
   local function esc(x) return (tostring(x):gsub("%%", "%%%%")) end   -- % в подстановке gsub
   s = s:gsub("%%LEADER%%", esc(leader)):gsub("%%TOWN%%", esc(town)):gsub("%%ATT%%", esc(att)):gsub("%%DEF%%", esc(def))
   local cats = L.cats or {}
   s = s:gsub("%%CAT%%", esc(cats[e.cat or ""] or cats.goods or "goods"))
-  s = cleanText(s, dir) .. tail   -- страховка: в шаблон ничего грязного не просочилось
   if level >= 1 then s = s .. L.hedge[math.random(#L.hedge)] end
   return s, kind
 end
@@ -565,20 +410,6 @@ local function townKey(town)
   return "?"
 end
 
--- V2: разные рассказчики. Рассказчик дня (имя) с SPEAKER_MAX_DAY слухами пропускается; уже говоривший в этом визите — штраф.
--- Без учёта (R.spk = nil, команды консоли) — без штрафа.
-local function speakerName(ch)
-  local ok, n = pcall(function() return ch:getName() end)
-  return (ok and type(n) == "string") and n or "?"
-end
-local function speakerPenalty(ch)
-  local sp = R.spk
-  if not sp then return 0 end
-  local nm = speakerName(ch)
-  if (sp.n[nm] or 0) >= CFG.SPEAKER_MAX_DAY then return nil end
-  return ((R.visit and R.visit.spk[nm]) or 0) * 12000   -- больше разницы ролей (prefer x 10000): второй слух — у другого, если он есть
-end
-
 -- Снимок загруженных NPC (PERF): KMM_Gov.snapshot(ttl), без Gov/при ошибке — прежний обход списка (фолбэк ниже).
 local function findSpeakerSnap(listener, lx, lz)
   local g = rawget(_G, "KMM_Gov")
@@ -592,10 +423,9 @@ local function findSpeakerSnap(listener, lx, lz)
       if d <= CFG.TALK_RADIUS and r.town then
         local alive = true
         pcall(function() if r.ch:isDead() then alive = false end end)   -- снимок мог устареть
-        local pen = alive and speakerPenalty(r.ch)
-        if alive and pen then
+        if alive then
           local level, prefer = roleOf(r.ch)
-          local score = prefer * 10000 - d - pen
+          local score = prefer * 10000 - d
           if not bestScore or score > bestScore then best, bestScore = r.ch, score end
         end
       end
@@ -619,10 +449,8 @@ local function findSpeaker(listener)
       if not x then return end
       local d = math.sqrt((x - lx) ^ 2 + (z - lz) ^ 2)
       if d > CFG.TALK_RADIUS then return end
-      local pen = speakerPenalty(c)
-      if not pen then return end
       local level, prefer = roleOf(c)
-      local score = prefer * 10000 - d - pen
+      local score = prefer * 10000 - d
       if not bestScore or score > bestScore then best, bestScore = c, score end
     end)
   end
@@ -781,405 +609,76 @@ local function mapHint(e, level, dist, now)
   if not ok then mapOff("squad", err) end
 end
 
------------------------------------------------------------------------ V2 ГЛОБАЛЬНАЯ ПАМЯТЬ РАССКАЗАННОГО
--- R.told хранит ключи "id|town" (формат сейва прежний); рассказанным считается событие с ЛЮБЫМ ключом своего id —
--- одно событие не пересказывают в каждом новом городе. Индекс строится заново на каждой проверке (тесты и загрузка меняют R.told целиком).
--- Значение индекса: "say" — сказано, "merged" — слито с рассказанным (V6), "fail" — say() упал (на экран не дошло).
-local function toldIndex()
-  local idx = {}
-  for k in pairs(R.told) do
-    local id, rest = tostring(k):match("^([^|]*)|?(.*)$")
-    if id and id ~= "" then
-      local v = (rest:sub(1, 1) == "=") and "merged" or ((rest:sub(1, 1) == "!") and "fail" or "say")
-      if idx[id] ~= "say" then idx[id] = (v == "say" or not idx[id]) and v or idx[id] end
-    end
-  end
-  return idx
-end
-
------------------------------------------------------------------------ V3 ЖУРНАЛ УСЛЫШАННОГО
--- ManagementScreen.getSingleton():addMessage(owner, msg, MessageLogColor.ML_NORMAL) — вкладка сообщений окна управления (✓код, BindingsReference ManagementScreen).
--- Окна нет (ранняя загрузка) — строка ждёт в очереди; класса нет и SHOW_IN_MESSAGE_LOG — showPlayerAMessage_withLog. Ошибка вызова выключает только журнал.
-R.jq = R.jq or {}
-R.jday = R.jday or { day = -1, n = 0 }
-R.jdone = R.jdone or {}   -- id событий, записанных в журнал за сессию (KMM_Rumors.journaled — для хроники Nemesis)
--- ревью: хроника Nemesis уже записала это событие во вкладку сообщений — не дублировать. KMM_Nemesis.chronicled(event_id) -> bool;
--- нет модуля/функции или ошибка — прежнее поведение. id дирижёра — число, у нас строка: спрашиваем числом, потом строкой
-local function chronicled(id)
-  local NM = rawget(_G, "KMM_Nemesis")
-  local f = type(NM) == "table" and NM.chronicled
-  if type(f) ~= "function" then return false end
-  local n = tonumber(id)
-  local ok, r = pcall(f, n or id)
-  if ok and r == true then return true end
-  if n ~= nil and type(id) == "string" then
-    local ok2, r2 = pcall(f, tostring(id))
-    if ok2 and r2 == true then return true end
-  end
-  return false
-end
-local function journalFlush()
-  if not CFG.JOURNAL_ON or R.journalOff or #R.jq == 0 then return end
-  local MS = rawget(_G, "ManagementScreen")
-  if not MS then
-    if CFG.SHOW_IN_MESSAGE_LOG then
-      local q = table.remove(R.jq, 1)
-      local ok, err = pcall(function() getGameWorld():showPlayerAMessage_withLog(q.owner .. ": " .. q.msg, true) end)
-      if ok then R.vstat.journal = R.vstat.journal + 1; log("journal ok via=showPlayerAMessage text=" .. q.msg)
-      else R.journalOff = true; R.vstat.journal_fail = R.vstat.journal_fail + 1; log("journal disabled until restart: showPlayerAMessage_withLog FAILED: " .. tostring(err)) end
-    end
-    return
-  end
-  local okS, ms = pcall(function() return MS.getSingleton() end)
-  if not (okS and ms) then return end   -- окно ещё не создано — ждём
-  local col = rawget(_G, "MessageLogColor")
-  local okc, c0 = pcall(function() return col and col.ML_NORMAL end)
-  while #R.jq > 0 do
-    local q = table.remove(R.jq, 1)
-    if chronicled(q.id) then log("journal skip event=" .. tostring(q.id) .. " reason=chronicled"); return journalFlush() end
-    local ok, err = pcall(function() ms:addMessage(q.owner, q.msg, (okc and c0) or 0) end)
-    if not ok then
-      R.journalOff = true; R.vstat.journal_fail = R.vstat.journal_fail + 1
-      log("journal disabled until restart: addMessage FAILED: " .. tostring(err))
-      return
-    end
-    R.vstat.journal = R.vstat.journal + 1
-    R.jdone[tostring(q.id)] = true
-    if not R.journalOkLogged then R.journalOkLogged = true; log("journal: addMessage ok (ManagementScreen message log)") end
-    log("journal event=" .. tostring(q.id) .. " owner=" .. q.owner .. " text=" .. q.msg)
-  end
-end
-local function journalAdd(id, who, place, text, day)
-  if not CFG.JOURNAL_ON or R.journalOff then return end
-  if chronicled(id) then log("journal skip event=" .. tostring(id) .. " reason=chronicled"); return end
-  if R.jday.day ~= day then R.jday.day, R.jday.n = day, 0 end
-  if R.jday.n >= CFG.JOURNAL_MAX_DAY then log("journal skip event=" .. tostring(id) .. " reason=day_cap"); return end
-  R.jday.n = R.jday.n + 1
-  local L = T[CFG.LANG] or T.en
-  local t = text
-  if #t > CFG.JOURNAL_MAX_CHARS then t = t:sub(1, CFG.JOURNAL_MAX_CHARS - 3):gsub("[\128-\191]+$", ""):gsub("[\192-\255]$", "") .. "..." end
-  local msg = place and string.format(L.journal_day, day, place, t) or string.format(L.journal_day0, day, t)
-  local owner = cleanName(who, L.journal_owner)
-  R.jq[#R.jq + 1] = { id = id, owner = owner, msg = msg }
-  while #R.jq > CFG.JOURNAL_QUEUE do table.remove(R.jq, 1) end
-  journalFlush()
-end
-
------------------------------------------------------------------------ B1 МЕТРИКА ВИДИМОСТИ
--- Доля событий текущего мира (журнал дирижёра), дошедших до экрана через слухи (say ok), по типам.
--- Строка в rumors.log: VISIBILITY day=D events=M shown=N merged=K pct=P journal=J smalltalk=S types=type:shown/total,...
--- shown — сказано пузырём (say ok); merged — слито в сказанный слух (видно как часть его); pct = 100*(shown+merged)/events.
--- types — все типы мира, по убыванию total, при равенстве по имени; shown в типе считает shown+merged.
-local function visibility()
-  local idx = toldIndex()
-  local byT, M, N, K = {}, 0, 0, 0
-  for _, id in ipairs(R.order) do
-    local e = R.events[id]
-    if e then
-      local ty = tostring(e.type)
-      local b = byT[ty] or { t = 0, s = 0 }
-      byT[ty] = b
-      b.t = b.t + 1; M = M + 1
-      local v = idx[tostring(id)]
-      if v == "say" then N = N + 1; b.s = b.s + 1 elseif v == "merged" then K = K + 1; b.s = b.s + 1 end
-    end
-  end
-  local list = {}
-  for ty, b in pairs(byT) do list[#list + 1] = { ty, b } end
-  table.sort(list, function(a, b) if a[2].t ~= b[2].t then return a[2].t > b[2].t end return a[1] < b[1] end)
-  local parts = {}
-  for _, p in ipairs(list) do parts[#parts + 1] = string.format("%s:%d/%d", p[1], p[2].s, p[2].t) end
-  local pct = M > 0 and (100 * (N + K) / M) or 0
-  return { events = M, shown = N, merged = K, pct = pct, types = table.concat(parts, ","), by = byT }
-end
-local function visLog(force)
-  local okV, v = pcall(visibility)
-  if not okV then log("visibility failed: " .. tostring(v)); return end
-  local h = gameHours()
-  local sig = string.format("%d|%d|%d|%d|%d", v.events, v.shown, v.merged, R.vstat.journal, R.vstat.small)
-  if not force and sig == R.visSig then return end
-  R.visSig = sig
-  log(string.format("VISIBILITY day=%d events=%d shown=%d merged=%d pct=%.1f journal=%d smalltalk=%d types=%s",
-    h and math.floor(h / 24) or -1, v.events, v.shown, v.merged, v.pct, R.vstat.journal, R.vstat.small, v.types))
-end
-R.visibility = visibility
-R.journaled = function(id) return R.jdone[tostring(id)] == true end   -- для хроники Nemesis: слух уже в журнале
-
------------------------------------------------------------------------ V4 МЕЛОЧЬ ГОРОДА: в визите не прозвучало новостей — житель говорит о местном
--- Только чтение модели: хозяин города (KMM_Conductor.town_mood/name), полки (KMM_Stock.level), разыскиваемые рядом
--- (KMM_Outlaws.wanted: o.st == "a", o.x/o.z, o.n, o.b), путники рядом (KMM_Traces.travelers). Ничего нет — «тихая неделя».
-local function townSid(town)
-  local ok, sid = pcall(function() local gd = town:getGameData() or town.data; return gd and gd.stringID end)
-  return ok and sid or nil
-end
-local function pickOne(pool) return pool[math.random(#pool)] end
-local function smallLines(tsid, lx, lz)
-  local L = T[CFG.LANG] or T.en
-  local S = L.small
-  local opts = {}
-  local function esc(x) return (tostring(x):gsub("%%", "%%%%")) end
-  local C = rawget(_G, "KMM_Conductor")
-  if tsid and C and C.town_mood then
-    local okm, mood = pcall(C.town_mood, tsid)
-    local owner = okm and type(mood) == "table" and mood.owner
-    local pf
-    pcall(function() pf = C.cfg().player_faction end)
-    if owner and owner ~= pf and C.name then
-      local okn, on = pcall(C.name, owner)
-      local nm = okn and cleanName(on, nil)
-      if nm and nm ~= owner then opts[#opts + 1] = { "owner", (pickOne(S.owner):gsub("%%OWNER%%", esc((nm:gsub("^The ", "the "))))) } end
-    end
-  end
-  local K = rawget(_G, "KMM_Stock")
-  if tsid and K and K.level then
-    local cats = L.cats or {}
-    for _, cat in ipairs({ "food", "metal", "weapons", "med", "drugs" }) do
-      local okl, lv = pcall(K.level, tsid, cat)
-      if okl and type(lv) == "number" and lv == lv and lv >= 0 then
-        local word = cats[cat] or cat
-        if lv < CFG.STOCK_LOW then opts[#opts + 1] = { "stock_low", (pickOne(S.low):gsub("%%CAT%%", esc(word))) }
-        elseif lv > CFG.STOCK_HIGH then opts[#opts + 1] = { "stock_high", (pickOne(S.high):gsub("%%CAT%%", esc(word))) } end
-      end
-    end
-  end
-  local O = rawget(_G, "KMM_Outlaws")
-  if lx and O and O.wanted then
-    local okw, list = pcall(O.wanted)
-    if okw and type(list) == "table" then
-      local best, bd
-      for _, o in ipairs(list) do
-        if type(o) == "table" and o.st == "a" and tonumber(o.x) and tonumber(o.z) then
-          local d = (o.x - lx) ^ 2 + (o.z - lz) ^ 2
-          if d <= CFG.NEAR_OUTLAW_R ^ 2 and (not bd or d < bd) then best, bd = o, d end
-        end
-      end
-      local nm = best and cleanName(best.n, nil)
-      if nm then
-        local s = pickOne(S.outlaw):gsub("%%NAME%%", esc(nm)):gsub("%%BOUNTY%%", esc(tonumber(best.b) or "a few hundred"))
-        opts[#opts + 1] = { "outlaw", s }
-      end
-    end
-  end
-  local TR = rawget(_G, "KMM_Traces")
-  if lx and TR and TR.travelers then
-    local okt, list = pcall(TR.travelers)
-    if okt and type(list) == "table" then
-      for _, t in ipairs(list) do
-        local x, z = type(t) == "table" and (t.lx or t.sx), type(t) == "table" and (t.lz or t.sz)
-        if x and z and (x - lx) ^ 2 + (z - lz) ^ 2 <= CFG.NEAR_TRAVELER_R ^ 2 then
-          local pool = S[tostring(t.kind)] or S.traveler
-          local fac = L.some_faction
-          if t.fid and C and C.name then local okn, fn = pcall(C.name, t.fid); fac = (okn and cleanName(fn, nil)) or fac end
-          opts[#opts + 1] = { "traveler", (pickOne(pool):gsub("%%FAC%%", esc(fac))) }
-          break
-        end
-      end
-    end
-  end
-  return opts
-end
-local function smallTalk(listener, tkey, tsid, now, lx, lz)
-  local opts = smallLines(tsid, lx, lz)
-  local L = T[CFG.LANG] or T.en
-  local last = R.smallLast and R.smallLast[tkey]
-  local pickFrom = {}
-  for _, o in ipairs(opts) do if o[1] ~= last then pickFrom[#pickFrom + 1] = o end end
-  if #pickFrom == 0 then pickFrom = opts end
-  local o = (#pickFrom > 0) and pickFrom[math.random(#pickFrom)] or { "quiet", pickOne(L.small.quiet) }
-  local speaker = findSpeaker(listener)
-  if not speaker then return nil end   -- никого рядом — повтор на следующей проверке
-  local text = cleanText(o[2])
-  local okSay, errSay = pcall(function() speaker:say(text) end)
-  R.smallHour[tkey] = now
-  R.smallLast = R.smallLast or {}
-  R.smallLast[tkey] = o[1]
-  if okSay then R.vstat.small = R.vstat.small + 1 end
-  log(string.format("smalltalk town=%s kind=%s speaker=%s options=%d say=%s text=%s", tkey, o[1], speakerName(speaker), #opts,
-    okSay and "ok" or tostring(errSay), text))
-  return okSay
-end
-
 local function tryTell()
   local now = gameHours()
   if not now then return end
-  journalFlush()
   local listener, town = playerInTown()
-  if not listener then R.visit = nil; return end
+  if not listener then return end
   local tkey = townKey(town)
-  local clk = os.clock()
-  if not (R.visit and R.visit.town == tkey) then R.visit = { town = tkey, t0 = clk, told = 0, small = false, spk = {} } end
-  local visit = R.visit
-  local dayNow = now / 24
-  local dayI = math.floor(dayNow)
-  if not (R.spk and R.spk.day == dayI) then R.spk = { day = dayI, n = {} } end
-  if not (R.noisyDay and R.noisyDay.day == dayI) then R.noisyDay = { day = dayI, n = {} } end
-  if not R.townLastHour[tkey] or now - R.townLastHour[tkey] >= CFG.TOWN_COOLDOWN_HOURS or now < R.townLastHour[tkey] then
-    R.townLastHour[tkey], R.townCount[tkey] = now, 0          -- новое окно города
-  end
+  if R.townLastHour[tkey] and now - R.townLastHour[tkey] < CFG.TOWN_COOLDOWN_HOURS then return end
   local lx, lz = vec(listener:getPosition())
-  local canTell = (R.townCount[tkey] or 0) < CFG.MAX_PER_TOWN and clk - (R.lastTellClock or -1e9) >= CFG.RUMOR_GAP_SEC
+  pcall(scanHeralds, lx, lz)
   local told = 0
-  if canTell then
-    pcall(scanHeralds, lx, lz)
-    local idx = toldIndex()
-    local cands, groups = {}, {}
-    for i = #R.order, 1, -1 do                       -- свежие события первыми
-      local e = R.events[R.order[i]]
-      if e and not idx[tostring(e.id)] and tellable(e) then
-        local ex, ez = eventXZ(e)
-        local delay, dist = newsDelay(e, ex, ez, lx, lz)
-        local herald = R.heard[e.id] and true or false
-        if herald then delay = 0 end
-        local ageDays = dayNow - (e.day or 0)
-        if ageDays >= delay and ageDays <= CFG.MAX_AGE_DAYS then
-          local noisy = CFG.NOISY[e.type]
-          local gkey = noisy and table.concat({ e.type, e.att or "", e.def or "", tostring(e.kind or ""), tostring(e.by_player or ""),
-                                                tostring(math.floor((e.day or 0) / CFG.MERGE_DAYS)) }, "|")
-          if gkey and groups[gkey] then
-            local g = groups[gkey].members
-            g[#g + 1] = e.id                           -- V6: старшее однотипное событие той же пары — в группу свежего
-          elseif not (noisy and not e.by_player and (R.noisyDay.n[e.type] or 0) >= noisy.cap) then
-            local w = (noisy and not e.by_player) and noisy.weight or (CFG.BIG_SPEED_MULT[e.type] and CFG.BIG_WEIGHT) or 1
-            if herald then w = w * CFG.HERALD_WEIGHT end
-            local score = w / (1 + math.max(0, ageDays) / CFG.FRESH_DAYS) * (dist and 1 / (1 + dist / CFG.NEAR_SCALE) or 0.5)
-            local c = { e = e, dist = dist, herald = herald, dir = (dist and direction(lx, lz, ex, ez)) or nil, ord = #cands, score = score,
-                        members = { e.id } }
-            cands[#cands + 1] = c
-            if gkey then groups[gkey] = c end
-          end
-        end
-      end
-    end
-    table.sort(cands, function(p, q)                 -- вес x свежесть x близость; тай-брейк — ближе, потом свежее
-      if p.score ~= q.score then return p.score > q.score end
-      local dp, dq = p.dist or 1e9, q.dist or 1e9
-      if dp ~= dq then return dp < dq end
-      return p.ord < q.ord
-    end)
-    for _, c in ipairs(cands) do
-      local e, dist, dir = c.e, c.dist, c.dir
-      local speaker = findSpeaker(listener)
-      if not speaker then break end
-      local level, _, role = roleOf(speaker)
-      if dist and dist > CFG.FAR_DISTANCE then level = level + 1 end
-      local text, kind = compose(e, level, dist, dir, #c.members)
-      if text then
-        if c.herald then text = ((T[CFG.LANG] or T.en).herald or "") .. text end
-        local okSay, errSay = pcall(function() speaker:say(text) end)
-        local who = speakerName(speaker)
-        if CFG.SHOW_IN_MESSAGE_LOG and rawget(_G, "ManagementScreen") then   -- прежний дубль строкой сверху (по умолчанию выкл.; журнал — V3)
-          local L = T[CFG.LANG] or T.en
-          local msg = L.msg:gsub("%%WHO%%", (tostring(who):gsub("%%", "%%%%"))):gsub("%%TEXT%%", (text:gsub("%%", "%%%%")))
-          pcall(function() getGameWorld():showPlayerAMessage_withLog(msg, true) end)
-        end
-        local key = e.id .. "|" .. (okSay and "" or "!") .. tkey
-        R.told[key] = true
-        for i = 2, #c.members do R.told[c.members[i] .. "|=" .. tkey] = true end
-        R.townCount[tkey] = (R.townCount[tkey] or 0) + 1
-        R.lastTellClock = clk
-        visit.told = visit.told + 1
-        visit.spk[who] = (visit.spk[who] or 0) + 1
-        R.spk.n[who] = (R.spk.n[who] or 0) + 1
-        if CFG.NOISY[e.type] and not e.by_player then R.noisyDay.n[e.type] = (R.noisyDay.n[e.type] or 0) + 1 end
-        local okF, f = pcall(io.open, CFG.TOLD_PATH, "a")
-        if okF and f then f:write(key .. "\n"); f:close() end
-        log(string.format("told event=%s town=%s speaker=%s role=%s level=%d dist=%s herald=%s kind=%s merged=%d score=%.3f say=%s text=%s",
-          e.id, tkey, who, role, level, dist and string.format("%.0f", dist) or "?", tostring(c.herald), kind, #c.members - 1, c.score,
-          okSay and "ok" or tostring(errSay), text))
-        if #c.members > 1 then log(string.format("merge kind=%s n=%d event=%s", tostring(e.type), #c.members, e.id)) end
-        if okSay then
-          journalAdd(e.id, who, cleanName(tkey, nil), text, dayI)   -- V3: услышанное остаётся в журнале
-          mapHint(e, level, dist, now)   -- R2: наводка на карте (своя защита, ошибка выключает только карту)
-        end
-        told = told + 1
-        if told >= CFG.MAX_PER_CHECK then break end
+  local cands = {}
+  local dayNow = now / 24
+  for i = #R.order, 1, -1 do                       -- свежие события первыми
+    local e = R.events[R.order[i]]
+    local key = e.id .. "|" .. tkey
+    if not R.told[key] then
+      local ex, ez = eventXZ(e)
+      local delay, dist = newsDelay(e, ex, ez, lx, lz)
+      local herald = R.heard[e.id] and true or false
+      if herald then delay = 0 end
+      local ageDays = dayNow - e.day
+      if ageDays >= delay and ageDays <= CFG.MAX_AGE_DAYS then
+        cands[#cands + 1] = { e = e, key = key, dist = dist, herald = herald, dir = (dist and direction(lx, lz, ex, ez)) or nil, ord = #cands }
       end
     end
   end
-  -- V4: в этом визите новостей не прозвучало — через ENTRY_DELAY_SEC после входа житель скажет о местном
-  if told == 0 and CFG.SMALLTALK_ON and visit.told == 0 and not visit.small and clk - visit.t0 >= CFG.ENTRY_DELAY_SEC
-     and (not R.smallHour[tkey] or now - R.smallHour[tkey] >= CFG.SMALLTALK_CD_HOURS or now < R.smallHour[tkey]) then
-    local tsid = townSid(town)
-    -- приветствие Nemesis в этом визите: уже сказал — мелочь не нужна; ещё может прозвучать — ждём. Нет модуля/функции — как раньше
-    local gsaid, gpend = false, false
-    local NM = rawget(_G, "KMM_Nemesis")
-    if tsid and type(NM) == "table" and NM.greet_said then
-      local okg, s1, s2 = pcall(NM.greet_said, tsid)
-      if okg then gsaid, gpend = s1 == true, s2 == true end
-    end
-    if gsaid then
-      visit.small = true
-      log("smalltalk skip town=" .. tkey .. " reason=greet_said")
-    elseif not gpend then
-      local okT, said = pcall(smallTalk, listener, tkey, tsid, now, lx, lz)
-      if not okT then log("smalltalk failed: " .. tostring(said)) end
-      if not okT or said ~= nil then visit.small = true end
+  table.sort(cands, function(p, q)                 -- сначала ближние (вести доходят раньше), потом свежие
+    local dp, dq = p.dist or 1e9, q.dist or 1e9
+    if dp ~= dq then return dp < dq end
+    return p.ord < q.ord
+  end)
+  for _, c in ipairs(cands) do
+    local e, key, dist, dir = c.e, c.key, c.dist, c.dir
+    local speaker = findSpeaker(listener)
+    if not speaker then return end
+    local level, _, role = roleOf(speaker)
+    if dist and dist > CFG.FAR_DISTANCE then level = level + 1 end
+    local text, kind = compose(e, level, dist, dir)
+    if text then
+      if c.herald then text = ((T[CFG.LANG] or T.en).herald or "") .. text end
+      local okSay, errSay = pcall(function() speaker:say(text) end)
+      local who = "?"
+      pcall(function() who = speaker:getName() end)
+      if CFG.SHOW_IN_MESSAGE_LOG then
+        local L = T[CFG.LANG] or T.en
+        local msg = L.msg:gsub("%%WHO%%", (tostring(who):gsub("%%", "%%%%"))):gsub("%%TEXT%%", (text:gsub("%%", "%%%%")))
+        pcall(function() getGameWorld():showPlayerAMessage_withLog(msg, true) end)
+      end
+      R.told[key] = true
+      R.townLastHour[tkey] = now
+      local okF, f = pcall(io.open, CFG.TOLD_PATH, "a")
+      if okF and f then f:write(key .. "\n"); f:close() end
+      log(string.format("told event=%s town=%s speaker=%s role=%s level=%d dist=%s herald=%s kind=%s say=%s text=%s",
+        e.id, tkey, who, role, level, dist and string.format("%.0f", dist) or "?", tostring(c.herald), kind, okSay and "ok" or tostring(errSay), text))
+      if okSay then mapHint(e, level, dist, now) end   -- R2: наводка на карте (своя защита, ошибка выключает только карту)
+      told = told + 1
+      if told >= CFG.MAX_PER_CHECK then return end
     end
   end
 end
 
 ----------------------------------------------------------------------- ТИК
--- Числа из правил: KMM_Conductor.cfg().params.rumors = { KEY = значение } (ключи CFG верхнего уровня, тот же тип). Нет — DEF выше.
-local function applyOverrides()
-  if R.cfgApplied then return end
-  local C = rawget(_G, "KMM_Conductor")
-  if not (C and C.cfg) then return end
-  R.cfgApplied = true
-  local ok, ov = pcall(function() local c = C.cfg(); return c and c.params and c.params.rumors end)
-  if not (ok and type(ov) == "table") then return end
-  local n = 0
-  for k, v in pairs(ov) do
-    if CFG[k] ~= nil and type(CFG[k]) == type(v) and type(v) ~= "table" then CFG[k] = v; n = n + 1
-    elseif CFG[k] ~= nil and type(v) == "table" and type(CFG[k]) == "table" then for k2, v2 in pairs(v) do CFG[k][k2] = v2 end; n = n + 1 end
-  end
-  log("config: " .. n .. " overrides from conductor params.rumors")
-end
--- чистка R.told / R.heard (см. TOLD_KEEP_DAYS / TOLD_MAX). Источник не дирижёр или журнал пуст — не трогаем (нечем проверить)
-local function pruneTold(dayNow)
-  if R.src ~= "conductor" or #R.order == 0 then return 0 end
-  local gone, old, cap = 0, 0, 0
-  local function bad(id)
-    local e = R.events[id]
-    if not e then gone = gone + 1; return true end
-    if dayNow and (e.day or 0) < dayNow - CFG.TOLD_KEEP_DAYS then old = old + 1; return true end
-    return false
-  end
-  for k in pairs(R.told) do
-    local id = tostring(k):match("^([^|]*)")
-    if bad(id) then R.told[k] = nil end
-  end
-  for id in pairs(R.heard) do if bad(tostring(id)) then R.heard[id] = nil end end
-  local keys = {}
-  for k in pairs(R.told) do keys[#keys + 1] = { k = k, t = true, n = tonumber(tostring(k):match("^([^|]*)")) or 0 } end
-  for k in pairs(R.heard) do keys[#keys + 1] = { k = k, t = false, n = tonumber(k) or 0 } end
-  if #keys > CFG.TOLD_MAX then
-    table.sort(keys, function(a, b) if a.n ~= b.n then return a.n < b.n end return tostring(a.k) < tostring(b.k) end)
-    for i = 1, #keys - CFG.TOLD_MAX do
-      if keys[i].t then R.told[keys[i].k] = nil else R.heard[keys[i].k] = nil end
-      cap = cap + 1
-    end
-  end
-  local n = gone + old + cap
-  if n > 0 then log(string.format("told prune: removed=%d gone=%d old=%d cap=%d kept=%d", n, gone, old, cap, math.min(#keys, CFG.TOLD_MAX))) end
-  return n
-end
-R.prune = pruneTold   -- офлайн-тест
-
-local function resetWorld()
-  R.told, R.townLastHour, R.heard, R.townCount, R.smallHour = {}, {}, {}, {}, {}
-  R.visit, R.spk, R.noisyDay, R.smallLast, R.lastTellClock, R.visSig = nil, nil, nil, nil, nil, nil
-  R.jq, R.jday, R.jdone, R.pruneDay = {}, { day = -1, n = 0 }, {}, nil
-end
-
 local function onTick()
   if R.disabled then return end
   local t = os.clock()
   if t - R.lastCheck < CFG.CHECK_INTERVAL_SEC then return end
   R.lastCheck = t
-  pcall(applyOverrides)
   local h = gameHours()
   if h and R.lastHours and h + 12 < R.lastHours then   -- время пошло назад: новая игра / другой мир
-    resetWorld(); R.map.day = -1
+    R.told, R.townLastHour, R.heard = {}, {}, {}; R.map.day = -1
     log(string.format("game time went back (%.1f < %.1f h) — told list reset", h, R.lastHours))
   end
   if h then R.lastHours = h end
@@ -1188,13 +687,7 @@ local function onTick()
     local okE, errE = pcall(mapExpire, h)
     if not okE then mapOff("expire", errE) end
   end
-  local ok, err = pcall(function()
-    if not readConductor() then readChronicle() end
-    local d = h and math.floor(h / 24)
-    if d and R.pruneDay ~= d then R.pruneDay = d; pruneTold(h / 24) end   -- раз в игровой день
-    tryTell()
-  end)
-  if ok and t - (R.visT or -1e9) >= CFG.VIS_LOG_SEC then R.visT = t; pcall(visLog, false) end   -- B1: метрика видимости
+  local ok, err = pcall(function() if not readConductor() then readChronicle() end; tryTell() end)
   if not ok then
     R.disabled = true
     log("tick disabled until restart: " .. tostring(err))
@@ -1250,21 +743,19 @@ function R.save_ids()
   return ids
 end
 R.saveHandler = Events.on("PlayerInterface::serialise", guarded("save", function(_, gd)
-  pcall(function() local h = gameHours(); pruneTold(h and h / 24) end)   -- в сейв — только нужное
   local keys = {}
   for k in pairs(R.told) do keys[#keys + 1] = k end
   for id in pairs(R.heard) do keys[#keys + 1] = "@" .. tostring(id) end   -- NEWS: старый код прочтёт это как безвредный ключ told
   local str = table.concat(keys, "\n")
   local ok, err = pcall(function() gd.sdata[TOLD_KEY] = str end)
   if not ok then log("serialise told list failed: " .. tostring(err)) end
-  pcall(visLog, true)   -- B1: метрика видимости на каждом сохранении
   for _, id in ipairs(R.save_ids()) do   -- PERSIST 2026-11-13: запасная копия (загрузка sdata в игре вернула пусто)
     local okf, f = pcall(io.open, "C:/KenshiModMap/state/" .. id .. ".rumors", "w")
     if okf and f then pcall(function() f:write(str) end); f:close() end
   end
 end))
 R.loadHandler = Events.on("PlayerInterface::loadFromSerialise", guarded("load", function(_, gd)
-  resetWorld(); R.lastHours = nil
+  R.told, R.townLastHour, R.lastHours, R.heard = {}, {}, nil, {}
   local ok, v = pcall(function() return gd.sdata[TOLD_KEY] end)
   local how = "index"
   if not (ok and type(v) == "string" and v ~= "") then
@@ -1303,7 +794,7 @@ R.test = function(text)
 end
 R.status = function()
   local n = 0
-  for _ in pairs(toldIndex()) do n = n + 1 end
+  for _ in pairs(R.told) do n = n + 1 end
   return string.format("events=%d told=%d towns=%d map_places=%d map_squads=%d map_off=%s", #R.order, n, (function() local k = 0 for _ in pairs(TOWNS) do k = k + 1 end return k end)(),
     R.map.places, R.map.squads, tostring(R.map.off == true))
 end
@@ -1311,6 +802,4 @@ R.CFG = CFG
 
 R.news = { townXZ = townXZ, eventXZ = eventXZ, delay = newsDelay, heralds = scanHeralds }
 R.mapfn = { hint = mapHint, expire = mapExpire, find = findPlace, outlaw = findOutlaw }   -- R2: офлайн-тест
-R.fn = { tellable = tellable, compose = compose, small = smallLines, told = toldIndex, journal = journalFlush, vislog = visLog }   -- B1: офлайн-тест
-log("loaded v1: chronicle=" .. CFG.CHRONICLE_PATH .. " news_speed=" .. CFG.NEWS_SPEED .. " max_days=" .. CFG.NEWS_MAX_DAYS .. " lang=" .. CFG.LANG .. " map=" .. tostring(CFG.MAP.ON) .. " map_places_day=" .. CFG.MAP.MAX_PLACES_DAY ..
-  " town_window_h=" .. CFG.TOWN_COOLDOWN_HOURS .. " per_town=" .. CFG.MAX_PER_TOWN .. " journal=" .. tostring(CFG.JOURNAL_ON) .. " smalltalk=" .. tostring(CFG.SMALLTALK_ON))
+log("loaded v0: chronicle=" .. CFG.CHRONICLE_PATH .. " news_speed=" .. CFG.NEWS_SPEED .. " max_days=" .. CFG.NEWS_MAX_DAYS .. " lang=" .. CFG.LANG .. " map=" .. tostring(CFG.MAP.ON) .. " map_places_day=" .. CFG.MAP.MAX_PLACES_DAY)
