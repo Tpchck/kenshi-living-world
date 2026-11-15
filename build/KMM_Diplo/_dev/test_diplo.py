@@ -96,6 +96,7 @@ function CH(id, fid, x, z, player)
   ch.getFaction = function() return { getData = function() return { stringID = fid } end } end
   ch.getGameData = function() return { stringID = id } end
   ch.getPosition = function() return { x = ch.x, y = 0, z = ch.z } end
+  ch.getOwnerships = function() return { getMoney = function() return MONEY end } end   -- деньги — у персонажа (Character:getOwnerships)
   return ch
 end
 GW = {
@@ -105,8 +106,8 @@ GW = {
   showPlayerAMessage_withLog = function(_, t) MSGS[#MSGS + 1] = t end,
 }
 function getGameWorld() return GW end
-function getPlayerInterface() return { getAllPlayerCharacters = function() return PCS end,
-  getOwnerships = function() return { getMoney = function() return MONEY end } end } end
+function getPlayerInterface() return { getAllPlayerCharacters = function() return PCS end,   -- как в игре: у PlayerInterface нет getOwnerships
+  getOwnerships = function() error("PlayerInterface has no getOwnerships (not bound)") end } end
 -- состояние и конфиг дирижёра (как в KMM_Conductor: S.F/rel/treaties/events, CFG.params.treaties/bus/relic)
 function FRESH()
   local F = function(str, w, amb, extra) local f = { alive = true, strength = str, strength0 = str, wealth = w, wealth0 = w, ambition = amb,

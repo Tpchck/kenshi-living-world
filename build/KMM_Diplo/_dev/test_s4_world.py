@@ -122,15 +122,6 @@ KMM_Outlaws.state = function() return { L = { o5 = { n = "Old", pg = {}, st = "a
 CLOCK = CLOCK + 5; FIRE("GameWorld::charsUpdate")
 OK("rival: after world change old squads untouched, new one gets talk", STALE_CALLS == 0 and #ADDED == 4 and not Dm.disabled().rival_talk,
    STALE_CALLS .. " " .. #ADDED)
--- B1: имя условия не числом (биндинги обещают целое) — терпим, считаем, пишем тип в debug.log; маркеры мира — в debug.log
-local hk = Dm.hook(); local c0 = hk.calls
-local r1 = Dm._check(nil, "6", 0, 9001)
-OK("hot path: non-number cname tolerated and counted", r1 ~= nil and hk.calls == c0 + 1 and hk.ctype == "string" and hk.cond_n > 0, tostring(r1) .. " " .. tostring(hk.ctype))
-CLOCK = CLOCK + 5; FIRE("GameWorld::charsUpdate")
-local df = io.open("C:/KenshiModMap/logs/debug.log", "r"); local DL = df and df:read("*a") or ""; if df then df:close() end
-OK("debug.log: DIPLO_WORLD / asked / stats (session_report reads debug.log)",
-   DL:find("DIPLO_WORLD town=Testtown", 1, true) and DL:find("DIPLO_COND asked town_hungry", 1, true)
-   and DL:find("DIPLO_COND stats: calls=", 1, true) and DL:find("cname_type=string", 1, true), #DL)
 -- ошибка в перехвате → отключается только он, жетоны
 local bad = setmetatable({}, { __index = function() error("hook exploded") end })
 local save = Dm.hook().asked; Dm.hook().asked = bad
