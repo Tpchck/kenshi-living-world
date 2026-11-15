@@ -318,6 +318,20 @@ reset_state(); setevents({ ev{ type = "raid", day = 311, attacker = "C3", defend
 check(#MSGS == 1 and not R.journalOff, "ошибка chronicled — как раньше")
 rawset(_G, "KMM_Nemesis", nil)
 
+-- 9d. обороты сюжета: у всех story_* есть тексты; story_quiet без номера оборота; новый оборот (новый id) звучит снова
+for _, ty in ipairs({ "story_scramble", "story_famine", "story_twilight", "story_night", "story_forge", "story_ashes", "story_quiet" }) do
+  local s0 = R.fn.tellable({ type = ty }) and R.fn.compose({ type = ty, leader = "", town = "", att = "", def = "", text = "" }, 0, nil, nil)
+  check(type(s0) == "string" and #s0 > 10 and not s0:find("%d"), "story текст: " .. ty .. " -> " .. tostring(s0))
+end
+reset_state(); TOWNNAME = "TownA"
+setevents({ { type = "story_quiet", day = 320, cycle = 3, text = "" }, { type = "story_ashes", day = 320, cycle = 3, text = "" } })
+at(321.5); tick(); tick()
+check(#SAID == 2 and not text(1):find("3", 1, true) and not text(2):find("3", 1, true), "story_quiet/ashes сказаны, без номера оборота: " .. text(1) .. " | " .. text(2))
+setevents({ { type = "story_quiet", day = 320, cycle = 3, text = "" }, { type = "story_ashes", day = 320, cycle = 3, text = "" },
+            { type = "story_quiet", day = 330, cycle = 4, text = "" } })
+at(331.5); R.townLastHour = {}; tick()
+check(#SAID == 3 and (text(3):find("quiet", 1, true) or text(3):find("calm", 1, true)), "новый оборот — тишина снова: " .. text(3))
+
 -- 10. переопределение чисел из правил дирижёра
 R.cfgApplied = nil
 local P = C.cfg().params; local save = P.rumors

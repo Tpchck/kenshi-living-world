@@ -65,7 +65,7 @@ function pc:getCurrentTownLocation() return town end
 function npc:getCurrentTownLocation() return town end
 PCS = { pc }; CHARS = { pc, npc }
 
-local function reset_state() R.told, R.townLastHour, R.heard, R.lastHours = {}, {}, {}, nil; SAID = {} end
+local function reset_state() R.told, R.townLastHour, R.heard, R.lastHours, R.forms = {}, {}, {}, nil, {}; SAID = {} end   -- forms: годовой учёт форм — свой у каждого сценария
 local function setevents(list)
   local S = C.state(); S.events = {}
   for i, e in ipairs(list) do e.id = i; S.events[#S.events + 1] = e end

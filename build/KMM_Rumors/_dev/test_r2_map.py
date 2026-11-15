@@ -96,7 +96,7 @@ PCS = { pc }; CHARS = { pc, npc }
 local function logtext() local f = io.open("C:/KenshiModMap/logs/rumors.log", "r"); if not f then return "" end; local s = f:read("*a"); f:close(); return s end
 local function count(pat) local n = 0; for _ in logtext():gmatch(pat) do n = n + 1 end; return n end
 local function has(s) return logtext():find(s, 1, true) ~= nil end
-local function reset_state() R.told, R.townLastHour, R.heard, R.lastHours = {}, {}, {}, nil; SAID = {} end
+local function reset_state() R.told, R.townLastHour, R.heard, R.lastHours, R.forms = {}, {}, {}, nil, {}; SAID = {} end   -- forms: годовой учёт форм — свой у каждого сценария
 local function setevents(list)
   local S = C.state(); S.events = {}
   for i, e in ipairs(list) do e.id = i; S.events[#S.events + 1] = e end
