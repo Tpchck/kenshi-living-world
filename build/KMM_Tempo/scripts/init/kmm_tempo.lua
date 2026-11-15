@@ -73,13 +73,31 @@ local function append(path, line)
   return false
 end
 local function tlog(msg) append(CFG.log_path, os.date("%Y-%m-%d %H:%M:%S") .. " " .. tostring(msg)) end
-local function disable(name, why)
-  if DISABLED[name] then return end
+-- HEALTH (2026-11-15): отказ механики -> реестр ядра KMM_Gov (ключ KMM_Tempo.<имя>): пауза 1/5/30 мин и повтор.
+-- DISABLED — только навсегда: forever (запись не применилась — поле/API не то) или нет Gov (прежнее поведение).
+local function GOV() local g = rawget(_G, "KMM_Gov"); if type(g) == "table" and type(g.h_fail) == "function" then return g end end
+local function paused(name)
+  local g = GOV(); if not g then return false end
+  local ok, up = pcall(g.h_up, "KMM_Tempo." .. name)
+  return ok and up == false
+end
+local PAUSED = {}   -- имена на паузе реестра (для T.status().paused)
+local function disable(name, why, forever)
+  if DISABLED[name] or paused(name) then return end
+  local g, p = GOV(), nil
+  if g and not forever then local ok, r = pcall(g.h_fail, "KMM_Tempo." .. name, why); if ok then p = r end end
+  if type(p) == "number" then
+    PAUSED[name] = true
+    tlog("PAUSED " .. name .. " " .. p .. " s: " .. tostring(why)); klog("paused " .. name .. " " .. p .. " s: " .. tostring(why))
+    pcall(append, CFG.debug_log, os.date("%Y-%m-%d %H:%M:%S") .. " " .. TAG .. name .. " failed, retry in " .. p .. " s: " .. tostring(why))
+    return
+  end
+  if forever and g and type(g.h_off) == "function" then pcall(g.h_off, "KMM_Tempo." .. name, why, "noeffect") end
   DISABLED[name] = tostring(why)
   tlog("DISABLED " .. name .. ": " .. tostring(why)); klog("disabled " .. name .. ": " .. tostring(why))
   pcall(append, CFG.debug_log, os.date("%Y-%m-%d %H:%M:%S") .. " " .. TAG .. "disabled " .. name .. ": " .. tostring(why))
 end
-local function on(name) return CFG[name] and not DISABLED[name] end
+local function on(name) return CFG[name] and not DISABLED[name] and not paused(name) end
 local function game_hours()
   local ok, d = pcall(function() return getGameWorld():getTimeStamp_inGameHours():getTotalDays() end)
   if ok and type(d) == "number" then return d * 24 end
@@ -739,7 +757,7 @@ local function till_tick(h)
     local r = snap.list[TL.cursor]
     if r then
       local ok, err = pcall(till_one, r, day)
-      if TL.fatal then disable("till", TL.fatal); return end            -- запись денег не применилась: API не тот — выключаемся сразу
+      if TL.fatal then disable("till", TL.fatal, true); return end            -- запись денег не применилась: API не тот — выключаемся сразу
       if not ok then
         TL.errs = TL.errs + 1
         if TL.errs >= 5 and not TL.okc then disable("till", err); return end
@@ -915,7 +933,7 @@ local function restock_tick(h)
     local r = snap.list[RS.cursor]
     if r then
       local ok, err = pcall(restock_one, r, day, h)
-      if RS.fatal then disable("restock", RS.fatal); return end         -- запись метки не применилась: поле не то — выключаемся сразу
+      if RS.fatal then disable("restock", RS.fatal, true); return end         -- запись метки не применилась: поле не то — выключаемся сразу
       if not ok then
         RS.errs = RS.errs + 1; RS.last_err = tostring(err)
         if RS.errs >= 5 and not RS.okc then disable("restock", err); return end
@@ -963,7 +981,7 @@ local function summary(h)
 end
 
 local function g_tick()
-  if not CFG.enabled or DISABLED.all then pcall(restock_off, os.clock()); return end
+  if not CFG.enabled or DISABLED.all or paused("all") then pcall(restock_off, os.clock()); return end
   local now = os.clock()
   if not RT.t_start then RT.t_start = now end
   if RT.t_poll and now - RT.t_poll < CFG.poll_seconds then return end
@@ -1013,7 +1031,11 @@ local function g_tick()
 end
 
 function T.tick() local ok, err = pcall(g_tick); if not ok then disable("all", err) end end
-function T.status() return { ready = RT.ready, disabled = DISABLED, stats = RT.stats } end
+function T.status()
+  local pz = {}
+  for k in pairs(PAUSED) do if paused(k) then pz[k] = true else PAUSED[k] = nil end end
+  return { ready = RT.ready, disabled = DISABLED, paused = pz, stats = RT.stats }
+end
 function T.fatigue() local out = {}; for k, s in pairs(RT.chars) do out[k] = s.f end; return out end
 
 local function guarded(fn) return function(...) local ok, err = pcall(fn, ...); if not ok then disable("all", err) end end end
