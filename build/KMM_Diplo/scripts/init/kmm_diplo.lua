@@ -260,10 +260,20 @@ local function give_token(ch, key)
   GIVEN[#GIVEN + 1] = { pc = ch, key = key, at = os.clock() }
   stats.tokens = stats.tokens + 1
 end
+-- деньги игрока: у PlayerInterface нет getOwnerships (BindingsReference) — берём у живого персонажа игрока:
+-- Character:getOwnerships():getMoney(), затем Character:getMoney(), затем Platoon:getOwnerships() его платуна (как KMM_Nemesis.worth)
 local function player_money()
-  local m = 0
-  pcall(function() m = getPlayerInterface():getOwnerships():getMoney() or 0 end)
-  return m
+  for _, pc in ipairs(player_chars()) do
+    local okd, dead = pcall(function() return pc:isDead() end)
+    if not (okd and dead == true) then
+      for _, get in ipairs({ function() return pc:getOwnerships():getMoney() end, function() return pc:getMoney() end,
+                             function() return pc:getPlatoon().me:getOwnerships():getMoney() end }) do
+        local ok, m = pcall(get)
+        if ok and type(m) == "number" and m == m then return m end
+      end
+    end
+  end
+  return 0
 end
 
 ---------------------------------------------------------------------------------------------- S4: условия мира
@@ -1057,6 +1067,7 @@ local API = {
   ready = function() return ready end,
   _tick = function() tick() end,
   _set_data = function(d) D = d; P = d.params or P end,
+  _money = function() return player_money() end,   -- офлайн-тест: деньги игрока через персонажа
   world = function() return WV end,            -- S4: флаги условий мира (код → bool), только читать
   hook = function() return HK end,             -- S4: состояние перехвата (live, n, fail, asked)
   cond_mode = function() return cond_mode() end,
