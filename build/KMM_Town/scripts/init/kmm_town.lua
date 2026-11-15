@@ -90,15 +90,32 @@ local function dlog(msg)
   append((cfg and cfg.debug_log) or DEFAULTS.debug_log, os.date("%Y-%m-%d %H:%M:%S") .. " [KMM_Town] " .. tostring(msg))
   klog(msg)
 end
+-- HEALTH (2026-11-15): отказ шага -> реестр ядра KMM_Gov (ключ KMM_Town.<шаг>): пауза 1/5/30 мин и повтор, не «до перезапуска».
+-- DISABLED — только навсегда (нет Gov: прежнее поведение). off(nm) — шаг сейчас не работает (выключен или на паузе).
+local function HG() local g = rawget(_G, "KMM_Gov"); if type(g) == "table" and type(g.h_fail) == "function" then return g end end
+local function off(nm)
+  if DISABLED[nm] then return true end
+  local g = HG(); if not g then return false end
+  local ok, up = pcall(g.h_up, "KMM_Town." .. nm)
+  return ok and up == false
+end
+local function h_ok(nm) local g = HG(); if g then pcall(g.h_ok, "KMM_Town." .. nm) end end
+local function fail(nm, err)   -- отказ шага: пауза в реестре, без Gov — до перезапуска
+  local g, p = HG(), nil
+  if g then local ok, r = pcall(g.h_fail, "KMM_Town." .. nm, err); if ok then p = r end end
+  if type(p) == "number" then dlog(nm .. " failed, retry in " .. p .. " s: " .. tostring(err))
+  elseif not DISABLED[nm] then DISABLED[nm] = true; dlog(nm .. " disabled until restart: " .. tostring(err)) end
+end
 local function guarded(nm, fn)
   return function(...)
-    if DISABLED[nm] then return nil end
+    if off(nm) then return nil end
     local ok, r = pcall(fn, ...)
-    if not ok then DISABLED[nm] = true; dlog(nm .. " disabled until restart: " .. tostring(r)); return nil end
+    if not ok then fail(nm, r); return nil end
+    h_ok(nm)
     return r
   end
 end
-local function link_fail(nm, err) if not DISABLED[nm] then DISABLED[nm] = true; dlog(nm .. " disabled until restart: " .. tostring(err)) end end
+local function link_fail(nm, err) if not off(nm) then fail(nm, err) end end
 
 ---------------------------------------------------------------------------------------------- конфиг и данные (лениво)
 local function load_data()
@@ -130,21 +147,22 @@ local function conductor()
   return nil
 end
 local function stock()
-  if DISABLED.stock_link then return nil end
+  if off("stock_link") then return nil end
   local k = rawget(_G, "KMM_Stock")
   if type(k) == "table" and type(k.take) == "function" and type(k.level) == "function" then return k end
   return nil
 end
 local function emit(ev)
-  if DISABLED.conductor_link then return end
+  if off("conductor_link") then return end
   local c = conductor()
   if not c then return end
   local ok, err = pcall(c.emit, ev)
-  if not ok then link_fail("conductor_link", err) end
+  if not ok then link_fail("conductor_link", err) else h_ok("conductor_link") end
 end
 local function stock_level(K, t, cat)
   local ok, v = pcall(K.level, t, cat)
   if not ok then link_fail("stock_link", v); return nil end
+  h_ok("stock_link")
   return tonumber(v)
 end
 local function stock_take(K, t, cat, n)
@@ -162,7 +180,7 @@ end
 local function raw_cat(cat) return (cat == "weapons" or cat == "armor") and "metal" or cat end   -- кует из металла; прочее берёт свою категорию
 local function vis(tsid)   -- счётчики видимой работы в состоянии дирижёра (едут в его сейве); нет дирижёра — nil
   local c = conductor()
-  if not (c and type(c.town_state) == "function") or DISABLED.conductor_link then return nil end
+  if not (c and type(c.town_state) == "function") or off("conductor_link") then return nil end
   local ok, T = pcall(c.town_state)
   if not ok then link_fail("conductor_link", T); return nil end
   if type(T) ~= "table" then return nil end
@@ -172,7 +190,7 @@ local function vis(tsid)   -- счётчики видимой работы в с
 end
 local function mood_of(tsid)   -- множители работы по населению/беспорядкам/голоду города; нет дирижёра или данных - 1
   local m = { work = 1, carry = 1, buy = 1, alarm = false, pop = nil, unrest = 0, hungry = false }
-  if not cfg.mood_enabled or DISABLED.conductor_link then return m end
+  if not cfg.mood_enabled or off("conductor_link") then return m end
   local c = conductor()
   if not (c and type(c.town_mood) == "function") then return m end
   local ok, d = pcall(c.town_mood, tsid)
@@ -337,12 +355,12 @@ local function craft(tsid, sc, day)
     local isid, ity = m.item, 4
     if not isid and (m.cat == "weapons" or m.cat == "armor") and type(K.pick_item) == "function" then   -- изделие по ярусу владельца: подбирает склад
       local okp, a, b = pcall(K.pick_item, tsid, m.cat)
-      if okp then isid, ity = a, b elseif not DISABLED.stock_link then link_fail("stock_link", a) end
-      if DISABLED.stock_link then return made end
+      if okp then isid, ity = a, b elseif not off("stock_link") then link_fail("stock_link", a) end
+      if off("stock_link") then return made end
     end
     if isid then
       local lv = stock_level(K, tsid, raw_cat(m.cat))
-      if DISABLED.stock_link then return made end
+      if off("stock_link") then return made end
       if lv and lv >= cfg.min_level and stock_take(K, tsid, raw_cat(m.cat), cfg.units_per_item) >= cfg.units_per_item then
         local item = getGameWorld().theFactory:createItem(gd_item(isid, ity), nil, nil, nil, -1, nil)
         if not item then error("createItem nil for " .. isid) end
@@ -364,7 +382,7 @@ local function craft(tsid, sc, day)
         bump(tsid, "crafted")
         emit({ type = "town_craft", town_sid = tsid, town_name = DATA.towns[tsid], cat = m.cat, item = isid, n = 1, where = where,
                text = string.format("A craftsman in %s finished a batch of %s goods.", DATA.towns[tsid], m.cat) })
-      elseif lv ~= nil and not DISABLED.stock_link then   -- lv == nil: склад этот город не ведёт — молча пропускаем
+      elseif lv ~= nil and not off("stock_link") then   -- lv == nil: склад этот город не ведёт — молча пропускаем
         local key = tsid .. "|" .. m.cat
         if (day - (RT.short[key] or -1e9)) * 24 >= cfg.shortage_cooldown_hours then
           RT.short[key] = day
@@ -442,7 +460,7 @@ local function deliver(tsid, sc)
           bump(tsid, "delivered")
           if j.cat == "weapons" or j.cat == "armor" then   -- тот же предмет дошёл до лавки/каравана: изделие засчитано складу
             local K = stock()
-            if K and not DISABLED.stock_link and stock_made(K, tsid, j.cat, cfg.units_per_item) > 0 then bump(tsid, "stocked") end
+            if K and not off("stock_link") and stock_made(K, tsid, j.cat, cfg.units_per_item) > 0 then bump(tsid, "stocked") end
           end
           if j.to == "caravan" then
             RT.stats.to_caravan = RT.stats.to_caravan + 1
@@ -477,7 +495,7 @@ function U3.log(msg)
 end
 function U3.store(tsid)   -- -> записи, persist. Слот дирижёра (едет в сейве) — входы можно изымать;
   local c = conductor()      -- без него — память сессии, и записи там только о productionState (входы не трогаем)
-  if c and type(c.town_state) == "function" and not DISABLED.conductor_link then
+  if c and type(c.town_state) == "function" and not off("conductor_link") then
     local ok, T = pcall(c.town_state)
     if ok and type(T) == "table" then
       T[tsid] = T[tsid] or {}
@@ -659,7 +677,7 @@ function U3.pass(tsid, anchor, day)
   for _, cat in ipairs(order) do
     local g = groups[cat]
     local lv = stock_level(K, tsid, cat)
-    if DISABLED.stock_link then return end
+    if off("stock_link") then return end
     if lv then
       local f = math.max(0, math.min(1, (cfg.famine_hi - lv) / (cfg.famine_hi - cfg.famine_lo)))
       local target = math.floor(f * #g + 0.5)
@@ -710,15 +728,15 @@ end
 local g_famine = guarded("famine", U3.pass)
 local famine_find   -- = g_find (объявлен ниже)
 local function famine_stage(day)   -- опорный персонаж — свежий (ревью M6: Character* через тики не держим — сейв мог смениться)
-  if DISABLED.famine or U3.unavail or not rawget(_G, "lektor") then return end   -- без контейнеров U3 недоступен: и опроса нет
+  if off("famine") or U3.unavail or not rawget(_G, "lektor") then return end   -- без контейнеров U3 недоступен: и опроса нет
   local pcs = player_chars()
   if not pcs or #pcs == 0 then RT.stage = nil; return end
   local ft = famine_find and famine_find(pcs)
   if not (ft and ft[1] == RT.town) then return end
   g_famine(RT.town, ft[2], day)
-  if DISABLED.famine then   -- самоотключение: всё изъятое вернуть сразу
+  if off("famine") then   -- самоотключение: всё изъятое вернуть сразу
     pcall(U3.restore_all, "disabled")
-    U3.log("off: famine disabled until restart (reason in debug.log)")
+    U3.log("off: famine paused or disabled (reason in debug.log, KMM_Gov health KMM_Town.famine)")
   end
 end
 
@@ -731,7 +749,7 @@ local g_craft, g_haul, g_deliver = guarded("craft", craft), guarded("haul", haul
 local function reset_ready() RT.ready, RT.polls, RT.seen_clock, RT.seen_day = false, 0, nil, nil end
 local function leave_town(walked)   -- walked: игрок ушёл из города (постройки ещё загружены) — U3 откатывает; меню/загрузка — только забыть
   if next(RT.fh) then
-    if walked and not DISABLED.famine then pcall(U3.restore_all, "leave") else RT.fh = {} end
+    if walked and not off("famine") then pcall(U3.restore_all, "leave") else RT.fh = {} end
   end
   RT.town, RT.crate, RT.jobs, RT.stage, RT.sc = nil, {}, {}, nil, nil
 end
@@ -789,7 +807,7 @@ local function tick()
       RT.stage = STAGES[st + 1] and (st + 1) or nil
       if fn then
         local ok, err = pcall(fn, day)
-        if not ok then DISABLED["stage" .. st] = true; dlog("stage " .. st .. " disabled until restart: " .. tostring(err)); RT.stage = nil end
+        if not ok then fail("stage" .. st, err); RT.stage = nil end
       end
       if not RT.stage then RT.sc = nil end
     end
