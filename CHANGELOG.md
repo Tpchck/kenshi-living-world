@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-11-15
+- Core-first course: every mechanic starts from an engine reference in `docs/core/` (people, AI squads, world, economy, data, call ledger).
+- Deeds bus: kills, captures and rescues from the engine's relation callback feed rivals, town memory and bounties.
+- Nemesis: a rival is born from a beating you survive; debts for first aid and freeing prisoners.
+- Self-check module (`KMM_Probe`) runs read-only probes of engine calls at the start of every session.
+- Survival start: naked in the desert, no money, skills at 1, hungry.
+- Raids on the player's base become vanilla faction campaigns.
+
 ## 2026-11-14
 - Map cleanup mod (`KMM_Cleanup`): dead and duplicate locations, lone shops become street traders.
 - Herds on real regions from the game's biome map.
