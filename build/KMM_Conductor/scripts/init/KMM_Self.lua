@@ -19,15 +19,37 @@ local function dlog(msg)
 end
 -- on_err (Y3, override): при ошибке зовётся on_err(err), обработчик возвращает результат fn (nil = ванильное значение ядра).
 -- Без on_err (уведомления) ничего не возвращаем: false из уведомления глушит соседние обработчики.
+-- HEALTH (2026-11-15): отказ шага -> реестр ядра KMM_Gov (ключ KMM_Self.<шаг>): пауза 1/5/30 мин и повтор, не «до перезапуска».
+-- DISABLED — только навсегда (нет Gov: прежнее поведение). off(nm) — шаг сейчас не работает (выключен или на паузе).
+local function HG() local g = rawget(_G, "KMM_Gov"); if type(g) == "table" and type(g.h_fail) == "function" then return g end end
+local function off(nm)
+  if DISABLED[nm] then return true end
+  local g = HG(); if not g then return false end
+  local ok, up = pcall(g.h_up, "KMM_Self." .. nm)
+  return ok and up == false
+end
+local function h_ok(nm) local g = HG(); if g then pcall(g.h_ok, "KMM_Self." .. nm) end end
+local function h_off(nm, why, kind) DISABLED[nm] = true; local g = HG(); if g and type(g.h_off) == "function" then pcall(g.h_off, "KMM_Self." .. nm, why, kind) end end
+local function fail(nm, err)   -- отказ шага: пауза в реестре (вернёт секунды), без Gov — до перезапуска (nil)
+  local g, p = HG(), nil
+  if g then local ok, r = pcall(g.h_fail, "KMM_Self." .. nm, err); if ok then p = r end end
+  if type(p) == "number" then dlog(nm .. " failed, retry in " .. p .. " s: " .. tostring(err)); return p end
+  if not DISABLED[nm] then DISABLED[nm] = true; dlog(nm .. " disabled until restart: " .. tostring(err)) end
+  return nil
+end
+-- on_err (окно нокаута, override ядра): выключение навсегда — повторная регистрация override из тика не доказана (B3 И2/п.2)
 local function guarded(nm, fn, on_err)
   return function(...)
-    if DISABLED[nm] then return end
+    if off(nm) then return end
     local ok, res = pcall(fn, ...)
     if not ok then
-      DISABLED[nm] = true; dlog(nm .. " disabled until restart: " .. tostring(res))
-      if on_err then pcall(on_err, res) end
+      if on_err then
+        h_off(nm, res, "override"); dlog(nm .. " disabled until restart: " .. tostring(res))
+        pcall(on_err, res)
+      else fail(nm, res) end
       return nil
     end
+    if not on_err then h_ok(nm) end
     if on_err then return res end
   end
 end
@@ -59,7 +81,7 @@ local function emit_ev(ev)
   local Cn = KMM_Conductor
   if not (Cn and Cn.emit) then return end
   local ok, err = pcall(Cn.emit, ev)
-  if not ok and not DISABLED.emit then DISABLED.emit = true; dlog("emit disabled until restart: " .. tostring(err)) end
+  if not ok and not off("emit") then fail("emit", err) end
 end
 
 -- снимок загруженных NPC: KMM_Gov.snapshot(ttl); нет Gov / ошибка → собственный обход (тот же формат записей, кэш на ttl)
@@ -365,7 +387,8 @@ end
 local function ko_maint()
   if KO.n > 0 then
     if ko_p("ko_hold", true) == false then pcall(ko_reset, "off")
-    elseif DISABLED.scan or DISABLED.ko_hold then ko_shutdown("scan stopped") end
+    elseif DISABLED.scan or DISABLED.ko_hold then ko_shutdown("scan stopped")
+    elseif off("scan") then pcall(ko_reset, "scan paused") end   -- HEALTH: скан на паузе — отпустить удержанных, окно живо
   end
   if KO.hook and (KO.off or (KO.n == 0 and not KO.boot)) and Events and Events.off then   -- регистрация при загрузке (KO.boot) снимается только при выключении окна
     local id = KO.hook; KO.hook = nil
@@ -609,7 +632,7 @@ local function scan()
         acted[key] = now
         local ev = { a = g.fid, squad = key, n = g.n, down = g.down, loss = loss, x = g.x, z = g.z }
         local ko_ok = false
-        if action == "surrender" and P.surrender_mode == "knockout" and not DISABLED.knockout then   -- экспериментально: «сдались» = легли (нокаут)
+        if action == "surrender" and P.surrender_mode == "knockout" and not off("knockout") then   -- экспериментально: «сдались» = легли (нокаут)
           -- B3: ванильный MedicalSystem:knockoutForceTimer(sec) (BindingsReference «MedicalSystem», MedicalSystem.h:211) вместо записи
           -- полей knockoutTimer/unconcious: ядро само проходит коллапс и рэгдолл. B6: getMedical() вместо поля ch.medical (копия по значению).
           local okk, err = pcall(function()
@@ -621,7 +644,7 @@ local function scan()
               local okh, h = pcall(hkey, ch)
               if okh and type(h) == "string" then KO.forced[h] = now end
             end
-          else DISABLED.knockout = true; dlog("knockout disabled until restart (surrender -> runaway): " .. tostring(err)) end
+          else fail("knockout", "(surrender -> runaway) " .. tostring(err)) end
         end
         if ko_ok then
           stats.surrender = stats.surrender + 1

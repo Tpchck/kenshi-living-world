@@ -17,6 +17,7 @@
 -- Стоимость snapshot() (сборка/проверка) копится отдельно (stats()["gov:snapshot"]) и вычитается из замера Gov.run позвавшего модуля.
 -- Своих Events.on нет, на старте ничего не делает; пишет в debug.log при смене режима (<= 1 раза в 60 с на модуль)
 -- и сводку раз в report_s секунд: маркеры «[KMM_Gov] summary:» и «[KMM_Gov] modules:».
+-- HEALTH (2026-11-15): реестр здоровья механик KMM_Gov.health + h_up/h_ok/h_fail/h_off/h_guard/health_list (блок внизу файла).
 local G = rawget(_G, "KMM_Gov") or {}
 G.cfg = G.cfg or {
   frame_budget = 0.002,   -- сумма средних по всем модулям, сек
@@ -132,6 +133,8 @@ local function report(now)
   if fh then
     local ts = os.date("%Y-%m-%d %H:%M:%S")
     fh:write(ts, " [KMM_Gov] ", s1, "\n", ts, " [KMM_Gov] modules: ", (#parts > 0 and table.concat(parts, "; ") or "-"), "\n")
+    local hl = G.health_line and G.health_line()
+    if hl then fh:write(ts, " [KMM_Gov] health: ", hl, "\n") end
     fh:close()
   end
   RP.t = now; RP.b, RP.v, RP.h, RP.tb, RP.tv, RP.dr, RP.f = SN.builds, SN.vals, SN.hits, SN.t_build, SN.t_val, SN.dropped, SN.fails
@@ -340,6 +343,149 @@ function G.snapshot(ttl)
 end
 
 function G.snapshot_reset() SN.cur = nil; SN.view = nil; SN.pause_until = -1; SN.no_has = nil end
+
+---------------------------------------------------------------------------------------------- HEALTH: реестр здоровья механик (2026-11-15)
+-- Вместо «выкл до перезапуска»: отказ механики -> пауза, растущая по шагам cfg.health.steps (60, 300, 1800 с; дальше последний шаг),
+-- по её истечении одна новая попытка (state "retry"); успех -> "ok" (строка recovered). Навсегда ("off") — только h_off: доказанное
+-- отсутствие API (reason "noapi") или крэш-сторож нативного вызова (reason "crash"). Только рантайм: в сейв не пишется.
+-- Читать (самопроверка): rawget(_G, "KMM_Gov").health.mech[ключ] или KMM_Gov.health_list() — массив копий записей по ключу.
+-- Запись: key "Модуль.механика", mod, state ("ok"|"pause"|"retry"|"off"), reason ("error"|"noapi"|"crash"|nil), err (последняя ошибка),
+--   fails (отказов подряд, шаг паузы), total (отказов за сессию), oks, recovered, pause (с), retry_at / t_fail / t_ok (os.clock),
+--   at_fail / at_off (os.date), desc. Время — os.clock (как у троттлинга); G.hclock можно подменить в тестах.
+-- Лог debug.log: «[KMM_Gov] health <ключ>: fail #n -> pause Ns: <err>», «retry», «recovered after n fails», «OFF (<reason>): <why>»,
+--   и в сводке report_s: «[KMM_Gov] health: ok N, pause K [..], off M [..]» (только если есть не-ok записи).
+G.health = G.health or { v = 1, mech = {} }
+G.health.mech = G.health.mech or {}
+local function HC()
+  local c = G.cfg and G.cfg.health
+  return type(c) == "table" and c or { steps = { 60, 300, 1800 } }
+end
+if G.cfg and G.cfg.health == nil then G.cfg.health = { steps = { 60, 300, 1800 } } end
+local function hnow()
+  local f = G.hclock
+  if type(f) == "function" then local ok, v = pcall(f); if ok and type(v) == "number" then return v end end
+  return os.clock()
+end
+local function hlog(msg)
+  pcall(function()
+    local fh = io.open((G.cfg and G.cfg.debug_log) or "C:/KenshiModMap/logs/debug.log", "a")
+    if fh then fh:write(os.date("%Y-%m-%d %H:%M:%S"), " [KMM_Gov] health ", msg, "\n"); fh:close() end
+  end)
+end
+local function hrec(key)
+  local M = G.health.mech
+  local r = M[key]
+  if not r then
+    r = { key = key, mod = (tostring(key):match("^([^%.]+)")) or tostring(key), state = "ok", fails = 0, total = 0, oks = 0, recovered = 0 }
+    M[key] = r
+  end
+  return r
+end
+local function hstr(e)   -- до 300 байт, не разрывая символ UTF-8 (лог читают как utf-8)
+  local s = tostring(e)
+  if #s > 300 then s = s:sub(1, 300):gsub("[\192-\255][\128-\191]*$", "") end
+  return s
+end
+function G.h_reg(key, desc)   -- необязательно: механика видна в реестре до первого отчёта
+  local ok, r = pcall(function() local r = hrec(key); if desc then r.desc = tostring(desc) end; return r end)
+  return ok and r ~= nil
+end
+function G.h_up(key)   -- можно ли запускать сейчас; пауза истекла -> одна попытка (retry)
+  local ok, res = pcall(function()
+    local r = G.health.mech[key]
+    if not r or r.state == "ok" or r.state == "retry" then return true end
+    if r.state == "off" then return false end
+    if hnow() >= (r.retry_at or 0) then
+      r.state = "retry"
+      hlog(key .. ": retry after " .. tostring(r.pause) .. " s pause (fail #" .. r.fails .. ")")
+      return true
+    end
+    return false
+  end)
+  return (not ok) or res
+end
+function G.h_ok(key)
+  pcall(function()
+    local r = G.health.mech[key]
+    if r and r.state == "ok" then r.oks = r.oks + 1; return end
+    r = r or hrec(key)
+    r.oks = r.oks + 1
+    if r.state == "off" then return end
+    if r.state == "pause" or r.state == "retry" then
+      r.state = "ok"; r.recovered = r.recovered + 1; r.t_ok = hnow()
+      hlog(key .. ": recovered after " .. r.fails .. " fails")
+    end
+  end)
+end
+-- отказ: возвращает паузу в секундах; false — механика выключена навсегда (h_off); nil — сбой самого реестра (вызывающий решает сам)
+function G.h_fail(key, err, desc)
+  local ok, res = pcall(function()
+    local r = hrec(key)
+    if desc then r.desc = tostring(desc) end
+    r.total = r.total + 1; r.err = hstr(err); r.t_fail = hnow(); r.at_fail = os.date("%Y-%m-%d %H:%M:%S")
+    if r.state == "off" then return false end
+    local steps = HC().steps or { 60, 300, 1800 }
+    local last = steps[#steps] or 1800
+    -- долго работал после восстановления -> шаг паузы заново с первого
+    if r.state == "ok" and r.t_ok and r.t_fail - r.t_ok > last then r.fails = 0 end
+    r.fails = r.fails + 1
+    r.pause = steps[math.min(r.fails, #steps)] or last
+    r.state, r.reason = "pause", "error"
+    r.retry_at = r.t_fail + r.pause
+    hlog(key .. ": fail #" .. r.fails .. " -> pause " .. r.pause .. " s: " .. r.err)
+    return r.pause
+  end)
+  if ok then return res end
+  return nil
+end
+-- навсегда: kind "noapi" (функции нет в движке) или "crash" (крэш-сторож); иначе используйте h_fail
+function G.h_off(key, why, kind)
+  local ok = pcall(function()
+    local r = hrec(key)
+    if r.state == "off" then return end
+    r.state, r.reason, r.err = "off", (kind == "crash" and "crash" or "noapi"), hstr(why)
+    r.at_off = os.date("%Y-%m-%d %H:%M:%S"); r.t_fail = hnow()
+    hlog(key .. ": OFF (" .. r.reason .. "): " .. r.err)
+  end)
+  return ok
+end
+function G.h_get(key)
+  local ok, c = pcall(function()
+    local r = G.health.mech[key]; if not r then return nil end
+    local c = {}; for k, v in pairs(r) do c[k] = v end; return c
+  end)
+  return ok and c or nil
+end
+function G.health_list()
+  local out = {}
+  pcall(function()
+    local keys = {}
+    for k in pairs(G.health.mech) do keys[#keys + 1] = k end
+    table.sort(keys)
+    for _, k in ipairs(keys) do local c = {}; for a, b in pairs(G.health.mech[k]) do c[a] = b end; out[#out + 1] = c end
+  end)
+  return out
+end
+-- обёртка: пауза -> nil, "paused"; иначе pcall(fn, ...) и отчёт ok/fail. Возвращает ok, результат (как pcall) или nil, "paused"
+function G.h_guard(key, fn, ...)
+  if not G.h_up(key) then return nil, "paused" end
+  local res = { pcall(fn, ...) }
+  if res[1] then G.h_ok(key) else G.h_fail(key, res[2]) end
+  return unpack(res)
+end
+function G.health_line()
+  local ok, s = pcall(function()
+    local n, p, o = 0, {}, {}
+    for _, r in ipairs(G.health_list()) do
+      if r.state == "off" then o[#o + 1] = r.key .. "(" .. tostring(r.reason) .. ")"
+      elseif r.state == "pause" or r.state == "retry" then p[#p + 1] = r.key .. "(#" .. r.fails .. " " .. tostring(r.pause) .. "s)"
+      else n = n + 1 end
+    end
+    if #p == 0 and #o == 0 then return nil end
+    return string.format("ok %d, pause %d [%s], off %d [%s]", n, #p, table.concat(p, ", "), #o, table.concat(o, ", "))
+  end)
+  return ok and s or nil
+end
 
 function G.snapshot_stats()
   return { builds = SN.builds, hits = SN.hits, fails = SN.fails, skipped = SN.skipped, chars = SN.chars, last_err = SN.last_err, n = SN.cur and SN.cur.n or 0,

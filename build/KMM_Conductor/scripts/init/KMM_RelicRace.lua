@@ -37,6 +37,30 @@ local function log(msg)
 end
 local function C() return rawget(_G, "KMM_Conductor") end
 local function T() return rawget(_G, "KMM_Traces") end
+-- HEALTH (2026-11-15): отказы идут в реестр ядра KMM_Gov (ключи KMM_RelicRace.<механика>): пауза 1/5/30 мин и повтор вместо «до перезапуска».
+-- Навсегда — только нет API в движке (noapi) или крэш-сторож (crash). Без Gov — прежнее поведение (до перезапуска).
+local function HG() local g = rawget(_G, "KMM_Gov"); if type(g) == "table" and type(g.h_fail) == "function" then return g end end
+local function h_up(k) local g = HG(); if not g then return true end; local ok, r = pcall(g.h_up, k); return (not ok) or r ~= false end
+local function h_ok(k) local g = HG(); if g then pcall(g.h_ok, k) end end
+local function h_off(k, why, kind) local g = HG(); if g and type(g.h_off) == "function" then pcall(g.h_off, k, why, kind) end end
+-- отказ: t[f] = true; пауза реестра -> t[f .. "_p"] = ключ, вернёт секунды; без Gov -> nil (до перезапуска)
+local function down(t, f, key, err)
+  t[f] = true
+  local g, p = HG(), nil
+  if g then local ok, r = pcall(g.h_fail, key, err); if ok then p = r end end
+  if type(p) == "number" then t[f .. "_p"] = key; return p end
+  t[f .. "_p"] = nil
+  return nil
+end
+-- true = выключено сейчас; пауза истекла -> флаг снят (одна попытка)
+local function live(t, f)
+  if not t[f] then return false end
+  local key = t[f .. "_p"]
+  if key and h_up(key) then t[f], t[f .. "_p"] = false, nil; return false end
+  return true
+end
+local function forever(t, f, key, why, kind) t[f], t[f .. "_p"] = true, nil; h_off(key, why, kind) end
+local function why_p(p) return p and ("failed, retry in " .. p .. " s") or "disabled until restart" end
 
 local function st()   -- S.ext.relicrace, лениво; нет мира -> nil
   local c = C(); local S = c and c.state and c.state()
@@ -295,11 +319,18 @@ local function probe_call(x, fn)
   if first then pcall(os.remove, lock); L.probe[x .. "#done"] = true end
   return ok, a
 end
-local function verdict(x, ok, what)   -- маркер пробы: ok один раз за сессию; FAIL выключает разбор руин до перезапуска (не навсегда)
+local function verdict(x, ok, what)   -- маркер пробы: ok один раз за сессию; FAIL ставит разбор руин на паузу реестра (крэш-сторож — навсегда)
   local L = M.rt.loot
   if ok then
+    h_ok("KMM_RelicRace.ruinloot")
     if not L.probe[x .. "#ok"] then L.probe[x .. "#ok"] = true; log("ruinloot probe ok: " .. x .. " " .. tostring(what)) end
-  else L.off = true; log("ruinloot probe FAIL: " .. x .. " " .. tostring(what)) end
+  elseif not probe_ok(x) then
+    forever(L, "off", "KMM_RelicRace.ruinloot", "crash lock state/probe_rl_" .. x .. ".off", "crash")
+    log("ruinloot probe FAIL: " .. x .. " " .. tostring(what) .. " (crash lock: off)")
+  else
+    local p = down(L, "off", "KMM_RelicRace.ruinloot", x .. " " .. tostring(what))
+    log("ruinloot probe FAIL: " .. x .. " " .. tostring(what) .. (p and (" (paused " .. p .. " s)") or ""))
+  end
 end
 
 local function rivals(c)
@@ -328,6 +359,17 @@ local function bld_owner(b, pf)
   local f = b:getFaction(); local gd = f and (f.data or f:getData())
   local fid = gd and gd.stringID
   if pf and fid == pf then return "player" end
+  -- HEALTH/H4 (2026-11-15): правило ванили — поселение, к которому движок приписал здание (Building:getTown -> TownBase.townType,
+  -- BindingsReference/EnumsReference TownType). TOWN_RUINS — добыча руин при любой фракции здания; город/деревня/аванпост/лагерь
+  -- работорговцев/военный/тюрьма — чужая собственность. Нет поселения (или гнездо/точка интереса) — правило модели дирижёра ниже.
+  local okt, tt = pcall(function() local t = b:getTown(); return t and t.townType end)
+  if okt and type(tt) == "number" then
+    local TT = rawget(_G, "TownType")
+    local function e(n, d) local v = type(TT) == "table" and TT[n]; return type(v) == "number" and v or d end
+    if tt == e("TOWN_RUINS", 4) then return false end
+    if tt == e("TOWN_TOWN", 2) or tt == e("TOWN_VILLAGE", 3) or tt == e("TOWN_OUTPOST", 1) or tt == e("TOWN_SLAVE_CAMP", 5)
+       or tt == e("TOWN_MILITARY", 6) or tt == e("TOWN_PRISON", 7) then return true end
+  end
   -- 2026-11-15 игра: «free containers 0, owned buildings 123» — у зданий руин всегда есть фракция (бандиты/монстры/руинная).
   -- Чужая собственность — только у фракции, которая держит города в модели дирижёра; остальное — добыча руин.
   local okS, S = pcall(function() return KMM_Conductor.state() end)
@@ -602,7 +644,7 @@ function M.day_step(c, R, S, day)
 end
 
 function M.tick()
-  if M.off then return end
+  if live(M, "off") then return end
   local now = os.clock()
   if not started then started = now end
   if now - started < P.start_s or (last_chk and now - last_chk < P.check_s) then return end
@@ -615,9 +657,9 @@ function M.tick()
   local day = c.day()
   if type(day) ~= "number" then return end
   if last_day ~= math.floor(day) then last_day = math.floor(day); M.day_step(c, R, S, day) end
-  if P.loot and not M.rt.loot.off then
+  if P.loot and not live(M.rt.loot, "off") then
     local okl, el = pcall(M.loot_tick, c, R, day)
-    if not okl then M.rt.loot.off = true; log("ruinloot disabled until restart: " .. tostring(el)) end
+    if not okl then log("ruinloot " .. why_p(down(M.rt.loot, "off", "KMM_RelicRace.ruinloot", el)) .. ": " .. tostring(el)) end
   end
   for _, e in pairs(R.exp) do M.visible_exp(c, R, day, e) end
   for fid, ch in pairs(R.champ) do M.visible_champ(c, R, day, fid, ch) end
@@ -626,11 +668,11 @@ end
 M.run = function()
   local ok, err = pcall(M.tick)
   if not ok then
-    M.off = true; M.stats.errors = M.stats.errors + 1
-    log("disabled until restart: " .. tostring(err))
-  end
+    M.stats.errors = M.stats.errors + 1
+    log(why_p(down(M, "off", "KMM_RelicRace.module", err)) .. ": " .. tostring(err))
+  elseif not M.off then h_ok("KMM_RelicRace.module") end
 end
 
-local function guarded(nm, fn) return function(...) local ok, e = pcall(fn, ...); if not ok then M.off = true; log(nm .. " disabled until restart: " .. tostring(e)) end end end
+local function guarded(nm, fn) return function(...) local ok, e = pcall(fn, ...); if not ok then log(nm .. " " .. why_p(down(M, "off", "KMM_RelicRace.module", e)) .. ": " .. tostring(e)) end end end
 if Events and Events.on then Events.on("GameWorld::charsUpdate", guarded("tick", function() M.run() end)) end
 KMM_RelicRace = M

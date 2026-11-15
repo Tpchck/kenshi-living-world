@@ -59,9 +59,33 @@ function M.log(msg)
   if ok and f then f:write(os.date("%Y-%m-%d %H:%M:%S"), " ", tostring(msg), "\n"); f:close() end
   pcall(function() if KenshiLua and KenshiLua.log then KenshiLua.log(TAG .. tostring(msg)) end end)
 end
+-- HEALTH (2026-11-15): отказы идут в реестр ядра KMM_Gov (ключи KMM_Fates.<механика>): пауза 1/5/30 мин и повтор вместо «до перезапуска».
+-- Навсегда — только нет API в движке (noapi) или крэш-сторож (crash). Без Gov — прежнее поведение (до перезапуска).
+local function HG() local g = rawget(_G, "KMM_Gov"); if type(g) == "table" and type(g.h_fail) == "function" then return g end end
+local function h_up(k) local g = HG(); if not g then return true end; local ok, r = pcall(g.h_up, k); return (not ok) or r ~= false end
+local function h_ok(k) local g = HG(); if g then pcall(g.h_ok, k) end end
+local function h_off(k, why, kind) local g = HG(); if g and type(g.h_off) == "function" then pcall(g.h_off, k, why, kind) end end
+-- отказ: t[f] = true; пауза реестра -> t[f .. "_p"] = ключ, вернёт секунды; без Gov -> nil (до перезапуска)
+local function down(t, f, key, err)
+  t[f] = true
+  local g, p = HG(), nil
+  if g then local ok, r = pcall(g.h_fail, key, err); if ok then p = r end end
+  if type(p) == "number" then t[f .. "_p"] = key; return p end
+  t[f .. "_p"] = nil
+  return nil
+end
+-- true = выключено сейчас; пауза истекла -> флаг снят (одна попытка)
+local function live(t, f)
+  if not t[f] then return false end
+  local key = t[f .. "_p"]
+  if key and h_up(key) then t[f], t[f .. "_p"] = false, nil; return false end
+  return true
+end
+local function forever(t, f, key, why, kind) t[f], t[f .. "_p"] = true, nil; h_off(key, why, kind) end
+local function why_p(p) return p and ("failed, retry in " .. p .. " s") or "disabled until restart" end
 function M.fail(where, err)
-  M.off = true
-  M.log("disabled until restart in " .. where .. ": " .. tostring(err))
+  local p = down(M, "off", "KMM_Fates.module", err)
+  M.log((p and ("failed, retry in " .. p .. " s") or "disabled until restart") .. " in " .. where .. ": " .. tostring(err))
 end
 function M.cfg()
   local c = DEF
@@ -303,7 +327,7 @@ function M.bounty_add(OM, h, fid, amt)   -- публичный KMM_Outlaws.add_b
   return rawget(_G, "KMM_Outlaws").add_bounty(h, fid, amt)
 end
 function M.on_deed(ev)
-  if M.off or M.deed_off or type(ev) ~= "table" then return end
+  if live(M, "off") or live(M, "deed_off") or type(ev) ~= "table" then return end
   local cfg = M.cfg()
   if cfg.deed_bounty == false or ev.by_player or ev.to_player or not (ev.a and ev.b) or ev.a == ev.b then return end
   local C = rawget(_G, "KMM_Conductor")
@@ -357,7 +381,7 @@ end
 function M.on_deed_g(ev)   -- ошибка выключает только связку дел, не модуль и не подписку побед
   if type(ev) == "table" and ev.by_player and ev.witnessed == false then M.stat("deed_unwitnessed"); return end   -- Y1: дело игрока без свидетелей - мир о нём не знает
   local ok, err = pcall(M.on_deed, ev)
-  if not ok then M.deed_off = true; M.log("deed bounty disabled until restart: " .. tostring(err)) end
+  if not ok then M.log("deed bounty " .. why_p(down(M, "deed_off", "KMM_Fates.deed_bounty", err)) .. ": " .. tostring(err)) end
 end
 function M.bounty_day(cfg, h)   -- награда тает (как у Outlaws «на дне»)
   if not (h.b and h.b > 0 and h.bb) then return end
@@ -596,7 +620,7 @@ end
 
 -- тик -------------------------------------------------------------------------------------------------------------------
 function M.tick()
-  if M.off then return end
+  if live(M, "off") then return end
   local now = os.clock()
   local cfg0 = M.cfg()
   if cfg0.enabled == false or now - M.last < (cfg0.tick_s or 8) then return end
@@ -629,7 +653,7 @@ local function guarded()
     if G and G.run then return G.run("fates", M.tick) end
     return M.tick()
   end)
-  if not ok then M.fail("tick", err) end
+  if not ok then M.fail("tick", err) else h_ok("KMM_Fates.module") end
 end
 M.guarded = guarded
 

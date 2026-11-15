@@ -77,7 +77,34 @@ function D.log(msg)
   if ok and f then f:write(os.date("%Y-%m-%d %H:%M:%S"), " ", tostring(msg), "\n"); f:close() end
   pcall(function() if KenshiLua and KenshiLua.log then KenshiLua.log(TAG .. tostring(msg)) end end)
 end
-function D.fail(where, err) D.off = true; D.log("disabled until restart in " .. where .. ": " .. tostring(err)) end
+-- HEALTH (2026-11-15): отказы идут в реестр ядра KMM_Gov (ключи KMM_Deeds.<механика>): пауза 1/5/30 мин и повтор вместо «до перезапуска».
+-- Навсегда — только нет API в движке (noapi) или крэш-сторож (crash). Без Gov — прежнее поведение (до перезапуска).
+local function HG() local g = rawget(_G, "KMM_Gov"); if type(g) == "table" and type(g.h_fail) == "function" then return g end end
+local function h_up(k) local g = HG(); if not g then return true end; local ok, r = pcall(g.h_up, k); return (not ok) or r ~= false end
+local function h_ok(k) local g = HG(); if g then pcall(g.h_ok, k) end end
+local function h_off(k, why, kind) local g = HG(); if g and type(g.h_off) == "function" then pcall(g.h_off, k, why, kind) end end
+-- отказ: t[f] = true; пауза реестра -> t[f .. "_p"] = ключ, вернёт секунды; без Gov -> nil (до перезапуска)
+local function down(t, f, key, err)
+  t[f] = true
+  local g, p = HG(), nil
+  if g then local ok, r = pcall(g.h_fail, key, err); if ok then p = r end end
+  if type(p) == "number" then t[f .. "_p"] = key; return p end
+  t[f .. "_p"] = nil
+  return nil
+end
+-- true = выключено сейчас; пауза истекла -> флаг снят (одна попытка)
+local function live(t, f)
+  if not t[f] then return false end
+  local key = t[f .. "_p"]
+  if key and h_up(key) then t[f], t[f .. "_p"] = false, nil; return false end
+  return true
+end
+local function forever(t, f, key, why, kind) t[f], t[f .. "_p"] = true, nil; h_off(key, why, kind) end
+local function why_p(p) return p and ("failed, retry in " .. p .. " s") or "disabled until restart" end
+function D.fail(where, err)
+  local p = down(D, "off", "KMM_Deeds.module", err)
+  D.log((p and ("failed, retry in " .. p .. " s") or "disabled until restart") .. " in " .. where .. ": " .. tostring(err))
+end
 function D.cfg()
   local c = D.DEF
   local ok, p = pcall(function() return KMM_Conductor.cfg().params.deeds end)
@@ -323,13 +350,14 @@ end
 -- регистрация и тик ---------------------------------------------------------------------------------------------------------
 local function guarded(name, fn, flag)   -- сбой колбэка ядра выключает только его (флаг D[flag]); сбой тика — весь модуль
   return function(...)
-    if D.off then return end
-    if flag and D[flag] then return end
+    if live(D, "off") then return end
+    if flag and live(D, flag) then return end
     local ok, err = pcall(fn, ...)
     if not ok then
       if not flag then D.fail(name, err)
-      else D[flag] = true; D.log("hook " .. name .. " disabled until restart: " .. tostring(err)) end
-    end
+      else D.log("hook " .. name .. " " .. why_p(down(D, flag, "KMM_Deeds." .. name, err)) .. ": " .. tostring(err)) end
+    elseif flag then h_ok("KMM_Deeds." .. name)
+    elseif not D.off then h_ok("KMM_Deeds.module") end
   end
 end
 function D.hooks()   -- колбэк ядра регистрируется из первого тика (не при загрузке файла)
@@ -342,11 +370,11 @@ function D.hooks()   -- колбэк ядра регистрируется из 
   local okw, errw = pcall(function()   -- Y1: свидетель преступления (ванильный механизм розыска)
     Events.on("BountyManager::notifyCrimeWitnessed", guarded("notifyCrimeWitnessed", function(bm, fac, who, exp, cr) D.on_crime(bm, fac, who, exp, cr) end, "crime_off"))
   end)
-  if not okw then D.crime_off = true end
+  if not okw then forever(D, "crime_off", "KMM_Deeds.notifyCrimeWitnessed", "Events.on: " .. tostring(errw), "noapi") end
   D.log(okw and "witness: notifyCrimeWitnessed hook registered" or ("witness: hook registration failed: " .. tostring(errw)))
 end
 function D.tick()
-  if D.off then return end
+  if live(D, "off") then return end
   local c = D.cfg()
   D.C = c
   if c.enabled == false or os.clock() - D.last < c.tick_s then return end

@@ -26,8 +26,34 @@ local RT = {}      -- runtime: {[ключ] = os.clock последнего вы�
 local STARTED = false
 
 local function dlog(msg) pcall(function() local f = io.open(LOGP, "a"); if f then f:write(tostring(msg), "\n"); f:close() end end) end
-local function off(why) DISABLED = true; dlog("predators disabled until restart: " .. tostring(why)) end
-local function guarded(nm, fn) return function(...) if DISABLED then return end; local ok, er = pcall(fn, ...); if not ok then off(nm .. ": " .. tostring(er)) end end end
+-- HEALTH (2026-11-15): отказы идут в реестр ядра KMM_Gov (ключи KMM_Predators.module|smell|echo|squadjob|centermove): пауза 1/5/30 мин
+-- и повтор вместо «до перезапуска». Навсегда — только нет API в движке (noapi) или крэш-сторож (crash). Без Gov — прежнее поведение.
+local function HG() local g = rawget(_G, "KMM_Gov"); if type(g) == "table" and type(g.h_fail) == "function" then return g end end
+local function h_up(k) local g = HG(); if not g then return true end; local ok, r = pcall(g.h_up, k); return (not ok) or r ~= false end
+local function h_ok(k) local g = HG(); if g then pcall(g.h_ok, k) end end
+local function h_off(k, why, kind) local g = HG(); if g and type(g.h_off) == "function" then pcall(g.h_off, k, why, kind) end end
+-- отказ: t[f] = true; пауза реестра -> t[f .. "_p"] = ключ, вернёт секунды; без Gov -> nil (до перезапуска)
+local function down(t, f, key, err)
+  t[f] = true
+  local g, p = HG(), nil
+  if g then local ok, r = pcall(g.h_fail, key, err); if ok then p = r end end
+  if type(p) == "number" then t[f .. "_p"] = key; return p end
+  t[f .. "_p"] = nil
+  return nil
+end
+-- true = выключено сейчас; пауза истекла -> флаг снят (одна попытка)
+local function live(t, f)
+  if not t[f] then return false end
+  local key = t[f .. "_p"]
+  if key and h_up(key) then t[f], t[f .. "_p"] = false, nil; return false end
+  return true
+end
+local function forever(t, f, key, why, kind) t[f], t[f .. "_p"] = true, nil; h_off(key, why, kind) end
+local function wlog(what, p, err) dlog(what .. (p and (" failed, retry in " .. p .. " s: ") or " disabled until restart: ") .. tostring(err)) end
+local MOD = { off = false }
+local function is_off() DISABLED = live(MOD, "off"); return DISABLED end
+local function off(why) local p = down(MOD, "off", "KMM_Predators.module", why); DISABLED = true; wlog("predators", p, why) end
+local function guarded(nm, fn) return function(...) if is_off() then return end; local ok, er = pcall(fn, ...); if not ok then off(nm .. ": " .. tostring(er)) end end end
 
 -- крэш-сторож нативного вызова (pcall не ловит нативный краш): lock до вызова, удаляется после успеха.
 -- Lock при старте = прошлая сессия упала на этом вызове -> метод отключён навсегда (.off).
@@ -105,6 +131,27 @@ local function zone_smell(x, y, z)
   if not zs then return nil, "zone without ZoneSmell" end
   return zs
 end
+-- HEALTH: зона камеры/игрока ядра (ZoneManager:getCurrentZoneMap, BindingsReference ZoneManager) — последний запасной путь, когда
+-- getZoneMap(Vector3) у точки и у игрока дал nil (лог «smell api unavailable ... nil»: зона не найдена, а не поломка API)
+local function cur_zone_smell()
+  local zm = getGameWorld().zoneMgr:getCurrentZoneMap()
+  if not zm then return nil, "no current zone" end
+  local zs = zm.zoneSmell
+  if not zs then return nil, "current zone without ZoneSmell" end
+  return zs
+end
+-- есть ли API запаха в движке: nil = есть; строка = чего нет (тогда навсегда, noapi)
+local function smell_api_missing()
+  local ok, why = pcall(function()
+    local gw = getGameWorld()
+    local zm = gw and gw.zoneMgr
+    if not zm then return "GameWorld.zoneMgr" end
+    if type(zm.getZoneMap) ~= "function" then return "ZoneManager:getZoneMap" end
+    return nil
+  end)
+  if not ok then return nil end   -- ошибка проверки — не доказательство отсутствия
+  return why
+end
 local function zone_loaded(x, y, z)
   local ok, v = pcall(function() return getGameWorld().zoneMgr:isZoneLoadedT({ x = x, y = y, z = z }) end)
   if ok then return tostring(v) end
@@ -142,7 +189,7 @@ function M.smell_retract(ck)
 end
 -- smell(x, z, kind "blood"|"corpse", key_fid, why) -> ok, lvl0 (уровень зоны до), причина отказа
 local function smell(x, z, kind, key_fid, why)
-  if DISABLED or SM.off or CFGP.smell == false then return false, nil, "off" end
+  if is_off() or live(SM, "off") or CFGP.smell == false then return false, nil, "off" end
   local C = C_(); if not (C and C.day) then return false, nil, "no conductor" end
   local px, py, pz, pch = player_xyz()
   if not px then return false, nil, "no player" end
@@ -165,13 +212,23 @@ local function smell(x, z, kind, key_fid, why)
       x, z, okz, zs = px, pz, true, zs2
     elseif ok2 then zw = zw2 or zw end
   end
+  if not (okz and zs) then   -- HEALTH: третий путь — текущая зона ядра
+    local ok3, zs3 = pcall(cur_zone_smell)
+    if ok3 and zs3 then
+      SM.st.at_cur = (SM.st.at_cur or 0) + 1
+      if SM.zl < 6 then SM.zl = SM.zl + 1; dlog(string.format("smell zone miss at %d,%d and at the player -> source in the current zone (getCurrentZoneMap)", math.floor(x), math.floor(z))) end
+      x, z, okz, zs = px, pz, true, zs3
+    end
+  end
   if not (okz and zs) then
     local why = okz and tostring(zw) or ("error " .. tostring(zs))
     SM.st.miss = (SM.st.miss or 0) + 1
     if SM.zl < 6 then SM.zl = SM.zl + 1; dlog(string.format("smell zone miss (%s) at %d,%d loaded=%s, player zone too -> skipped (ok so far %d)", why, math.floor(x), math.floor(z), zone_loaded(x, py, z), SM.ok)) end
-    if SM.ok == 0 then
-      SM.fails = SM.fails + 1
-      if SM.fails >= 3 then SM.off = true; dlog("smell api unavailable (zoneMgr/zoneSmell): " .. why .. " -> smell off, fallbacks only") end
+    -- HEALTH: промах зоны — не отказ (зона не загружена); навсегда только если API запаха нет в движке
+    local miss = smell_api_missing()
+    if miss then
+      forever(SM, "off", "KMM_Predators.smell", "no " .. miss, "noapi")
+      dlog("smell api unavailable (" .. miss .. " missing in the engine) -> smell off, fallbacks only")
     end
     return false, nil, "no zone"
   end
@@ -179,6 +236,12 @@ local function smell(x, z, kind, key_fid, why)
   local lvl0 = level_of(zs)
   local mt = smsg(kind)
   local key = fobj(key_fid) or pch
+  local okf, hasf = pcall(function() return type(zs.addSmell) == "function" end)
+  if okf and hasf == false then
+    forever(SM, "off", "KMM_Predators.smell", "no ZoneSmell:addSmell", "noapi")
+    dlog("smell api unavailable: ZoneSmell:addSmell missing in the engine -> smell off, fallbacks only")
+    return false, lvl0, "api"
+  end
   local ok, er = probe_call("addSmell", function() zs:addSmell(mt, key, pos) end)
   if not ok and key ~= pch and pch and probe_ok("addSmell") then
     key = pch; ok, er = probe_call("addSmell", function() zs:addSmell(mt, key, pos) end)
@@ -186,11 +249,18 @@ local function smell(x, z, kind, key_fid, why)
   if not ok then
     SM.fails = SM.fails + 1
     dlog("smell addSmell failed (" .. tostring(why) .. "): " .. tostring(er or "probe off"))
-    if SM.fails >= 3 or not probe_ok("addSmell") then SM.off = true; dlog("smell api unavailable: addSmell -> smell off, fallbacks only") end
+    if not probe_ok("addSmell") then
+      forever(SM, "off", "KMM_Predators.smell", "crash lock state/probe_addSmell.off", "crash")
+      dlog("smell api unavailable: addSmell crash lock -> smell off, fallbacks only")
+    else
+      local p = down(SM, "off", "KMM_Predators.smell", er)
+      wlog("smell", p, er)
+    end
     return false, lvl0, "api"
   end
   SM.last[ck] = now; SM.n = SM.n + 1; SM.st[kind] = (SM.st[kind] or 0) + 1
   SM.ok = SM.ok + 1
+  h_ok("KMM_Predators.smell")
   if SM.ok == 1 then dlog("smell api ok: GameWorld.zoneMgr getZoneMap -> ZoneMap.zoneSmell addSmell (first source this session)") end
   if SM.src[ck] then SM.src[ck].d = C.day() else SM.src[ck] = { key = key, x = x, y = py, z = z, d = C.day(), why = why } end
   local ns, od = 0, nil
@@ -259,14 +329,14 @@ function M.on_bus(ev)
 end
 local EC   -- S1 эхо павших (ниже): счёт смертей по месту — с той же шины, независимо от запаха
 local function on_bus_g(ev)   -- ошибка выключает только свою связку (запах или эхо), не модуль
-  if DISABLED then return end
-  if EC and not EC.off then
+  if is_off() then return end
+  if EC and not live(EC, "off") then
     local oke, ee = pcall(EC.note, ev)
-    if not oke then EC.off = true; dlog("soul echo disabled until restart: " .. tostring(ee)) end
+    if not oke then wlog("soul echo", down(EC, "off", "KMM_Predators.echo", ee), ee) end
   end
-  if SM.off then return end
+  if live(SM, "off") then return end
   local ok, er = pcall(M.on_bus, ev)
-  if not ok then SM.off = true; dlog("smell link disabled until restart: " .. tostring(er)) end
+  if not ok then wlog("smell link", down(SM, "off", "KMM_Predators.smell", er), er) end
 end
 local function smell_subscribe(C)
   if SM.sub or not C.subscribe then return end
@@ -368,7 +438,7 @@ function SQ.release(r, why)
       parts[#parts + 1] = "pkg " .. src .. (okr and " ok" or " FAIL")
     else parts[#parts + 1] = "pkg unknown" end
   else parts[#parts + 1] = "no blackboard" end
-  if r.cm and not SQ.cm_off then
+  if r.cm and not live(SQ, "cm_off") then
     local leader, ai = leader_ai(pl)
     if ai then
       local cen, how
@@ -391,7 +461,7 @@ function SQ.release(r, why)
 end
 -- -> "ok" | "skip" (отряд не готов: фолбэк без отключения) | "fail" (API: наряд выключен до перезапуска), причина
 function SQ.hold(pl, x, z, hours, fid, C)
-  if SQ.off or CFGP.squadjob == false then return "skip", "off" end
+  if live(SQ, "off") or CFGP.squadjob == false then return "skip", "off" end
   local okl, leader = pcall(function() return pl:getSquadLeader() end)
   if not (okl and leader and type(leader) ~= "string") then return "skip", "no leader" end
   local okb, board = pcall(function() return pl:getBlackboard() end)
@@ -422,19 +492,28 @@ function SQ.hold(pl, x, z, hours, fid, C)
   end)
   local n1 = ok and sq_jobs(board) or nil
   if not ok or (n0 and n1 and n1 <= n0) then
-    SQ.off = true; SQ.st.fail = SQ.st.fail + 1
+    SQ.st.fail = SQ.st.fail + 1
     local why = ok and string.format("jobs on board %d -> %d (not registered)", n0, n1) or tostring(er or "probe off (state/probe_squadJob.off)")
-    dlog(string.format("squadjob FAIL key=%s fid=%s: %s -> squad jobs off until restart, addOrder fallback", key, tostring(fid), why))
+    local p
+    if not probe_ok("squadJob") then forever(SQ, "off", "KMM_Predators.squadjob", why, "crash") else p = down(SQ, "off", "KMM_Predators.squadjob", why) end
+    dlog(string.format("squadjob FAIL key=%s fid=%s: %s -> squad jobs %s, addOrder fallback", key, tostring(fid), why,
+         p and ("paused " .. p .. " s") or "off until restart"))
     return "fail", why
   end
+  h_ok("KMM_Predators.squadjob")
   local cm = "off"
-  if not SQ.cm_off then
+  if not live(SQ, "cm_off") then
     if ai then
       local okc, ec = probe_call("centerMove", function()
         ai:setCenterOfMovement({ x = x, y = y, z = z })
         ai:setManuveringFreedomLevel(enum("AI.AIManuverabilityOrders", "STAY_CLOSE", 1))
       end)
-      if okc then cm = "ok" else SQ.cm_off = true; cm = "FAIL " .. tostring(ec or "probe off") end
+      if okc then cm = "ok"; h_ok("KMM_Predators.centermove")
+      else
+        if probe_ok("centerMove") then down(SQ, "cm_off", "KMM_Predators.centermove", ec)
+        else forever(SQ, "cm_off", "KMM_Predators.centermove", "crash lock state/probe_centerMove.off", "crash") end
+        cm = "FAIL " .. tostring(ec or "probe off")
+      end
     else cm = "no ai" end
   end
   local r = { k = key, f = fid, p = psid, t0 = d, till = d + hours / 24, x = x, z = z, cm = (cm == "ok") or nil, cx = cx, cy = cy, cz = cz, mv = mv }
@@ -465,7 +544,9 @@ local function sq_verify(r, pl, d)
     local n = order_squad({ pl }, r.x, r.z, "hold"); SQ.st.fb = SQ.st.fb + 1
     dlog(string.format("squadjob drift key=%s fid=%s: leader %.0f from the point after %.1fh -> addOrder HOLD_POSITION %d/1", r.k, tostring(r.f), dd, hh, n))
     if SQ.st.drift >= 2 and SQ.st.work == 0 and not SQ.off then
-      SQ.off = true; dlog("squadjob: jobs register but do not hold (" .. SQ.st.drift .. " drifts, 0 ok) -> squad jobs off until restart, addOrder")
+      local why = "jobs register but do not hold (" .. SQ.st.drift .. " drifts, 0 ok)"
+      local p = down(SQ, "off", "KMM_Predators.squadjob", why)
+      dlog("squadjob: " .. why .. " -> squad jobs " .. (p and ("paused " .. p .. " s") or "off until restart") .. ", addOrder")
     end
   end
 end
@@ -511,7 +592,11 @@ function M.ambush_hold(pls, x, z, hours, fid)
   local fb, why = {}, nil
   for _, pl in ipairs(pls or {}) do
     local okc, res, w = pcall(SQ.hold, pl, x, z, hours, fid, C)
-    if not okc then SQ.off = true; SQ.st.fail = SQ.st.fail + 1; dlog("squadjob FAIL (error): " .. tostring(res) .. " -> squad jobs off until restart"); res, w = "fail", res end
+    if not okc then
+      SQ.st.fail = SQ.st.fail + 1
+      local p = down(SQ, "off", "KMM_Predators.squadjob", res)
+      dlog("squadjob FAIL (error): " .. tostring(res) .. " -> squad jobs " .. (p and ("paused " .. p .. " s") or "off until restart")); res, w = "fail", res
+    end
     if res ~= "ok" then fb[#fb + 1] = pl; why = w; if res == "skip" then SQ.st.skip = SQ.st.skip + 1 end end
   end
   if #fb > 0 then
@@ -834,7 +919,7 @@ function EC.check(C, now)   -- фракция и шаблоны в игре? tru
     return true
   end
   if EC.chk >= 3 then
-    EC.off = true
+    forever(EC, "off", "KMM_Predators.echo", tostring(CFGP.echo_fid) .. " not in game data", "noapi")
     dlog(string.format("soul echo off: %s not in game (faction %s, templates %d) - no echoes", tostring(CFGP.echo_fid), f and "ok" or "missing", #sids))
     return false
   end
@@ -872,7 +957,7 @@ function EC.spawned(pls, site)
        math.floor(site.x), math.floor(site.z), site.n, n, #(pls or {}), where))
 end
 function EC.step(C, e)
-  if EC.off or CFGP.echo == false then return end
+  if live(EC, "off") or CFGP.echo == false then return end
   local T = T_(); if not (T and T.request) then return end
   local s, d, now = EC.slot(e), C.day(), os.clock()
   -- старые смерти и отметки мест
@@ -931,7 +1016,7 @@ M.ec = EC
 
 local LASTT = -1000
 local function tick()
-  if DISABLED then return end
+  if is_off() then return end
   local now = os.clock()
   if now - LASTT < CFGP.tick_gap then return end
   LASTT = now
@@ -948,17 +1033,20 @@ local function tick()
     elseif di < e.last then e.last = di end
     smell_subscribe(C)
     if next(SM.src) then smell_age(C) end
-    if not SQ.tick_off then   -- Y4: снять истёкшие наряды и наряды из сейва; ошибка выключает только наряды (записи остаются в сейве)
+    if not live(SQ, "tick_off") then   -- Y4: снять истёкшие наряды и наряды из сейва; ошибка ставит на паузу только наряды (записи остаются в сейве)
       local oks, es = pcall(SQ.tick, C)
-      if not oks then SQ.off = true; SQ.tick_off = true; dlog("squadjob FAIL (tick): " .. tostring(es) .. " -> squad jobs off until restart") end
+      if not oks then
+        local p = down(SQ, "tick_off", "KMM_Predators.squadjob_tick", es); down(SQ, "off", "KMM_Predators.squadjob", es)
+        dlog("squadjob FAIL (tick): " .. tostring(es) .. " -> squad jobs " .. (p and ("paused " .. p .. " s") or "off until restart"))
+      end
     end
     visible(C, e)
-    if not EC.off then   -- S1: ошибка выключает только эхо
+    if not live(EC, "off") then   -- S1: ошибка ставит на паузу только эхо
       local oke, ee = pcall(EC.step, C, e)
-      if not oke then EC.off = true; dlog("soul echo disabled until restart: " .. tostring(ee)) end
+      if not oke then wlog("soul echo", down(EC, "off", "KMM_Predators.echo", ee), ee) end
     end
   end)
-  if not ok then off(err) end
+  if not ok then off(err) else h_ok("KMM_Predators.module") end
 end
 M.tick = tick
 M.step = function(day) local C = C_(); local e = C and slot(C); if e then step_day(C, e, day or C.day()) end end   -- офлайн-тест

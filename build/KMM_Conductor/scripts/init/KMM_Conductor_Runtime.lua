@@ -7,10 +7,14 @@ local KC = rawget(_G, "KMM_C_INT")   -- общее пространство им
 if type(KC) ~= "table" then KC = { _SEG = {} }; _G.KMM_C_INT = KC end
 if KC._booted then KC._SEG, KC._booted = {}, false end   -- повторная загрузка скриптов: собрать части заново
 KC._SEG.Runtime = function()
----------------------------------------------------------------------------------------------- STORY (акты мира «Сумерки реликтов»)
--- Раз в игровой день: метрики мира -> текущий акт (переходы из params.story) -> параметры дирижёра = база x множители акта.
--- Без новых сущностей, без спавнов, без записи world state. Состояние акта - S.story (в сейве дирижёра). Ошибка: база восстанавливается,
--- блок отключается до перезапуска. Слух: событие story_<акт> в журнал (KMM_Rumors берёт шаблон по типу). Описание: docs\STORY.md
+---------------------------------------------------------------------------------------------- STORY (обороты мира «Сумерки реликтов»)
+-- Раз в игровой день: метрики мира -> фаза оборота (params.story.cycle) -> параметры дирижёра = база x множители фазы.
+-- Оборот ~5 лет (4..6, от семени и пережитого): Тишина -> Охота -> кризис (Голод | Сумерки | Ночь, до двух подряд) ->
+-- [Пепел после тяжёлого] -> Кузня -> снова Тишина. Финала нет. Ветви и сроки - от давления мира относительно его собственной
+-- нормы (скользящие средние S.story.e), а не от абсолютных порогов: износ реликтов и рост знания не застревают через обороты;
+-- прошлые обороты (S.story.cycles) гасят повтор того же кризиса и меняют восстановление. Без спавнов, без записи world state.
+-- Состояние - S.story (сейв дирижёра): каждое поле читается с умолчанием (старые сейвы, будущие правки). Ошибка: база
+-- восстанавливается, блок отключается до перезапуска. Слух: событие story_<фаза> в журнал (KMM_Rumors). Описание: docs\STORY.md
 KC.STORY = { off = false, leaves = nil, paths = nil }
 function KC.story_cfg() local c = KC.P and KC.P.story; if type(c) == "table" and c.enabled ~= false and type(c.acts) == "table" and c.acts[c.start or ""] then return c end end
 function KC.story_index(c)   -- листья params (числа) по путям из mods всех актов; база снимается один раз, до любых изменений
@@ -41,45 +45,234 @@ function KC.story_index(c)   -- листья params (числа) по путям
   KC.STORY.leaves, KC.STORY.paths = leaves, paths
 end
 function KC.story_restore() if KC.STORY.leaves then for _, l in ipairs(KC.STORY.leaves) do l[1][l[2]] = l[3] end end end
+function KC.story_num(v, d) v = tonumber(v); if v == nil or v ~= v or v == math.huge or v == -math.huge then return d end; return v end
+function KC.story_tab(v) if type(v) == "table" then return v end; return {} end
+function KC.story_nrm(x, r)   -- линейно 0..1 на отрезке r = {a, b}, сверху до 1.5
+  r = KC.story_tab(r)
+  local a, b = KC.story_num(r[1], 0), KC.story_num(r[2], 1)
+  return KC.clamp((x - a) / math.max(1e-6, b - a), 0, 1.5)
+end
+function KC.story_Y(c) return KC.story_tab(c.cycle) end
+function KC.story_crises(c) local l = KC.story_Y(c).crises; if type(l) == "table" then return l end; return { "famine", "twilight", "night" } end
+function KC.story_is_crisis(c, act) for _, a in ipairs(KC.story_crises(c)) do if a == act then return true end end; return false end
 function KC.story_metrics(c)
-  local m = { year = (KC.DAY or 0) / 365, ore_crisis = KC.S.ore_crisis ~= nil, ore_fracture = KC.S.ore_crisis ~= nil and KC.S.ore_crisis.phase == "fracture",
-              ore_stress = KC.S.ore_stress or 0, forged = KC.S.forge ~= nil }
-  local kn, kc, cs, cc, heat = 0, 0, 0, 0, 0
+  local oc = type(KC.S.ore_crisis) == "table" and KC.S.ore_crisis or nil
+  local m = { year = (KC.DAY or 0) / 365, ore_crisis = KC.S.ore_crisis ~= nil, ore_fracture = oc ~= nil and oc.phase == "fracture",
+              ore_stress = KC.story_num(KC.S.ore_stress, 0), ore_since = oc and KC.story_num(oc.since, nil) or nil,
+              forged = KC.S.forge ~= nil, forge_day = type(KC.S.forge) == "table" and KC.story_num(KC.S.forge.day, nil) or nil }
+  local kn, kc, cs, cc, heat, ns, cis = 0, 0, 0, 0, 0, 0, 0
   for _, fid in ipairs(KC.sorted_keys(KC.S.F)) do
     local f = KC.S.F[fid]
     if f.alive and not f.player then
       if f.know and KC.ntowns(f) > 0 then kn = kn + f.know; kc = kc + 1 end
       if f.relic then cs = cs + (f.components or 100); cc = cc + 1 end
+      if f.crisis ~= nil then ns = ns + 1; cis = cis + KC.story_num(f.crisis, 0) end
       if (f.crisis or 0) >= (c.heat_ci or 2) then heat = heat + 1 end
     end
   end
-  m.know = kc > 0 and kn / kc or 0; m.comp = cc > 0 and cs / cc or 100; m.heat = heat
+  m.know = kc > 0 and kn / kc or 0; m.comp = cc > 0 and cs / cc or 100; m.heat = heat; m.hs = heat / math.max(1, ns); m.ci = cis / math.max(1, ns)
   return m
 end
-function KC.story_cond(cd, m, st, shift)
-  local hk = st.hk or 1
-  if cd.y_ge and not (m.year >= cd.y_ge + shift) then return false end
-  if cd.y_lt and not (m.year < cd.y_lt + shift) then return false end
-  if cd.act_days_ge and not (KC.DAY - st.since >= cd.act_days_ge) then return false end
-  if cd.ore_crisis ~= nil and cd.ore_crisis ~= m.ore_crisis then return false end
-  if cd.ore_fracture ~= nil and cd.ore_fracture ~= m.ore_fracture then return false end
-  if cd.forged ~= nil and cd.forged ~= m.forged then return false end
-  if cd.ore_stress_ge and not (m.ore_stress >= cd.ore_stress_ge) then return false end
-  if cd.know_ge and not (m.know >= cd.know_ge) then return false end
-  if cd.comp_le and not (m.comp <= cd.comp_le) then return false end
-  if cd.heat_ge and not (m.heat >= cd.heat_ge * hk) then return false end
-  if cd.heat_le and not (m.heat <= cd.heat_le * hk) then return false end
-  return true
+function KC.story_press(c, st, m)   -- давление ветвей (0..~2) относительно нормы мира: e = скользящие средние за ~1.5 года
+  local PR, e, cur = KC.story_tab(KC.story_Y(c).pressure), KC.story_tab(st.e), KC.story_tab(st.cur)
+  local F, T, N = KC.story_tab(PR.famine), KC.story_tab(PR.twilight), KC.story_tab(PR.night)
+  local p = {}
+  p.famine = KC.story_nrm(m.ore_stress / math.max(KC.story_num(F.floor, 0.5), KC.story_num(e.stress, m.ore_stress)), F.ratio or { 1, 1.5 })
+  if m.ore_since and m.ore_since >= KC.story_num(cur.d0, math.huge) and (KC.DAY or 0) - m.ore_since <= KC.story_num(F.fresh_days, 365) then
+    p.famine = p.famine + KC.story_num(F.fresh, 0.8)   -- рудный кризис начался в этом обороте
+  end
+  p.twilight = KC.story_nrm(KC.story_num(e.comp, m.comp) - m.comp, T.lag or { 1.5, 7 })   -- износ быстрее обычного (отставание от средней)
+  local hk = KC.story_num(st.hk, 1)   -- рост «жара» над средней: число держав в кризисе и средний индекс кризиса (непрерывный)
+  p.night = math.max(KC.story_nrm((m.heat - KC.story_num(e.heat, m.heat)) / hk, N.rise or { 0, 2.5 }),
+                     KC.story_nrm((KC.story_num(m.ci, 0) - KC.story_num(e.ci, m.ci or 0)) / hk, N.ci_rise or { 0.05, 0.4 }))
+            + KC.story_num(N.share_w, 0.3) * KC.story_nrm(m.hs or 0, N.share or { 0.15, 0.45 })
+  return p
+end
+function KC.story_ema(c, st, m, day)
+  local e = KC.story_tab(st.e); st.e = e
+  local dt = math.max(0, day - KC.story_num(e.d, day))
+  local a = 1 - math.exp(-dt / math.max(30, KC.story_num(KC.story_Y(c).ema_days, 540)))
+  local x = { stress = m.ore_stress, comp = m.comp, heat = m.heat, know = m.know, ci = KC.story_num(m.ci, 0) }
+  for _, k in ipairs({ "stress", "comp", "heat", "know", "ci" }) do
+    local v = KC.story_num(e[k], nil)
+    if v == nil then e[k] = x[k] else e[k] = v + (x[k] - v) * a end
+  end
+  e.d = day
+end
+function KC.story_maxp(c, p) local mx = 0; for _, a in ipairs(KC.story_crises(c)) do mx = math.max(mx, KC.story_num(p[a], 0)) end; return mx end
+function KC.story_pick(c, st, p, excl)   -- ветвь кризиса: давление x шум оборота x штраф за тот же кризис в прошлых оборотах
+  local Y, cur, cyc = KC.story_Y(c), KC.story_tab(st.cur), KC.story_tab(st.cycles)
+  local rep = KC.story_tab(Y.repeat_penalty)
+  local best, bs
+  for _, br in ipairs(KC.story_crises(c)) do
+    local skip = false
+    for _, a in ipairs(KC.story_tab(excl)) do if a == br then skip = true end end
+    if not skip and c.acts[br] then
+      local s = (KC.story_num(p[br], 0) + KC.story_num(Y.pick_base, 0.2)) * KC.story_num(KC.story_tab(cur.nz)[br], 1)   -- base: при равном затишье решают шум и история
+      for i = 1, #rep do
+        local r = cyc[#cyc + 1 - i]
+        if type(r) == "table" then for _, a in ipairs(KC.story_tab(r.cr)) do if a == br then s = s * KC.story_num(rep[i], 1); break end end end
+      end
+      if not bs or s > bs then best, bs = br, s end
+    end
+  end
+  return best, bs or 0
+end
+function KC.story_len(c, st)   -- длина оборота в днях: years x семя кампании + след прошлого кризиса + разброс, в пределах min..max
+  local Y = KC.story_Y(c)
+  local y = KC.story_num(Y.years, 5) * KC.story_num(st.ck, 1)
+  local cyc = KC.story_tab(st.cycles)
+  local last = cyc[#cyc]
+  if type(last) == "table" then for _, a in ipairs(KC.story_tab(last.cr)) do y = y + KC.story_num(KC.story_tab(KC.story_tab(Y.after)[a]).years, 0) end end
+  local j = KC.story_num(Y.jitter_years, 0.35)
+  y = y + KC.rnd(-j, j)
+  return math.floor(365 * KC.clamp(y, KC.story_num(Y.min_years, 4), KC.story_num(Y.max_years, 6)))
+end
+function KC.story_mods(cur, t)   -- t = { share = {фаза = x}, k = {фаза = x} }: доли срока и сила фаз этого оборота
+  t = KC.story_tab(t)
+  for _, key in ipairs({ "share", "k" }) do
+    local dst = (key == "share") and cur.sh or cur.kx
+    for _, a in ipairs(KC.sorted_keys(KC.story_tab(t[key]))) do dst[a] = KC.story_num(dst[a], 1) * KC.story_num(t[key][a], 1) end
+  end
+end
+function KC.story_target(c, st, act, day)   -- плановый срок фазы (дни) от длины оборота
+  local Y, cur = KC.story_Y(c), st.cur
+  local sh, L, mind = KC.story_tab(Y.share), KC.story_num(cur.L, 1825), KC.story_num(c.min_act_days, 120)
+  if KC.story_is_crisis(c, act) then
+    return math.max(mind, KC.story_num(sh.crisis, 0.34) * L * KC.story_num(cur.sh.crisis, 1) - KC.story_num(cur.cd, 0))
+  end
+  local nom = KC.story_num(sh[act], 0.15) * L * KC.story_num(cur.sh[act], 1)
+  if act == (Y.recover or "forge") then return KC.clamp(KC.story_num(cur.d0, day) + L - day, 0.5 * nom, 2 * nom) end
+  return math.max(mind, nom)
+end
+function KC.story_newcycle(c, st, day, m)
+  local Y, old = KC.story_Y(c), st.cur
+  if type(old) == "table" then
+    st.cycles[#st.cycles + 1] = { n = KC.story_num(old.n, 0), d0 = math.floor(KC.story_num(old.d0, day)), len = math.floor(day - KC.story_num(old.d0, day)),
+                                  path = KC.story_tab(old.path), cr = KC.story_tab(old.cr) }
+    while #st.cycles > KC.story_num(Y.keep_cycles, 12) do table.remove(st.cycles, 1) end
+  end
+  local cur = { n = (type(old) == "table" and KC.story_num(old.n, 0) or 0) + 1, d0 = day, path = {}, cr = {}, kx = {}, sh = {}, nz = {}, cd = 0,
+                b = { stress = m.ore_stress, comp = m.comp, heat = m.heat, know = m.know } }
+  st.cur = cur
+  cur.L = KC.story_len(c, st)
+  local nz = KC.story_tab(Y.noise)
+  for _, br in ipairs(KC.story_crises(c)) do cur.nz[br] = KC.rnd(KC.story_num(nz[1], 1), KC.story_num(nz[2], 1)) end
+  local last = st.cycles[#st.cycles]   -- восстановление после пережитого: доли и сила фаз нового оборота
+  if cur.n == 1 then KC.story_mods(cur, Y.first) end   -- первый оборот кампании: длиннее начальная тишина
+  if type(last) == "table" then for _, a in ipairs(KC.story_tab(last.cr)) do KC.story_mods(cur, KC.story_tab(KC.story_tab(Y.after)[a]).next) end end
+  return cur
+end
+function KC.story_migrate(c, st, day)   -- состояние без оборота (сейв до циклов): оборот восстанавливается из hist
+  local i0 = nil
+  local n = 0
+  for i, h in ipairs(st.hist) do if type(h) == "table" and h[1] == c.start then i0 = i; n = n + 1 end end
+  local cur = { n = math.max(1, n), d0 = KC.story_num(st.since, day), path = {}, cr = {}, kx = {}, sh = {}, nz = {}, cd = 0 }
+  if i0 then
+    cur.d0 = KC.story_num(st.hist[i0][2], cur.d0)
+    for i = i0, #st.hist do
+      local a = type(st.hist[i]) == "table" and st.hist[i][1]
+      if a then cur.path[#cur.path + 1] = a; if KC.story_is_crisis(c, a) then cur.cr[#cur.cr + 1] = a end end
+    end
+  else cur.path[1] = st.act end
+  if cur.n == 1 then KC.story_mods(cur, KC.story_Y(c).first) end   -- первый оборот кампании: длиннее начальная тишина
+  return cur
+end
+function KC.story_state(c, day)   -- S.story: создать или дочитать (любое поле может отсутствовать или быть старого вида)
+  local st = KC.S.story
+  if type(st) ~= "table" then st = {}; KC.S.story = st end
+  local Y, Z = KC.story_Y(c), KC.story_tab(c.seed)
+  if type(st.hist) ~= "table" then st.hist = {} end
+  if type(st.k) ~= "table" then st.k = {} end
+  if type(st.cycles) ~= "table" then st.cycles = {} end
+  local sk = KC.story_tab(Z.k)
+  for _, id in ipairs(KC.sorted_keys(c.acts)) do if KC.story_num(st.k[id], nil) == nil then st.k[id] = KC.rnd(KC.story_num(sk[1], 1), KC.story_num(sk[2], 1)) end end
+  if KC.story_num(st.hk, nil) == nil then local h = KC.story_tab(Z.heat_k); st.hk = KC.rnd(KC.story_num(h[1], 1), KC.story_num(h[2], 1)) end
+  if KC.story_num(st.ck, nil) == nil then local q = KC.story_tab(Y.campaign_k); st.ck = KC.rnd(KC.story_num(q[1], 1), KC.story_num(q[2], 1)) end
+  local n0 = nil
+  if type(st.act) ~= "string" or not c.acts[st.act] then   -- нет фазы или её убрали из params: новый оборот с начала
+    n0 = type(st.cur) == "table" and KC.story_num(st.cur.n, nil) or nil
+    st.act, st.since, st.pt, st.cur = c.start, day, nil, nil
+    st.hist[#st.hist + 1] = { c.start, math.floor(day) }
+  end
+  st.since = KC.story_num(st.since, day)
+  if type(st.cur) ~= "table" then
+    st.cur = KC.story_migrate(c, st, day)
+    if n0 then st.cur.n = n0 + 1 end
+  end
+  local cur = st.cur
+  cur.n, cur.d0, cur.cd = KC.story_num(cur.n, 1), KC.story_num(cur.d0, st.since), KC.story_num(cur.cd, 0)
+  for _, k in ipairs({ "path", "cr", "kx", "sh", "nz" }) do if type(cur[k]) ~= "table" then cur[k] = {} end end
+  if KC.story_num(cur.L, nil) == nil then cur.L = KC.story_len(c, st) end
+  if KC.story_num(st.pt, nil) == nil then st.pt = KC.story_target(c, st, st.act, st.since) end
+  return st
+end
+function KC.story_next(c, st, m, p, day)   -- следующая фаза или nil
+  local Y, cur, act = KC.story_Y(c), st.cur, st.act
+  local ad, el, pt = day - st.since, day - cur.d0, KC.story_num(st.pt, 365)
+  if ad < KC.story_num(c.min_act_days, 120) then return nil end
+  local rise, after, rec = Y.rise or "scramble", Y.after_act or "ashes", Y.recover or "forge"
+  local Lmin, Lmax = 365 * KC.story_num(Y.min_years, 4), 365 * KC.story_num(Y.max_years, 6)
+  if act == rec then   -- Кузня закрывает оборот: не раньше min_years, не позже max_years
+    local FW = KC.story_tab(Y.recover_window)
+    if el < Lmin then return nil end
+    if el >= Lmax or ad >= KC.story_num(FW[2], 1.2) * pt then return c.start end
+    if ad >= KC.story_num(FW[1], 0.85) * pt and KC.story_maxp(c, p) <= KC.story_num(Y.calm, 0.6) then return c.start end
+    return nil
+  end
+  local fnom = KC.story_num(KC.story_tab(Y.share)[rec], 0.17) * KC.story_num(cur.L, 1825)
+  if el >= Lmax - KC.story_num(Y.recover_min, 0.5) * fnom and c.acts[rec] then return rec end   -- поздно: сразу к Кузне
+  local W = KC.story_tab(Y.window)
+  if ad < KC.story_num(W[1], 0.6) * pt then return nil end
+  local hi = ad >= KC.story_num(W[2], 1.5) * pt
+  if act == c.start then
+    if hi or (m.forge_day and m.forge_day >= cur.d0) or KC.story_maxp(c, p) >= KC.story_num(Y.restless, 0.6) then return rise end
+  elseif act == rise then
+    local best, bs = KC.story_pick(c, st, p, nil)
+    if best and (hi or bs >= KC.story_num(Y.pick, 1)) then return best end
+    if hi then return rec end
+  elseif KC.story_is_crisis(c, act) then
+    local bud = KC.story_num(KC.story_tab(Y.share).crisis, 0.34) * KC.story_num(cur.L, 1825) * KC.story_num(cur.sh.crisis, 1)
+    if #cur.cr < KC.story_num(Y.max_crises, 2) and cur.cd + ad < KC.story_num(Y.esc_frac, 0.55) * bud then
+      local best, bs = KC.story_pick(c, st, p, cur.cr)
+      if best and bs >= KC.story_num(Y.escalate, 1.1) then return best end
+    end
+    if hi or KC.story_num(p[act], 0) <= KC.story_num(Y.recede, 0.6) * KC.story_num(st.pe, 0) then
+      local H, heavy = KC.story_tab(Y.heavy), #cur.cr >= KC.story_num(KC.story_tab(Y.heavy).count_ge, 2)
+      for _, a in ipairs(KC.story_tab(H.crises)) do for _, b in ipairs(cur.cr) do if a == b then heavy = true end end end
+      if KC.story_maxp(c, p) >= KC.story_num(H.p_ge, 1.1) then heavy = true end
+      return (heavy and c.acts[after]) and after or rec
+    end
+  elseif act == after then
+    if hi or KC.story_maxp(c, p) <= KC.story_num(Y.calm, 0.6) then return rec end
+  elseif hi then return rec end   -- фаза без роли (новая в будущих params): по сроку к Кузне
+  return nil
+end
+function KC.story_enter(c, st, to, day, m, p)
+  local Y, cur = KC.story_Y(c), st.cur
+  if KC.story_is_crisis(c, st.act) then cur.cd = cur.cd + (day - st.since) end
+  if to == c.start then cur = KC.story_newcycle(c, st, day, m) end
+  if KC.story_is_crisis(c, to) then cur.cr[#cur.cr + 1] = to; KC.story_mods(cur, KC.story_tab(KC.story_tab(Y.after)[to]).same) end
+  cur.path[#cur.path + 1] = to
+  st.act, st.since, st.pe = to, day, KC.story_num(p[to], 0)
+  if to == (Y.recover or "forge") then   -- знание, набранное за оборот, делает Кузню сильнее
+    local g = (m.know - KC.story_num(KC.story_tab(cur.b).know, m.know)) * KC.story_num(Y.know_k, 0.5)
+    cur.kx[to] = KC.story_num(cur.kx[to], 1) * (1 + KC.clamp(g, 0, KC.story_num(Y.know_cap, 0.3)))
+  end
+  st.pt = KC.story_target(c, st, to, day)
+  st.hist[#st.hist + 1] = { to, math.floor(day) }
+  while #st.hist > KC.story_num(Y.keep_hist, 60) do table.remove(st.hist, 1) end
+  KC.emit({ type = "story_" .. to, cycle = cur.n, text = string.format("The age turns: %s.", tostring(c.acts[to].name)) })
 end
 function KC.story_apply(c, st)
   KC.story_restore()
-  local kk = (st.k and st.k[st.act]) or 1
+  local kk = KC.clamp(KC.story_num(st.k[st.act], 1) * KC.story_num(KC.story_tab(KC.story_tab(st.cur).kx)[st.act], 1), 0.4, 1.6)
   for _, m in ipairs(c.acts[st.act].mods or {}) do
     local op, v = m[2], tonumber(m[3])
     if v then
       for _, l in ipairs(KC.STORY.paths[m[1]] or {}) do
         local b = l[1][l[2]]
-        if op == "mul" then l[1][l[2]] = b * (1 + (v - 1) * kk)
+        if op == "mul" then l[1][l[2]] = math.max(0, b * (1 + (v - 1) * kk))
         elseif op == "add" then l[1][l[2]] = b + v * kk
         elseif op == "set" then l[1][l[2]] = v end
       end
@@ -90,36 +283,17 @@ function KC.story_tick_impl(day)
   local c = KC.story_cfg()
   if not c then return end
   if not KC.STORY.leaves then KC.story_index(c) end
-  local st = KC.S.story
-  if type(st) ~= "table" or not c.acts[st.act or ""] then
-    local Z = c.seed or {}
-    local sy, sk = Z.shift_years or { -0.6, 0.8 }, Z.k or { 0.75, 1.3 }
-    st = { act = c.start, since = day, shift = KC.rnd(sy[1], sy[2]), hk = KC.rnd((Z.heat_k or { 0.8, 1.25 })[1], (Z.heat_k or { 0.8, 1.25 })[2]), k = {}, hist = { { c.start, math.floor(day) } } }
-    for _, id in ipairs(KC.sorted_keys(c.acts)) do st.k[id] = KC.rnd(sk[1], sk[2]) end
-    KC.S.story = st
-  end
-  if math.floor(day) <= (st.last or -1) then return end
+  local st = KC.story_state(c, day)
+  if math.floor(day) <= KC.story_num(st.last, -1) then return end
   st.last = math.floor(day)
   local m = KC.story_metrics(c)
-  st.m = { y = math.floor(m.year * 100) / 100, stress = math.floor(m.ore_stress * 100) / 100, know = math.floor(m.know * 100) / 100, comp = math.floor(m.comp), heat = m.heat }
-  if day - st.since >= (c.min_act_days or 120) then
-    local list = c.acts[st.act].next or {}
-    if c.final and c.final.to ~= st.act and c.acts[c.final.to] then
-      list = {}; for _, t in ipairs(c.acts[st.act].next or {}) do list[#list + 1] = t end
-      list[#list + 1] = { to = c.final.to, any = { { y_ge = c.final.y_ge } } }
-    end
-    for _, tr in ipairs(list) do
-      local hit, seen = false, false
-      for _, h in ipairs(st.hist) do if h[1] == tr.to then seen = true end end   -- акты не повторяются
-      for _, cd in ipairs(seen and {} or tr.any or {}) do if KC.story_cond(cd, m, st, st.shift or 0) then hit = true; break end end
-      if hit and c.acts[tr.to] then
-        st.act, st.since = tr.to, day
-        st.hist[#st.hist + 1] = { tr.to, math.floor(day) }
-        KC.emit({ type = "story_" .. tr.to, text = string.format("The age turns: %s.", tostring(c.acts[tr.to].name)) })
-        break
-      end
-    end
-  end
+  local p = KC.story_press(c, st, m)
+  KC.story_ema(c, st, m, day)
+  local r2 = function(x) return math.floor(KC.story_num(x, 0) * 100 + 0.5) / 100 end
+  st.m = { y = r2(m.year), stress = r2(m.ore_stress), know = r2(m.know), comp = math.floor(m.comp), heat = m.heat,
+           pf = r2(p.famine), pt = r2(p.twilight), pn = r2(p.night), ci = r2(m.ci), cyc = st.cur.n }
+  local to = KC.story_next(c, st, m, p, day)
+  if to and c.acts[to] then KC.story_enter(c, st, to, day, m, p) end
   KC.story_apply(c, st)   -- каждый день заново от базы: идемпотентно, переживает загрузку сейва
 end
 KC.STORY.tick = function(day)

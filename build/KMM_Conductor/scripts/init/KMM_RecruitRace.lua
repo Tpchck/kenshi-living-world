@@ -56,9 +56,40 @@ function M.log(msg)
     if fh then fh:write(os.date("%Y-%m-%d %H:%M:%S"), " [KMM_RecruitRace] ", tostring(msg), "\n"); fh:close() end
   end)
 end
-function M.disable(why, forever)
-  M.off = true
-  M.log("disabled" .. (forever and " forever" or " until restart") .. ": " .. tostring(why))
+-- HEALTH (2026-11-15): отказы идут в реестр ядра KMM_Gov (ключи KMM_RecruitRace.<механика>): пауза 1/5/30 мин и повтор вместо «до перезапуска».
+-- Навсегда — только нет API в движке (noapi) или крэш-сторож (crash). Без Gov — прежнее поведение (до перезапуска).
+local function HG() local g = rawget(_G, "KMM_Gov"); if type(g) == "table" and type(g.h_fail) == "function" then return g end end
+local function h_up(k) local g = HG(); if not g then return true end; local ok, r = pcall(g.h_up, k); return (not ok) or r ~= false end
+local function h_ok(k) local g = HG(); if g then pcall(g.h_ok, k) end end
+local function h_off(k, why, kind) local g = HG(); if g and type(g.h_off) == "function" then pcall(g.h_off, k, why, kind) end end
+-- отказ: t[f] = true; пауза реестра -> t[f .. "_p"] = ключ, вернёт секунды; без Gov -> nil (до перезапуска)
+local function down(t, f, key, err)
+  t[f] = true
+  local g, p = HG(), nil
+  if g then local ok, r = pcall(g.h_fail, key, err); if ok then p = r end end
+  if type(p) == "number" then t[f .. "_p"] = key; return p end
+  t[f .. "_p"] = nil
+  return nil
+end
+-- true = выключено сейчас; пауза истекла -> флаг снят (одна попытка)
+local function live(t, f)
+  if not t[f] then return false end
+  local key = t[f .. "_p"]
+  if key and h_up(key) then t[f], t[f .. "_p"] = false, nil; return false end
+  return true
+end
+local function forever_(t, f, key, why, kind) t[f], t[f .. "_p"] = true, nil; h_off(key, why, kind) end
+local function why_p(p) return p and ("failed, retry in " .. p .. " s") or "disabled until restart" end
+-- forever: файл state/recruitrace.off (рычаг ядра setFaction упал — защита сейва от полупереноса рекрута, решение прежних ревью);
+-- в реестре это off с reason "unsafe". Иначе — пауза реестра и повтор.
+function M.disable(why, forever, offfile)
+  if forever or offfile then
+    forever_(M, "off", "KMM_RecruitRace.module", why, forever and "unsafe" or "offfile")
+    M.log("disabled" .. (forever and " forever" or " (off file)") .. ": " .. tostring(why))
+  else
+    local p = down(M, "off", "KMM_RecruitRace.module", why)
+    M.log((p and ("failed, retry in " .. p .. " s") or "disabled until restart") .. ": " .. tostring(why))
+  end
   if forever then pcall(function() local fh = io.open(M.P.sdir .. "recruitrace.off", "w"); if fh then fh:write(tostring(why)); fh:close() end end) end
 end
 local function guarded(nm, fn) return function(...) local ok, e = pcall(fn, ...); if not ok then M.disable(nm .. ": " .. tostring(e), false) end end end
@@ -452,6 +483,8 @@ M.SAY_MERC = "The guild walks with me now. Try your luck."
 M.SAY_SOLD = "Sold again. New chains, same weight."
 
 function M.lever_ok(nm)
+  local pk = M.X.off_p and M.X.off_p[nm]
+  if M.X.off[nm] and pk and h_up(pk) then M.X.off[nm], M.X.off_p[nm] = nil, nil end   -- HEALTH: пауза рычага истекла
   if M.X.off[nm] then return false end
   if M.X.ff[nm] == nil then
     M.X.ff[nm] = false
@@ -462,7 +495,14 @@ function M.lever_ok(nm)
 end
 function M.lever_off(nm, why, forever)
   M.X.off[nm] = why
-  M.log("lever " .. nm .. " disabled" .. (forever and " forever" or " until restart") .. ": " .. tostring(why))
+  M.X.off_p = M.X.off_p or {}
+  local key, p = "KMM_RecruitRace.lever_" .. nm, nil
+  if forever then M.X.off_p[nm] = nil; h_off(key, why, "unsafe")
+  else
+    local t = {}; p = down(t, "x", key, why)
+    M.X.off_p[nm] = p and key or nil
+  end
+  M.log("lever " .. nm .. (p and (" failed, retry in " .. p .. " s") or (" disabled" .. (forever and " forever" or " until restart"))) .. ": " .. tostring(why))
   if forever then pcall(function() local fh = io.open(M.P.sdir .. "recruitrace_" .. nm .. ".off", "w"); if fh then fh:write(tostring(why)); fh:close() end end) end
 end
 function M.probe_kill(x, why)   -- одна ветка вызова больше не пробуется (рычаг может жить другой веткой)
@@ -765,12 +805,12 @@ function M.on_chained(ch, on)   -- оковы сняты взломом игро
 end
 
 function M.tick()
-  if M.off then return end
+  if live(M, "off") then return end
   local now = os.clock()
   M.t0 = M.t0 or now
   if now - M.t0 < M.P.start_s or now - (M.last or -1e9) < M.P.tick_s then return end
   M.last = now
-  if M.off_file() then return M.disable("state/recruitrace.off present", false) end
+  if M.off_file() then return M.disable("state/recruitrace.off present", false, true) end
   local c = M.C()
   if not (c and c.state and c.emit and c.day) then return end
   local R, S = M.st(c)
@@ -841,7 +881,8 @@ function M.run()
     if G and G.run then return G.run("recruitrace", M.tick) end
     return M.tick()
   end)
-  if not ok then M.stats.errors = M.stats.errors + 1; M.disable("tick: " .. tostring(err), false) end
+  if not ok then M.stats.errors = M.stats.errors + 1; M.disable("tick: " .. tostring(err), false)
+  elseif not M.off then h_ok("KMM_RecruitRace.module") end
 end
 function M._reset() M.off, M.rt, M.S, M.R, M.PROBE, M.tname, M.t0, M.last, M.hooked, M.X = false, {}, nil, nil, {}, {}, nil, nil, nil, { off = {}, ff = {} } end
 

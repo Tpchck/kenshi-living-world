@@ -19,9 +19,33 @@ local H = { disabled = false, D = nil, last = -1e9, stats = { days = 0, ev = 0, 
 local function log(msg)
   pcall(function() local f = io.open(LOG, "a"); if f then f:write(os.date("%Y-%m-%d %H:%M:%S"), " [KMM_Herds] ", tostring(msg), "\n"); f:close() end end)
 end
+-- HEALTH (2026-11-15): отказы идут в реестр ядра KMM_Gov (ключи KMM_Herds.<механика>): пауза 1/5/30 мин и повтор вместо «до перезапуска».
+-- Навсегда — только нет API в движке (noapi) или крэш-сторож (crash). Без Gov — прежнее поведение (до перезапуска).
+local function HG() local g = rawget(_G, "KMM_Gov"); if type(g) == "table" and type(g.h_fail) == "function" then return g end end
+local function h_up(k) local g = HG(); if not g then return true end; local ok, r = pcall(g.h_up, k); return (not ok) or r ~= false end
+local function h_ok(k) local g = HG(); if g then pcall(g.h_ok, k) end end
+local function h_off(k, why, kind) local g = HG(); if g and type(g.h_off) == "function" then pcall(g.h_off, k, why, kind) end end
+-- отказ: t[f] = true; пауза реестра -> t[f .. "_p"] = ключ, вернёт секунды; без Gov -> nil (до перезапуска)
+local function down(t, f, key, err)
+  t[f] = true
+  local g, p = HG(), nil
+  if g then local ok, r = pcall(g.h_fail, key, err); if ok then p = r end end
+  if type(p) == "number" then t[f .. "_p"] = key; return p end
+  t[f .. "_p"] = nil
+  return nil
+end
+-- true = выключено сейчас; пауза истекла -> флаг снят (одна попытка)
+local function live(t, f)
+  if not t[f] then return false end
+  local key = t[f .. "_p"]
+  if key and h_up(key) then t[f], t[f .. "_p"] = false, nil; return false end
+  return true
+end
+local function forever(t, f, key, why, kind) t[f], t[f .. "_p"] = true, nil; h_off(key, why, kind) end
+local function why_p(p) return p and ("failed, retry in " .. p .. " s") or "disabled until restart" end
 local function fail(where, err)
-  H.disabled = true
-  log("disabled until restart (" .. where .. "): " .. tostring(err))
+  local p = down(H, "disabled", "KMM_Herds.module", err)
+  log((p and ("failed, retry in " .. p .. " s") or "disabled until restart") .. " (" .. where .. "): " .. tostring(err))
 end
 
 H.P_DEF = { cycle_days = 30, stay = 0.4, pred_delay = 4, hunt_delay = 9, near_r = 45000, max_live = 3, live_days = 1.0, cooldown_days = 3.0,
@@ -303,7 +327,7 @@ end
 
 ---------------------------------------------------------------------------------------------- тик
 H.tick = function()
-  if H.disabled then return end
+  if live(H, "disabled") then return end
   local now = os.clock()
   local P = (H.D and H.D.P) or H.P_DEF
   if now - H.last < P.tick_sec then return end
@@ -319,12 +343,12 @@ H.tick = function()
     if e.day ~= math.floor(day) then H.daily(day) end
     H.materialize(day)
   end)
-  if not ok then fail("tick", err) end
+  if not ok then fail("tick", err) else h_ok("KMM_Herds.module") end
 end
 
 local function guarded(nm, fn)
   return function(...)
-    if H.disabled then return end
+    if live(H, "disabled") then return end
     local ok, err = pcall(fn, ...)
     if not ok then fail(nm, err) end
   end

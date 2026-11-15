@@ -159,6 +159,7 @@ N.DEF = {
   worth_squad = 2,         -- живых своих не больше
   worth_skill = 25,        -- средний общий навык (CharStats:getOverallSkillLevel_0_100) не выше; не читается — не учитывается
   worth_ttl_s = 10,        -- кэш оценки богатства, реальные секунды
+  worth_item_guess = 500,  -- цена вещи, если ни getValueAll, ни getValueSingle не читаются (маркер «worth: item value fallback=guess»)
   chron_type_day = 2,      -- ХРОНИКА: событий одного «ближнего» типа в журнал за игровой день не больше
   generic_rx = "bandit|thug|guard|soldier|hungry|starving|dust|raider|ninja|samurai|recruit|mercenary|slaver|hunter|warrior|cannibal|" ..
                "fogman|skeleton|drifter|outlaw|scout|sentry|paladin|knight|trader|worker|peasant|farmer|vagrant|thief|pirate|nomad|" ..
@@ -331,13 +332,16 @@ function N.chronicle(C, S)
   local last = E[#E] and E[#E].id or 0
   if not X.chron_id then X.chron_id = last; return end   -- первая загрузка: историю не вываливаем
   N.chron_q = N.chron_q or {}
+  if #N.chron_q == 0 or not N.chron_qi then N.chron_qi = {} end   -- id строк очереди (для KMM_Nemesis.chronicled)
   if last > X.chron_id then
     for i = math.max(1, #E - 200), #E do
       local ev = E[i]
       if ev.id and ev.id > X.chron_id and (N.CHRON_EV[ev.type] or N.CHRON_NEAR[ev.type]) and ev.text and ev.text ~= "" and N.chron_known(C, ev)
          and N.chron_room(ev, cfg) then
         N.chron_q[#N.chron_q + 1] = string.format("Day %d. %s", math.floor(ev.day or 0), ev.text)
-        if #N.chron_q > cfg.chron_queue then table.remove(N.chron_q, 1) end
+        N.chron_qi = N.chron_qi or {}
+        N.chron_qi[#N.chron_q] = ev.id
+        if #N.chron_q > cfg.chron_queue then table.remove(N.chron_q, 1); table.remove(N.chron_qi, 1) end
       end
     end
     X.chron_id = last
@@ -348,6 +352,17 @@ function N.chronicle(C, S)
   local ok, ms = pcall(function() return MS and MS.getSingleton() end)
   if not (ok and ms) then return end   -- окно ещё не создано (ранняя загрузка) — строки ждут в очереди
   local line = table.remove(N.chron_q, 1)
+  local lid = N.chron_qi and table.remove(N.chron_qi, 1) or nil
+  if lid then   -- то же событие Rumors уже записал в журнал (KMM_Rumors.journaled): второй строки не пишем; нет функции — как раньше
+    local R = rawget(_G, "KMM_Rumors")
+    local okj, jd = false, false
+    if type(R) == "table" and type(R.journaled) == "function" then okj, jd = pcall(R.journaled, lid) end
+    if okj and jd == true then
+      N.chron_sent = N.chron_sent or {}; N.chron_sent[lid] = true
+      N.log("chronicle: skip event " .. tostring(lid) .. " - already in the journal via Rumors")
+      return
+    end
+  end
   local col = rawget(_G, "MessageLogColor")
   local okc, c2 = pcall(function() return col and col.ML_SYSTEM end)
   local oka, ea = pcall(function() ms:addMessage(cfg.chron_owner, line, (okc and c2) or 2) end)
@@ -355,6 +370,11 @@ function N.chronicle(C, S)
   -- B8: маркер вызова движка (успех — один раз за сессию, ошибка — всегда) для session_report
   if not oka then N.chron_off = true; N.log("chronicle disabled until restart: addMessage FAILED: " .. tostring(ea)); return end
   if not N.chron_ok_logged then N.chron_ok_logged = true; N.log("chronicle: addMessage ok (ManagementScreen message log)") end
+  if lid then   -- KMM_Nemesis.chronicled(id): это событие уже во вкладке сообщений (Rumors не пишет его второй раз)
+    N.chron_sent = N.chron_sent or {}; N.chron_sn = (N.chron_sn or 0) + 1
+    if N.chron_sn > 400 then N.chron_sent, N.chron_sn = {}, 1 end
+    N.chron_sent[lid] = true
+  end
   N.log("chronicle: " .. line)
 end
 N.MOURN = { leader_killed = { "We buried %s not long ago. Show some respect.", "%s is dead. Nobody knows who is in charge now.", "They killed %s. The whole town is holding its breath." },
@@ -410,15 +430,18 @@ function N.log(msg)
   pcall(function() if KenshiLua and KenshiLua.log then KenshiLua.log(TAG .. tostring(msg)) end end)
 end
 function N.fail(where, err) N.off = true; N.log("disabled until restart in " .. where .. ": " .. tostring(err)) end
+-- Конфиг: params.nemesis поверх N.DEF без копирования (~150 ключей на вызов было бы дорого каждый кадр). Прокси на ту же таблицу params:
+-- чтение ключа — params, иначе N.DEF; запись в прокси уходит в params. Правка params.nemesis.X видна сразу; новая таблица params — новый прокси.
+N.CFG_MT = {}
 function N.cfg()
-  local c = N.DEF
   local ok, p = pcall(function() return KMM_Conductor.cfg().params.nemesis end)
-  if ok and type(p) == "table" then
-    c = {}
-    for k, v in pairs(N.DEF) do c[k] = v end
-    for k, v in pairs(p) do c[k] = v end
-  end
-  return c
+  if not (ok and type(p) == "table") then return N.DEF end
+  if N.cfg_p == p and N.cfg_px then return N.cfg_px end
+  local D = N.DEF
+  N.cfg_p = p
+  N.cfg_px = setmetatable({}, { __index = function(_, k) local v = p[k]; if v == nil then v = D[k] end; return v end,
+                                 __newindex = function(_, k, v) p[k] = v end })
+  return N.cfg_px
 end
 function N.pick(t) return t[math.random(1, #t)] end
 function N.state(S)
@@ -532,8 +555,6 @@ function N.worth(C)
   local now = os.clock()
   if N.wc and now >= N.wc.t and now - N.wc.t < cfg.worth_ttl_s then return N.wc end
   local W = { t = now, gear = 0, bounty = 0, n = 0 }
-  local okm, m = pcall(function() return getPlayerInterface():getOwnerships():getMoney() end)
-  if okm and type(m) == "number" then W.money = m end
   local sk, nsk = 0, 0
   pcall(function()
     for _, pc in pairs(getPlayerInterface():getAllPlayerCharacters()) do
@@ -541,18 +562,26 @@ function N.worth(C)
       local okd, dead = pcall(function() return pc:isDead() end)
       if not (okd and dead == true) then
         W.n = W.n + 1
-        if W.money == nil then
-          local okp, pm = pcall(function() return pc:getPlatoon().me:getOwnerships():getMoney() end)
-          if okp and type(pm) == "number" then W.money = pm end
+        if W.money == nil then   -- деньги общие на фракцию игрока: Character:getMoney (BindingsReference), запас — Ownerships платуна
+          local okc, cm = pcall(function() return pc:getMoney() end)
+          if okc and type(cm) == "number" then W.money = cm
+          else
+            local okp, pm = pcall(function() return pc:getPlatoon().me:getOwnerships():getMoney() end)
+            if okp and type(pm) == "number" then W.money = pm end
+          end
         end
         local okb, b = pcall(function() return pc.crimes:getTotalBounty() end)
         if okb and type(b) == "number" and b > 0 then W.bounty = W.bounty + b end
         local oks, v = pcall(function() return pc:getStats():getOverallSkillLevel_0_100() end)
         if oks and type(v) == "number" then sk, nsk = sk + v, nsk + 1 end
-        pcall(function()
+        pcall(function()   -- цена: getValueAll (InventoryItemBase), запас getValueSingle x quantity, не читается — worth_item_guess за вещь
           for _, it in ipairs(pc:getInventory():getAllItems()) do
             local okv, iv = pcall(function() return it:getValueAll(false) end)
-            if okv and type(iv) == "number" and iv > 0 then W.gear = W.gear + iv end
+            if not (okv and type(iv) == "number") then
+              okv, iv = pcall(function() return it:getValueSingle(false) * (tonumber(it.quantity) or 1) end)
+              if okv and type(iv) == "number" then W.fb = "single" else iv = cfg.worth_item_guess; W.fb = "guess" end
+            end
+            if type(iv) == "number" and iv > 0 then W.gear = W.gear + iv end
           end
         end)
       end
@@ -562,8 +591,13 @@ function N.worth(C)
   W.title = C and N.title(C) or nil
   W.poor = W.money ~= nil and W.n >= 1 and W.money <= cfg.worth_money and W.gear <= cfg.worth_gear and W.bounty <= cfg.worth_bounty
            and W.n <= cfg.worth_squad and not W.title and (W.skill == nil or W.skill <= cfg.worth_skill)
-  W.txt = string.format("money=%s gear=%d bounty=%d n=%d skill=%s title=%s poor=%s", tostring(W.money), math.floor(W.gear), math.floor(W.bounty), W.n,
+  W.txt = string.format("money=%s gear=%d%s bounty=%d n=%d skill=%s title=%s poor=%s", tostring(W.money), math.floor(W.gear),
+                        W.fb and ("(" .. W.fb .. ")") or "", math.floor(W.bounty), W.n,
                         W.skill and string.format("%.0f", W.skill) or "?", tostring(W.title or "-"), tostring(W.poor))
+  if W.fb and N.worth_fb ~= W.fb then   -- маркер: цена вещей посчитана запасным путём (раз на способ за сессию)
+    N.worth_fb = W.fb
+    N.log("worth: item value fallback=" .. W.fb .. (W.fb == "guess" and (" (getValueAll/getValueSingle unavailable, " .. cfg.worth_item_guess .. " per item)") or " (getValueAll unavailable)"))
+  end
   N.wc = W
   return W
 end
@@ -1170,6 +1204,8 @@ function N.player_lost(pc, px, pz, now)
   local cfg = N.cfg()
   local okw, w = pcall(function() local hd = pc.lastGuyWhoDefeatedMe; return hd and hd:getCharacter() end)
   if not okw then w = nil end
+  local okh, hko = pcall(function() return pc:getMedical():isHungerKO() end)   -- лёг от голода — поле хранит старого победителя
+  if okh and hko == true then w = nil end
   local wn, wf, wx, wz
   if w then
     local okv, ok2 = pcall(function()
@@ -1182,6 +1218,15 @@ function N.player_lost(pc, px, pz, now)
       return wn ~= nil and wf ~= nil
     end)
     if not (okv and ok2) then wn, wf = nil, nil end
+    if wn then   -- свежесть: победитель сейчас в бою (isInCombatMode) или только что дрался с игроком (кандидат с ударом не старше linger_s)
+      local okc, inc = pcall(function() return w:isInCombatMode(true, true) end)
+      local c0 = N.cand[tostring(wf) .. "|" .. tostring(wn)]
+      local fought = c0 and c0.hits > 0 and now - (c0.last or c0.first) <= cfg.linger_s
+      if not (fought or (okc and inc == true)) then
+        N.log(string.format("beaten: stale winner %s (not fighting, no fresh hits) - no rival", tostring(wn)))
+        wn, wf = nil, nil
+      end
+    end
   end
   local pname = "?"; pcall(function() pname = tostring(pc:getName()) end)
   for _, c in pairs(N.cand) do
@@ -2092,9 +2137,19 @@ KMM_Nemesis = {
   ambient_off = function() return N.amb_off end,
   trait_of = function(nm) return N.trait_of(nm) end,
   greet_off = function() return N.greet_off end,
+  -- событие хроники дирижёра (ev.id) уже записано хроникой Nemesis во вкладку сообщений (addMessage ok): true; второе значение — стоит в очереди
+  chronicled = function(id)
+    if id == nil then return false, false end
+    local sent = N.chron_sent ~= nil and N.chron_sent[id] == true
+    local q = false
+    for _, x in ipairs(N.chron_qi or {}) do if x == id then q = true end end
+    return sent, q
+  end,
   -- greet за ТЕКУЩИЙ визит в город tsid: said = житель уже сказал (реплика в очереди/сказана); pending = игрок в этом городе и greet ещё может
   -- сказать (ждёт greet_delay_s или жителя рядом). Визит кончается, когда игрок вышел из города. Для KMM_Rumors: не говорить вторым подряд.
-  greet_said = function(tsid) return N.greet_visit ~= nil and N.greet_visit == tsid, (N.greet_town == tsid and N.greet_at ~= nil and N.greet_visit == nil) end,
+  greet_said = function(tsid)   -- Nemesis выключен (ошибка/greet_off) — greet не скажет: false, false (иначе «ждём» навсегда глушит мелочь Rumors)
+    if N.off or N.greet_off then return false, false end
+    return N.greet_visit ~= nil and N.greet_visit == tsid, (N.greet_town == tsid and N.greet_at ~= nil and N.greet_visit == nil) end,
   chronicle_off = function() return N.chron_off end,
   on_trade = function(a, b) return N.on_trade(a, b) end,
   player_title = function() local C = rawget(_G, "KMM_Conductor"); return C and N.title(C) end,

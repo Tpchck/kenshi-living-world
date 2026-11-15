@@ -55,6 +55,7 @@ local CA = {}
 KC.L2.camp = CA
 CA.PROBE = {}
 function CA.CP() return KC.P.campaign or {} end
+function CA.off_now() return KC.GL.h_live(CA, "OFF") end   -- HEALTH: пауза реестра истекла -> снова в работе
 function CA.log(msg) pcall(function() _G.KMM_Conductor.guard_log("campaign: " .. tostring(msg)) end) end
 function CA.probe_ok(x)
   local st = CA.PROBE[x]
@@ -205,7 +206,7 @@ end
 function CA.base_try(fid, why)   -- true = кампания запущена (событие даст привязка или фолбэк); false = звать старый путь base_raid
   local G, PB = CA.CP(), KC.P.player_base or {}
   local B, pf = KC.S.base, KC.CFG.player_faction
-  if PB.native == false or G.enabled == false or CA.OFF or CA.PROBE["triggerCampaign"] == false then return false, "native off" end
+  if PB.native == false or G.enabled == false or CA.off_now() or CA.PROBE["triggerCampaign"] == false then return false, "native off" end
   if not (B and B.x and pf and KC.S.F[fid]) or KC.S.bcamp then return false, "busy or no base" end
   local ok, res, rw = pcall(function()
     if not CA.near_player(B.x, B.z, G.load_radius or 15000) then return false, "player far" end   -- незагруженная зона: поведение очереди не проверено
@@ -310,7 +311,7 @@ end
 -- решение дирижёра: фракция fid бьёт по o (a = "raid" | "capture"); true = родная кампания запущена
 function CA.try(fid, o, a, town)
   local G = CA.CP()
-  if G.enabled == false or CA.OFF or not KC.S.F[fid] or not KC.S.F[o] then return false end
+  if G.enabled == false or CA.off_now() or not KC.S.F[fid] or not KC.S.F[o] then return false end
   if CA.PROBE["triggerCampaign"] == false then return false end
   if (KC.S.F[fid].camp_day or -1000) == KC.DAY then return false end   -- ore_campaign сегодня уже запускал
   if KC.treaty_between(fid, o) or not CA.limits_ok(fid) then return false end
@@ -355,13 +356,18 @@ function CA.try(fid, o, a, town)
     end
     return true
   end)
-  if not ok then CA.OFF = true; CA.log("native campaigns disabled until restart: " .. tostring(res)); return false end
+  if not ok then
+    local p = KC.GL.h_down(CA, "OFF", "KMM_Conductor.campaign", res)
+    CA.log(p and ("native campaigns failed, retry in " .. p .. " s: " .. tostring(res)) or ("native campaigns disabled until restart: " .. tostring(res)))
+    return false
+  end
+  KC.GL.h_ok("KMM_Conductor.campaign")
   return res and true or false
 end
 -- родные флаги RelationData по договорам/войне дирижёра (alliance/peaceTreaty/war); declareWar / setNoLongerEnemies при смене состояния
 function CA.flags(a, b, fa, fb, v)
   local G = CA.CP()
-  if G.relflags == false or CA.RELOFF then return end
+  if G.relflags == false or KC.GL.h_live(CA, "RELOFF") then return end
   local al = KC.treaty_between(a, b, "defense") or KC.treaty_between(a, b, "military") or KC.treaty_between(a, b, "vassal")
   local pe = KC.treaty_between(a, b, "nonaggression") or KC.treaty_between(a, b, "trade")
   local fa_, fb_ = KC.S.F[a], KC.S.F[b]
@@ -379,7 +385,12 @@ function CA.flags(a, b, fa, fb, v)
       if rd then rd.alliance, rd.peaceTreaty, rd.war = al and true or false, pe and true or false, war end
     end
   end)
-  if not ok then CA.RELOFF = true; CA.log("RelationData flags disabled until restart"); return end
+  if not ok then
+    if not CA.probe_ok("RelationData") then KC.GL.h_forever(CA, "RELOFF", "KMM_Conductor.relflags", "crash lock state/probe_RelationData.off", "crash"); CA.log("RelationData flags disabled (crash lock)"); return end
+    local p = KC.GL.h_down(CA, "RELOFF", "KMM_Conductor.relflags", "RelationData write failed")
+    CA.log(p and ("RelationData flags failed, retry in " .. p .. " s") or "RelationData flags disabled until restart"); return
+  end
+  KC.GL.h_ok("KMM_Conductor.relflags")
   if war and was < 4 then CA.probe_call("declareWar", function() fa.relations:declareWar(fb); fb.relations:declareWar(fa) end)
   elseif not war and was >= 4 then CA.probe_call("setNoLongerEnemies", function() fa.relations:setNoLongerEnemies(fb); fb.relations:setNoLongerEnemies(fa) end) end
   KC.S.relflag[key] = code
@@ -394,6 +405,7 @@ end
 --   Шина deed (KMM_Deeds) - только подсказка «пару тронули, прочти сейчас»: число берётся из ядра, дело не считается дважды.
 --   Ядра нет (офлайн, нет getFactionRelation) - чтение даёт nil и запись идёт абсолютной; ошибка - GL.rs.off до перезапуска.
 -- Параметры (необязательно) P.materialize.relsync = { enabled, every_s, batch, player, hot, min_delta, div, mark_every }.
+-- HEALTH (2026-11-15): отказы связок ядра — в реестр KMM_Gov через KC.GL.h_down/h_live/h_forever (Base, блок GOALS): пауза и повтор.
 KC.GL.rs = { seen = {}, hot = {}, nhot = 0, i = 1, j = 2, pj = 0, last = -1e9, steps = 0 }
 function KC.GL.rs_st0()
   KC.GL.rs.st = { scan = 0, merged = 0, sum = 0, big = 0, div = 0, maxdiv = 0, maxk = "-", dwr = 0, awr = 0, wrmis = 0, hint = 0 }
@@ -408,8 +420,9 @@ function KC.GL.rs_log(msg)
   KC.log(msg)
 end
 function KC.GL.rs_fail(err)
-  KC.GL.rs.off = true
-  KC.GL.rs_log("relsync disabled until restart (relations written as absolute values): " .. tostring(err))
+  local p = KC.GL.h_down(KC.GL.rs, "off", "KMM_Conductor.relsync", err)
+  if p then KC.GL.rs_log("relsync failed, retry in " .. p .. " s (relations written as absolute values meanwhile): " .. tostring(err))
+  else KC.GL.rs_log("relsync disabled until restart (relations written as absolute values): " .. tostring(err)) end
 end
 function KC.GL.rs_key(a, b) if a < b then return a .. "|" .. b end return b .. "|" .. a end
 function KC.GL.rs_target(a, b, v)   -- COHAB (баг Mongrel 14.11): соседи по городу в движке не враги — иначе стража и лавки дерутся в городе
@@ -583,8 +596,9 @@ function KC.GL.cs_cfg()
   return (m and type(m.coresync) == "table") and m.coresync or {}
 end
 function KC.GL.cs_fail(err)
-  KC.GL.cs.off = true
-  KC.GL.rs_log("CORESYNC disabled until restart (model runs on its own): " .. tostring(err))
+  local p = KC.GL.h_down(KC.GL.cs, "off", "KMM_Conductor.coresync", err)
+  if p then KC.GL.rs_log("CORESYNC failed, retry in " .. p .. " s (model runs on its own meanwhile): " .. tostring(err))
+  else KC.GL.rs_log("CORESYNC disabled until restart (model runs on its own): " .. tostring(err)) end
 end
 function KC.GL.cs_fresh()   -- другой мир/сейв: числа ядра прошлого мира не сравнивать
   local R = KC.GL.cs
@@ -750,9 +764,9 @@ function KC.GL.cs_step()
   if R.steps == 5 or R.steps % (c.mark_every or 40) == 0 then KC.GL.cs_mark() end
 end
 function KC.GL.cs_tick()
-  if KC.GL.cs.off then return end
+  if KC.GL.h_live(KC.GL.cs, "off") then return end
   local ok, err = pcall(KC.GL.cs_step)
-  if not ok then KC.GL.cs_fail(err) end
+  if not ok then KC.GL.cs_fail(err) else KC.GL.h_ok("KMM_Conductor.coresync") end
 end
 function KC.GL.cs_on_destroy(self, platoon)   -- Faction::destroyPlatoon: отряд фракции уничтожен (гибель или уход - ?), прочесть фракцию раньше
   local R = KC.GL.cs
@@ -788,9 +802,16 @@ function KC.GL.y2_cfg()
   local m = KC.P and KC.P.materialize
   return (m and type(m.prosperity) == "table") and m.prosperity or {}
 end
-function KC.GL.y2_fail(what, err)
-  KC.GL.cs.ys.off = true
-  KC.GL.rs_log("PROSPERITY " .. what .. " (Y2 off until restart, coresync goes on): " .. tostring(err))
+function KC.GL.y2_fail(what, err, forever)   -- forever: крэш-сторож (.off) — навсегда; иначе пауза реестра и повтор
+  local ys = KC.GL.cs.ys
+  if forever then
+    KC.GL.h_forever(ys, "off", "KMM_Conductor.prosperity", tostring(what) .. ": " .. tostring(err), "crash")
+    KC.GL.rs_log("PROSPERITY " .. what .. " (Y2 off, coresync goes on): " .. tostring(err))
+    return
+  end
+  local p = KC.GL.h_down(ys, "off", "KMM_Conductor.prosperity", err)
+  if p then KC.GL.rs_log("PROSPERITY " .. what .. " (Y2 paused, retry in " .. p .. " s, coresync goes on): " .. tostring(err))
+  else KC.GL.rs_log("PROSPERITY " .. what .. " (Y2 off until restart, coresync goes on): " .. tostring(err)) end
 end
 function KC.GL.y2_n3(x) return x and string.format("%.4f", x) or "?" end
 -- множитель процветания фракции и actualProsperity менеджера (nil - не прочлось)
@@ -829,7 +850,7 @@ function KC.GL.y2_do(fid, fo, conf)
     local pm, ap = KC.GL.y2_pm(fo)
     if not ck.hit and KC.GL.y2_drop(ck.pm, pm, ck.ap, ap, eps) then ys.eff = ys.eff + 1; ys.st.late = ys.st.late + 1 end
     if ys.eff == 0 and ys.mcalls >= (c.noeff_n or 6) then
-      ys.off = true
+      KC.GL.h_forever(ys, "off", "KMM_Conductor.prosperity", "no effect after " .. ys.mcalls .. " measured calls", "noeffect")
       KC.GL.rs_log(string.format("PROSPERITY no effect after %d measured calls (template outside faction list, copied manager or effect elsewhere - ?):"
         .. " calls stopped, wealth follows core prosperity via CORESYNC", ys.mcalls))
       return
@@ -843,7 +864,7 @@ function KC.GL.y2_do(fid, fo, conf)
   local day = math.floor(math.max(KC.DAY or 0, (KC.S and KC.S.last_day) or 0))
   if W.day ~= day then W.day = day; W.nd = 0; W.fd = {} end
   local CA = KC.L2.camp
-  if not CA.probe_ok("prosperity") then KC.GL.y2_fail("disabled forever (crash lock state/probe_prosperity.off)", "previous session crashed"); return end
+  if not CA.probe_ok("prosperity") then KC.GL.y2_fail("disabled forever (crash lock state/probe_prosperity.off)", "previous session crashed", true); return end
   local mgr = fo.diplomatMgr
   local pmg = mgr and mgr.prosperityMgr
   if not pmg then ys.st.nomgr = ys.st.nomgr + #q; return end
@@ -863,7 +884,7 @@ function KC.GL.y2_do(fid, fo, conf)
     if n >= (c.per_read or 2) or fd >= (c.per_fac_day or 3) or W.nd >= (c.per_day or 12) then ys.st.cap = ys.st.cap + 1
     else
       local okc, err = CA.probe_call("prosperity", function() pmg:notifySquadDefeated(e.tpl) end)
-      if not okc then KC.GL.y2_fail(ys.probed and "disabled until restart" or "probe FAIL", err); ys.probed = true; return end
+      if not okc then KC.GL.y2_fail(ys.probed and "call failed" or "probe FAIL", err, not CA.probe_ok("prosperity")); ys.probed = true; return end
       n = n + 1; W.fd[fid] = fd + 1; W.nd = W.nd + 1
       ys.calls = ys.calls + 1; ys.st.call = ys.st.call + 1
       local pm1, ap1 = KC.GL.y2_pm(fo)
@@ -880,9 +901,9 @@ function KC.GL.y2_do(fid, fo, conf)
   if n > 0 then W.chk[fid] = { pm = pmS, ap = apS, hit = hit } end
 end
 function KC.GL.y2_apply(fid, fo, conf)
-  if KC.GL.cs.ys.off then return end
+  if KC.GL.h_live(KC.GL.cs.ys, "off") then return end
   local ok, err = pcall(KC.GL.y2_do, fid, fo, conf)
-  if not ok then KC.GL.y2_fail("disabled until restart", err) end
+  if not ok then KC.GL.y2_fail("failed", err) end
 end
 function KC.GL.y2_mark()
   local ok, s = pcall(function()
@@ -896,7 +917,7 @@ function KC.GL.y2_mark()
 end
 function KC.write_relations()
   if not KC.P.materialize.relations_enabled then KC.S.dirty_rel = {}; return end
-  if not KC.GL.rs.off then local ok, err = pcall(KC.GL.rs_step); if not ok then KC.GL.rs_fail(err) end end
+  if not KC.GL.h_live(KC.GL.rs, "off") then local ok, err = pcall(KC.GL.rs_step); if not ok then KC.GL.rs_fail(err) else KC.GL.h_ok("KMM_Conductor.relsync") end end
   if next(KC.S.dirty_rel) == nil then return end   -- PERF2: очередь пуста (почти всегда) - ни подсчёта, ни обхода
   local nd = 0; for _ in pairs(KC.S.dirty_rel) do nd = nd + 1; if nd > 2000 then KC.S.dirty_rel = {}; break end end   -- AUDIT-B: потолок очереди
   local n = 0
@@ -989,8 +1010,21 @@ function KC.wealth_shift(fid)
   return 0
 end
 
--- союзный отряд к игроку (обязательство договора): createRandomSquad рядом с персонажем игрока, цель — он сам
+-- союзный отряд к игроку (обязательство договора): отряд через спавн Traces рядом с персонажем игрока, цель — он сам.
+-- HEALTH (2026-11-15): ошибка -> реестр KMM_Gov (KMM_Conductor.dispatch): пауза 1/5/30 мин, обязательство остаётся в очереди;
+-- наружу (KC.guarded дирижёра, «до перезапуска») ошибка уходит только без Gov.
 function KC.try_dispatch()
+  local key = "KMM_Conductor.dispatch"
+  if not KC.GL.h_up(key) then return end
+  local d0 = KC.S and KC.S.pending_dispatch
+  local ok, err = pcall(KC.try_dispatch_impl)
+  if ok then if d0 then KC.GL.h_ok(key) end; return end
+  if KC.S and KC.S.pending_dispatch == nil then KC.S.pending_dispatch = d0 end
+  local p = KC.GL.h_fail(key, err)
+  if type(p) ~= "number" then error(err, 0) end
+  pcall(KC.guard_log, "dispatch failed, retry in " .. p .. " s: " .. tostring(err))
+end
+function KC.try_dispatch_impl()
   local d = KC.S.pending_dispatch
   if not (d and KC.P.materialize.dispatch_enabled) then return end
   if KC.S.dispatch_day ~= math.floor(KC.DAY) then KC.S.dispatch_day, KC.S.dispatch_today = math.floor(KC.DAY), 0 end
