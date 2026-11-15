@@ -42,6 +42,9 @@
       "min": 20,
       "max": 300
     },
+    "cap_by_name_rx": [
+      {"rx": "\\b(Hungry|Starving)\\b", "min": 0, "max": 15, "_doc": "B4 Н10: голодные бандиты — пара монет, не 20-300 (правило понижает; wardrobe.loot.empty_pockets.name_rx то же)"}
+    ],
     "skip_name_contains": [
       "test",
       "initialisation",
