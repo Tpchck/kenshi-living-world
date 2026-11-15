@@ -1,0 +1,99 @@
+{
+  "_doc": "Поток BUILD (tools/streams/build.py, docs/BUILD_TREE.md): порядок в меню построек игрока и единое дерево исследований поверх слитой цепочки (ваниль → моды → KMM_Tech). Записи НЕ удаляются: дубли скрываются только из меню (ссылка снимается из RESEARCH.enable buildings), сводятся в один пункт меню родной группой (BUILDING.building group), исследования-пустышки прячутся ванильным флагом blueprint only. Поля построек, которые читают города, NPC и сейв, не трогаются.",
+  "vanilla_files": ["gamedata.base", "Newwworld.mod", "Dialogue.mod", "rebirth.mod"],
+
+  "start_research": ["5359-gamedata.base"],
+  "_start_doc": "Исследования, известные с начала игры. Старт владельца Castaway (rules/streams/fix.json survival_start) не задаёт research; как и Rock Bottom, он получает ванильный «_Default Start» (? движок, по данным: все ванильные старты без research). Если в старт добавят research, перечислить их здесь.",
+
+  "blueprint_sources": [["VENDOR_LIST", "blueprints"], ["CHARACTER", "blueprints"], ["DIALOGUE_LINE", "give item"]],
+  "_blueprint_doc": "Исследование blueprint only доступно, только если чертёж кто-то продаёт или носит (ванильные носители знания: лавки Tech Hunters, торговцы, NPC).",
+
+  "layout_mods_rx": "Category Tweaks",
+  "_layout_doc": "Раскладка меню модов «Buildings Category Tweaks - *» (Origin, Clutter, Cattrina's Furniture, Forgotten Buildings, Primitive и др.) главнее нашей: если последний писатель поля building category или building group у постройки — такой мод, поле не меняем. Дубли между двумя закреплёнными пунктами не сводим (исключение, считается отдельно).",
+
+  "clone": {
+    "_doc": "D1. Точный клон: совпадает всё (меш, материал, масштаб, функция по содержимому BUILDING_FUNCTIONALITY, лимиты склада, ферма, турель, улучшение, свет, флаги), кроме полей ниже. Видимым остаётся канон, остальные снимаются из исследований; исследование клона получает канон (доступность не сдвигается позже).",
+    "ignore_values": ["building category", "building group", "Description", "icon", "build materials", "build speed mult", "desirability", "creates player town", "inventory content name"],
+    "ignore_refs": ["construction"],
+    "canon_order": "ваниль → постройка с закреплённой раскладкой → раньше в порядке загрузки → меньший sid"
+  },
+
+  "fold": {
+    "_doc": "D2. Почти одинаковые постройки сводятся в один пункт меню (родная группа building group: варианты листаются стрелками). Ключ рабочей постройки (functions ниже, ферма, турель, генератор) — функция без меша; склада с лимитом — что хранит; декора, света, мебели — набор мешей (parts) без материала, масштаба и места установки. Категория пункта — закреплённая раскладкой BCT, если есть; внутри категории группа — закреплённая BCT, иначе группа/имя канона. Канон пункта — как в clone.canon_order; у канона без группы группа = его имя (ванильное правило, как у Camp Bed).",
+    "functional_values": ["has inventory", "storage size width", "storage size height", "stackable bonus mult", "power output", "power capacity", "output rate", "max operators", "itemtype limit", "links together"],
+    "functional_refs": ["limit inventory", "farm data", "gun turret"],
+    "function_ignore_values": ["string"],
+    "functions": [1, 3, 4, 5, 6, 7, 9, 10, 11, 12, 14, 23, 25, 26],
+    "_functions_doc": "BUILDING_FUNCTIONALITY.function рабочих построек (значения по данным): 1 добыча, 3 стол исследований, 4 производство, 5 генератор, 6 кровать, 7 тренировка, 9 прилавок, 10 верстак, 11 трупы, 12 турель, 14 печь переплавки, 23 батарея, 25 ремонтная койка, 26 ферма. 2 — склад (с лимитом сводится по «что хранит»). Не сводятся по функции: 13 общий сундук/декор, 15 свет, 16 стол, 17 сиденье, 24 трон, 21 пост, 8 клетка/гроб — у них ключ по мешу.",
+    "skip_categories": ["GRID"]
+  },
+
+  "categories": {
+    "_doc": "Сведение разнобойных категорий (не трогаем, если категория закреплена модом раскладки). Остальные категории — как у Buildings Category Tweaks.",
+    "map": {
+      "SC STORAGE": "STORAGE", "SC FARMING": "FARMING", "SC INTERIOR": "INTERIOR", "SC CRAFTING": "CRAFTING",
+      "SC FOOD": "FOOD", "SC MACHINE": "INDUSTRY", "SC MINING": "INDUSTRY", "SC SIGN": "EXTERIOR - Signs",
+      "SC WALLS": "WALLS", "SC BUILDINGS": "BUILDINGS", "SC TECH": "TECH", "SC LIGHTS": "LIGHTS", "SC CORE": "TECH",
+      "SC POWER": "POWER", "SC DEFENCE": "DEFENCE",
+      "储具": "STORAGE", "Storage": "STORAGE", "Beekeeping": "BEEKEEPING", "Southernbeekeeping": "BEEKEEPING",
+      "Cloaks": "CRAFTING", "Prisoner (BDP)": "FURNITURE - Prison", "CRAFTING - Redux": "CRAFTING",
+      "TECH-Racked": "TECH", "FIRELOCKS": "CRAFTING", "CAMP+ (FISHING)": "FOOD - Fishing", "Figures(Beep)": "Figures",
+      "=Trash=": "FURNITURE - Trash", "MISC - Ruins": "BUILDINGS - Ruins", "MINING": "INDUSTRY",
+      "40K related": "RELICS", "IF WH40K (decor)": "RELICS", "IF WH40K (workbenches)": "RELICS", "IF WH40K (turrets)": "RELICS",
+      "CRAFTING - Relics": "RELICS"
+    }
+  },
+
+  "research_dedupe": {
+    "_doc": "R1. Одна постройка — одно исследование. Несколько исследований из ОДНОГО семейства (ваниль = 4 ванильных файла, иначе файл-источник исследования) — замысел автора (как Flour Storage в трёх ванильных), оставляем. Если семейства разные — постройку оставляет самое раннее: старт → меньший level → исследование из мода постройки → ваниль → sid; из остальных она снимается."
+  },
+
+  "dead_research": {
+    "_doc": "R2. Тупик: достижимое исследование без содержимого (enable*, improve buildings), не повышение уровня и не предпосылка другого. Прячем ванильным флагом blueprint only, если чертёж никто не продаёт; иначе только в отчёт."
+  },
+
+  "level_upgrade": {
+    "_doc": "R3. «is level upgrade» (повышение уровня стола исследований) — только у ванильных Tech Level 2–6. У модовых (Sensible Training, Soulbody) флаг снимается: иначе они поднимают уровень в обход книг и AI Core."
+  },
+
+  "epochs": [
+    {"key": "s0", "name": "Ступень 0. Голый в пустыне", "levels": [0, 0], "gate": "старт (_Default Start)", "_doc": "хижина, малый стол исследований, факел, лежанка, ручная каменоломня; примитивная плавка (Less Early Raids) и ручная добыча руды с природных узлов"},
+    {"key": "s1", "name": "Ступень 1. Ферма, быт, ручное производство", "levels": [1, 1], "gate": "малый стол (уровень 1)", "_doc": "фермы, склады, кухня, ткань, кожа, ручной/малый плавильный передел (Iron Plates), ветряк, простые стены и тренировка"},
+    {"key": "s2", "name": "Ступень 2. Ремесло и оружие", "levels": [2, 2], "gate": "Tech Level 2 (книги ×6)", "_doc": "кузня оружия, кожаная броня, болты, перегонка, медицина"},
+    {"key": "s3", "name": "Ступень 3. Руда машинами, сталь, тяжёлая броня", "levels": [3, 3], "gate": "Tech Level 3 (книги ×10)", "_doc": "рудный бур, сталь, пластинчатая броня, электрика, батареи"},
+    {"key": "s4", "name": "Ступень 4. Знание древних", "levels": [4, 5], "gate": "Tech Level 4–5 (Ancient Science Book ×4/×8 — руины и Tech Hunters)", "_doc": "полуавтомат и автоматика добычи, медь-сплавы, роботехника, чужие технологии (Soul Crystal)"},
+    {"key": "s5", "name": "Ступень 5. Ядра ИИ", "levels": [6, 6], "gate": "Tech Level 6 (AI Core ×2)", "_doc": "мастерская выделка, скелетные конечности, лучшая механика"},
+    {"key": "relic", "name": "Ступень 6. Реликты", "levels": [6, 6], "gate": "Relic Studies (KMM_Tech)", "_doc": "ковка реликтов KMM_Tech и модовые технологии WH40k как реликтовые"}
+  ],
+
+  "relic": {
+    "_doc": "R4. Модовые технологии WH40k и подобные — реликтовые: level 6, категория Relics, корни требуют Relic Studies (KMM_Tech). Бесплатные (без cost и money) получают цену знания.",
+    "anchor": ["RESEARCH", "Relic Studies", "KMM_Tech.mod"],
+    "mods": ["wh40k_imperial_forces.mod", "wh40k_imperial_forces_EN.mod", "TEXT TEXTURE.mod", "40K Necrons.mod", "Death Korps of Krieg.mod"],
+    "category_rx": "40K|WH40k|Necron",
+    "level": 6,
+    "category": "Relics",
+    "free_cost": [["43953-rebirth.mod", 6], ["43951-rebirth.mod", 4]],
+    "free_money": 20000
+  },
+
+  "alien": {
+    "_doc": "R5. Чужие технологии (кристаллы душ Soulbody) — не раньше ступени 4.",
+    "mods": ["Soulbody.mod"],
+    "min_level": 4
+  },
+
+  "prereq": {
+    "_doc": "R6. Ничего раньше предпосылок: level исследования ≥ level его предпосылок; потребитель энергии (power output < 0) не раньше первого генератора. Уровень только поднимается. upgrades=false: цель улучшения (upgrades to) раньше базы не ошибка — в ванили её можно строить и напрямую; правило задерживало базовые сундуки (починка Broken Furniture → Item Storage) на ступень.",
+    "power": true,
+    "upgrades": false
+  },
+
+  "ore_boundary": {
+    "_doc": "Общая граница с потоком руды (build/KMM_Ore/scripts/ore_templates.lua, учёт добычи по sid шаблонов). Здесь — только место в дереве; выход и истощение — у руды. Ore Mine I–III в ванили не строятся игроком (rebirth.mod: RESEARCH «Ore Mining» REMOVED) — не возвращаем. Проверка: ручная/примитивная плавка не позже автоматики.",
+    "manual_smelt": ["13-Less Early Raids.mod", "47237-rebirth.mod"],
+    "powered_smelt": ["42167-gamedata.base", "42168-gamedata.base", "42169-gamedata.base", "1532831-rebirth.mod"],
+    "drills": ["2096-gamedata.base", "2097-gamedata.base", "2098-gamedata.base", "56977-Copper drill.mod", "56978-Copper drill.mod", "56979-Copper drill.mod"],
+    "alien_drills": ["5008195-Soulbody.mod", "5008199-Soulbody.mod", "5008204-Soulbody.mod", "5008208-Soulbody.mod"]
+  }
+}
