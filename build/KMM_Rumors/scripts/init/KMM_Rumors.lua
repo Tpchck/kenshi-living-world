@@ -66,12 +66,17 @@ local CFG = {
   WRONG_OUTCOME_CHANCE = 0.3,      -- уровень искажения 2: шанс перепутать исход (убит <-> пленён / отбились <-> пал)
   -- роль рассказчика по имени шаблона (data.name), первое совпадение; уровень: 0 точно, 1 без имён, 2 преувеличивает/путает
   ROLES = {
-    { match = { "barman", "bartender", "bar keeper", "innkeeper" }, level = 0, prefer = 3 },
-    { match = { "trader", "merchant", "caravan", "shop" },           level = 0, prefer = 2 },
-    { match = { "guard", "samurai", "soldier", "police", "paladin" }, level = 1, prefer = 1 },
-    { match = { "bandit", "thug", "drifter", "vagrant", "beggar", "slave" }, level = 2, prefer = 1 },
+    { match = { "barman", "bartender", "bar keeper", "innkeeper" }, level = 0, prefer = 3, kind = "barman" },
+    { match = { "trader", "merchant", "caravan", "shop" },           level = 0, prefer = 2, kind = "trader" },
+    { match = { "guard", "samurai", "soldier", "police", "paladin" }, level = 1, prefer = 1, kind = "guard" },
+    { match = { "bandit", "thug", "drifter", "vagrant", "beggar", "slave" }, level = 2, prefer = 1, kind = "low" },
   },
   DEFAULT_LEVEL        = 1,
+  -- B1 формы речи: вес формы по манере рассказчика (номер формы: 1 прямо, 2 слух, 3 коротко/грубо, 4 с оценкой; 5+ как 2)
+  MANNER = { barman = { 1, 3, 1, 3 }, trader = { 3, 1, 1, 3 }, guard = { 3, 1, 3, 1 }, low = { 1, 2, 3, 1 }, default = { 2, 3, 2, 1 } },
+  -- одна форма (ключ «тип#номер») — не чаще раза в FORM_YEAR_DAYS игровых дней; учёт в сейве (kmm_rumors_forms), потолок FORMS_MAX
+  FORM_YEAR_DAYS       = 365,
+  FORMS_MAX            = 2000,
 }
 
 local TAG = "[KMM_Rumors] "
@@ -79,84 +84,86 @@ local TAG = "[KMM_Rumors] "
 ----------------------------------------------------------------------- ТЕКСТЫ
 local T = {
   en = {
-    leader_killed   = { "Word is %LEADER% was killed at %TOWN%. %ATT% did it.", "They say %LEADER% is dead — %ATT% hit %TOWN%." },
-    leader_captured = { "Heard %ATT% took %LEADER% alive at %TOWN%.", "Rumour has it %LEADER% is in %ATT% chains now." },
-    attack_repelled = { "%ATT% went for %TOWN%, but %DEF% threw them back.", "Fighting at %TOWN%. %DEF% held." },
-    raid            = { "%ATT% raided %DEF% — carts of loot went past here.", "Heard %DEF% got hit by %ATT% again." },
-    town_captured   = { "%TOWN% belongs to %ATT% now. %DEF% lost it.", "They say %ATT% flew their colours over %TOWN%." },
-    mobilized       = { "%ATT% are on the march. Big warbands, out in the open.", "Something stirred %ATT%. They're mustering." },
-    demobilized     = { "%ATT% went quiet again. Back to their own business.", "Whatever riled %ATT% is over, it seems." },
-    treaty_signed   = { "%ATT% and %DEF% made a deal.", "Word is %ATT% and %DEF% shook hands. Watch out." },
-    treaty_broken   = { "%ATT% and %DEF% are done with each other.", "That pact between %ATT% and %DEF%? Gone." },
-    betrayal        = { "%ATT% stabbed %DEF% in the back. Nobody will trust them now.", "%DEF% trusted %ATT%. Big mistake." },
-    ally_help       = { "%ATT% came to help %DEF%. Kept their word.", "%ATT% sent fighters to back %DEF%." },
-    ally_failed     = { "%DEF% called for help and %ATT% never came.", "%ATT% left %DEF% to hang." },
-    faction_fell    = { "%ATT% are finished. Scattered to the winds.", "Nobody's seen %ATT% in a while. They're done." },
-    faction_rise    = { "%ATT% are getting strong. More towns every season.", "Mark my words, %ATT% will rule half the map." },
-    faction_decline = { "%ATT% are losing ground.", "Things look bad for %ATT%. Town after town lost." },
-    revolt          = { "%TOWN% rose up against %DEF%.", "Heard the people of %TOWN% threw %DEF% out." },
-    town_rejoined   = { "%TOWN% went back to %ATT%. Quietly, they say.", "%ATT% have %TOWN% again — no fighting." },
-    mine_exhausted  = { "The seams at %TOWN% are dead. Miners just walked off.", "Nothing left to dig at %TOWN%." },
-    mine_opened     = { "%ATT% sank a deep mine at %TOWN%. Iron's worth the risk now.", "%ATT% are digging deep near %TOWN%." },
-    ore_crisis      = { "Iron's scarce everywhere. Smiths are melting down old blades.", "Metal prices keep climbing. Every caravan with ore gets hit." },
-    -- сюжет идёт оборотами (~5 лет): каждый story_* может звучать снова в новом обороте — тексты без «впервые/навсегда»; номер оборота (cycle) не выводится
-    story_scramble  = { "More and more people are digging in the old ruins. Something is out there, they say.", "The ruin-diggers are back at it. Every fool with a shovel thinks he'll get rich." },
-    story_famine    = { "Iron is the only thing anyone talks about now. Hunger for metal.", "Metal's gone scarce again. Smiths turn customers away." },
-    story_twilight  = { "The old war-gear is failing. The ones who wore it are nervous.", "Ancient armour cracks and nobody can mend it. The proud ones are scared." },
-    story_night     = { "The dark gods whisper louder every month. Even the guards pray.", "Bad nights again. People bar their doors and pray to anything listening." },
-    story_forge     = { "Smiths say the ancient craft can be learned again. Slowly, at a price.", "Some forge is turning out old-style steel again. Costly, but it's real." },
-    story_ashes     = { "Too many burned towns, too many graves. Folk are picking through the ashes and starting over.", "The worst of it has passed, they say. What's left is ash and stubborn people." },
-    story_quiet     = { "Fires burn quietly again. Folk say the worst is behind us. For now.", "The roads are calm, the bars are full. Quiet times, while they last." },
-    elite_hunger    = { "%ATT% can't mend their wonders anymore. Their patrols look desperate.", "Even %ATT% are running out of the old parts." },
-    ruin_expedition = { "%ATT% went digging in %TOWN%. Came back with scrap.", "Saw %ATT% hauling junk out of %TOWN%." },
-    famine          = { "Hunger in %TOWN%. Families on the roads.", "%ATT% can't feed their people. Bread lines at %TOWN%." },
-    theft           = { "Thieves of %ATT% cleaned out %DEF% storehouses.", "Stolen goods everywhere — %ATT% work, they say." },
-    drug_bust       = { "%ATT% caught smugglers of %DEF% with a load of hash.", "%ATT% burned a hashish cargo. %DEF% won't like it." },
-    slave_raid      = { "%ATT% hunters took people of %DEF% in chains.", "Another slave column from %DEF% lands. %ATT% again." },
-    black_market    = { "%ATT% unloaded a cargo at %TOWN% you don't ask about. %DEF% paid, no questions.", "Busy night at %TOWN%: %ATT% selling, %DEF% buying. Don't ask what.", "Word is %DEF% buy from %ATT% at %TOWN%. Everyone knows, nobody says." },
-    slaves_freed    = { "%ATT% struck a %DEF% slave column. Set them all free.", "Heard %ATT% freed slaves of %DEF%." },
-    succession_crisis = { "%ATT% are fighting over who leads them now.", "No one rules %ATT%. Knives are out." },
-    succession_resolved = { "%ATT% have a new master.", "The squabbling in %ATT% is over. New boss." },
-    faction_split   = { "%ATT% broke away from %DEF%.", "%DEF% split — %ATT% walk their own road now." },
-    warlord_rose    = { "A warlord gathers men — %ATT%, they call themselves.", "Some warlord's rallying the angry ones of %DEF%." },
-    chaos_cult      = { "Strange cultists in %TOWN%. Whispering about dark gods.", "Something foul grows in %TOWN%. People vanish at night." },
-    base_raid       = { "%ATT% are talking about that new settlement. They want what's there.", "%ATT% plan to hit the Nameless settlement." },
-    base_campaign   = { "%ATT% are talking about that new settlement. They want what's there.", "%ATT% plan to hit the Nameless settlement." },   -- U2: рейд-кампания движка
-    recruit_merc_hired   = { "%LEADER% of %ATT% hired %DEF% blades near %TOWN%. Strike when the contract runs out.", "%ATT% paid %DEF% to guard %LEADER%. Two days, they say." },   -- X2
-    recruit_merc_left    = { "The %DEF% blades left %LEADER% of %ATT%. Contract's over.", "%LEADER% walks without guards again. %DEF% went home." },
-    recruit_slave_bought = { "%ATT% bought the strongest slave in %TOWN%: %LEADER%. Nobody else got a chance.", "The best one in the %TOWN% cages, %LEADER%? %ATT% took him first." },
-    recruit_slave_freed  = { "%LEADER%, bought by %ATT%, walks free. Someone broke the chains.", "Heard %LEADER% slipped the %ATT% chains. Somebody helped." },
-    ally_joins      = { "%ATT% marched out against %DEF%, beside some drifters.", "%ATT% joined a fight against %DEF%." },
-    relic_salvage   = { "%ATT% dragged something ancient out of the ruins. Still humming.", "They say %ATT% found a vault of the old ones." },
-    elite_seen      = { "%ATT% sent out their elite near %TOWN%. Heavy armour, cold eyes.", "Saw an honour guard of %ATT% by %TOWN%. Steer clear." },
-    stock_shortage  = { "%TOWN% is running out of %CAT%. Prices are climbing.", "Can't find %CAT% in %TOWN% for love or money." },
-    stock_glut      = { "%TOWN% is drowning in %CAT%. Traders sell it for nothing.", "Too much %CAT% in %TOWN%. Good time to buy." },
-    stock_sacked    = { "%ATT% stripped %TOWN% bare. Stores, shelves, everything.", "%TOWN%'s warehouses were looted by %ATT%." },
-    town_shortage   = { "The smiths of %TOWN% stand idle. No %CAT% to work with.", "Workshops in %TOWN% are short on %CAT%." },
-    smuggle_run     = { "Smugglers got a load of %CAT% into %TOWN% past the guards. Pricey, but it's there.", "Somebody ran %CAT% into %TOWN% in the night. Ask no questions." },
-    contraband_caught = { "%ATT% guards nabbed a drifter selling %CAT% in %TOWN%. They're furious.", "A Nameless trader was caught peddling %CAT% in %TOWN%. %ATT% won't forget it." },
-    gear_worn       = { "The patrols of %ATT% walk about in rusted armour. Their armouries must be empty.", "%ATT% soldiers wear patched, rusty kit these days. Hard times for them." },
-    player_sold     = { "Some drifter has been selling goods in %TOWN%. %CAT% prices are falling.", "A Nameless trader unloaded a lot of %CAT% in %TOWN%." },
-    caravan_lost    = { "A %ATT% caravan never arrived. Wolves, bandits, who knows.", "%ATT% lost a trade caravan on the road. Bodies by the track." },
-    refugees        = { "Refugees from %TOWN% are on the roads. Hungry ones.", "Whole families left %TOWN% with what they could carry." },
-    relic_forge_known = { "They say the Nameless built a thinking machine of the ancients.", "Rumour has it some drifters assembled a machine mind. Fools or geniuses." },
-    trade_for       = { "%ATT% are buying up %CAT% from %DEF%, whatever the price.", "Caravans of %ATT% carry %CAT% from %DEF%. Paid in full." },
-    raid_surplus    = { "%ATT% came back from %TOWN% loaded with %CAT%.", "After the raid on %TOWN%, %ATT% have more %CAT% than they can store." },
-    waylay          = { "%ATT% are robbing the travellers of %DEF% on the roads. Take an escort.", "Caravans of %DEF% keep vanishing; people whisper that %ATT% are waiting in the hills." },
-    loot_sold       = { "Somebody is selling plundered goods in %TOWN%. %CAT%, cheap, no questions asked.", "In %TOWN% they say %ATT% unload their loot on the market. Mostly %CAT%." },
+    -- B1 формы речи (en): [1] прямо, [2] слух через третьих, [3] коротко и грубо, [4] с оценкой рассказчика, [5+] ещё слух.
+    -- Ключ формы «тип#номер»: одна форма — не чаще раза в FORM_YEAR_DAYS (CFG); все формы типа за год сказаны — слух этого типа молчит
+    leader_killed = { "%LEADER% is dead. %ATT% killed him at %TOWN%.", "Word is %LEADER% was cut down at %TOWN%. %ATT% did it, they say.", "%LEADER%? Dead. %ATT% saw to it at %TOWN%.", "%ATT% killed %LEADER% at %TOWN%. Bold. Or stupid. We'll see which." },
+    leader_captured = { "%ATT% took %LEADER% alive at %TOWN%.", "Heard %LEADER% is wearing %ATT% chains now. Taken at %TOWN%, they say.", "%LEADER% is in a cage. %ATT% have him.", "%ATT% caught %LEADER% at %TOWN%. Alive is worse than dead, if you ask me." },
+    attack_repelled = { "%ATT% hit %TOWN% and %DEF% threw them back.", "They say %ATT% went for %TOWN%, but %DEF% held the walls.", "%ATT% tried %TOWN%. Got their teeth kicked in by %DEF%.", "%DEF% held %TOWN% against %ATT%. Good for them. Won't be the last try, though." },
+    raid = { "%ATT% raided %DEF%. Carts of loot went past here.", "Heard %DEF% got hit by %ATT% again.", "%ATT% robbed %DEF% blind. Same old.", "%ATT% keep raiding %DEF%. Someone ought to stop them, but nobody will.", "Folk say %ATT% bands came down on %DEF% in the night." },
+    town_captured = { "%TOWN% belongs to %ATT% now. %DEF% lost it.", "They say %ATT% flew their colours over %TOWN%.", "%TOWN% fell. %ATT% own it now.", "%ATT% took %TOWN% off %DEF%. New masters, same taxes, I'd wager." },
+    mobilized = { "%ATT% are on the march. Big warbands, out in the open.", "Word is something stirred %ATT%. They're mustering.", "%ATT% are arming up. Stay off the roads.", "When %ATT% march like that, somebody's town burns. Hope it isn't ours." },
+    demobilized = { "%ATT% went back to their own business.", "Folk say whatever riled %ATT% is over.", "%ATT% stood down. For now.", "%ATT% quieted down. I don't trust it." },
+    treaty_signed = { "%ATT% and %DEF% made a deal.", "Word is %ATT% and %DEF% shook hands.", "%ATT% and %DEF%, friends now. Huh.", "%ATT% and %DEF% signed something. Deals like that cost someone else." },
+    treaty_broken = { "%ATT% and %DEF% are done with each other.", "Heard that pact between %ATT% and %DEF% is gone.", "%ATT% tore up the deal with %DEF%.", "%ATT% and %DEF% broke it off. Never lasts, does it?" },
+    betrayal = { "%ATT% stabbed %DEF% in the back.", "They say %DEF% trusted %ATT%, and paid for it.", "%ATT% sold out %DEF%. Snakes.", "%ATT% betrayed %DEF%. Nobody sane will deal with them now." },
+    ally_help = { "%ATT% came to help %DEF%. Kept their word.", "Word is %ATT% sent fighters to back %DEF%.", "%ATT% showed up for %DEF%. Fair play.", "%ATT% stood by %DEF%. Rare thing these days." },
+    ally_failed = { "%DEF% called for help and %ATT% never came.", "Heard %ATT% left %DEF% to hang.", "%ATT% let %DEF% down. Cowards.", "%ATT% broke faith with %DEF%. Remember that before you trust them." },
+    faction_fell = { "%ATT% are finished. Scattered to the winds.", "They say nobody's seen %ATT% in a while. Done for.", "%ATT%? Gone. Dead or run off.", "%ATT% are no more. The world won't miss them much." },
+    faction_rise = { "%ATT% are getting strong. More towns every season.", "Word is %ATT% are taking ground everywhere.", "%ATT% are on the up. Get used to it.", "Mark my words, %ATT% will rule half the map." },
+    faction_decline = { "%ATT% are losing ground.", "Folk say things look bad for %ATT%. Town after town lost.", "%ATT% are slipping.", "%ATT% are on the way down. Wouldn't want to be one of them." },
+    revolt = { "%TOWN% rose up against %DEF%.", "Heard the people of %TOWN% threw %DEF% out.", "%TOWN% kicked out %DEF%. Just like that.", "%TOWN% turned on %DEF%. Squeeze people long enough and they bite." },
+    town_rejoined = { "%TOWN% went back to %ATT%. No fighting.", "They say %ATT% have %TOWN% again. Quietly.", "%TOWN% is %ATT% again.", "%TOWN% is back with %ATT%. Better the devil you know." },
+    mine_exhausted = { "The seams at %TOWN% are dead. The miners walked off.", "Word is there's nothing left to dig at %TOWN%.", "%TOWN% mine's empty.", "The %TOWN% mine is played out. Hard times for that lot." },
+    mine_opened = { "%ATT% sank a deep mine at %TOWN%.", "Heard %ATT% are digging deep near %TOWN%.", "%ATT% got a new mine at %TOWN%.", "%ATT% are digging at %TOWN%. Iron's worth the risk now, I suppose." },
+    ore_crisis = { "Iron is scarce everywhere. Smiths melt down old blades.", "They say every caravan with ore gets hit these days.", "No iron. Anywhere.", "Metal prices keep climbing. People will kill for scrap soon, mark my words." },
+    story_scramble = { "More and more people are digging in the old ruins.", "They say something is out there in the ruins. Everyone's digging.", "Ruin-diggers everywhere. Fools with shovels.", "Every fool with a shovel thinks he'll get rich in the ruins. Most just get dead." },
+    story_famine = { "Iron is the only thing anyone talks about now.", "Word is smiths are turning customers away. No metal.", "No metal. No work.", "Hunger for metal is worse than hunger for bread, some say. I'm not so sure." },
+    story_twilight = { "The old war-gear is failing.", "They say ancient armour cracks and nobody can mend it.", "Old gear's breaking. Good riddance.", "The ones who wore the old armour are nervous. As they should be." },
+    story_night = { "The dark gods whisper louder every month.", "Folk say even the guards pray at night now.", "Bad nights. Bar your door.", "People pray to anything that listens these days. Can't blame them." },
+    story_forge = { "Smiths say the ancient craft can be learned again.", "Word is some forge is making old-style steel again.", "Good steel's coming back. Costly.", "The old craft is coming back, slowly. About time something did." },
+    story_ashes = { "Too many burned towns. Folk are starting over in the ashes.", "They say the worst of it has passed. What's left is ash.", "Ash and graves. That's what's left.", "Stubborn people are rebuilding on the ashes. I respect that." },
+    story_quiet = { "Fires burn quietly again. The worst is behind us.", "Folk say the roads are calm these days.", "Quiet times. Enjoy them.", "The worst is behind us, they say. For now. It never lasts." },
+    elite_hunger = { "%ATT% can't mend their wonders anymore.", "Heard even %ATT% are running out of the old parts.", "%ATT% are scraping for parts.", "%ATT% patrols look desperate. Desperate men are dangerous." },
+    ruin_expedition = { "%ATT% went digging in %TOWN%. Came back with scrap.", "Word is %ATT% hauled junk out of %TOWN%.", "%ATT% looted the ruins at %TOWN%.", "%ATT% are picking %TOWN% clean. Let's hope they don't wake anything." },
+    famine = { "Hunger in %TOWN%. Families on the roads.", "They say %ATT% can't feed their people. Bread lines at %TOWN%.", "%TOWN% is starving.", "%TOWN% is going hungry and %ATT% do nothing. Shameful." },
+    theft = { "Thieves of %ATT% cleaned out %DEF% storehouses.", "Word is the stolen goods everywhere are %ATT% work.", "%ATT% robbed %DEF% stores.", "%ATT% thieves hit %DEF% again. Lock up your goods." },
+    drug_bust = { "%ATT% caught smugglers of %DEF% with a load of hash.", "Heard %ATT% burned a hashish cargo of %DEF%.", "%ATT% busted %DEF% smugglers.", "%ATT% burned %DEF% hash. Prices will go up, you watch." },
+    slave_raid = { "%ATT% hunters took people of %DEF% in chains.", "They say another slave column came from %DEF% lands. %ATT% again.", "%ATT% grabbed %DEF% folk. Chains and all.", "%ATT% are taking %DEF% people as slaves. Filthy business." },
+    black_market = { "%ATT% unloaded a cargo at %TOWN% you don't ask about. %DEF% paid.", "Word is %DEF% buy from %ATT% at %TOWN%. Everyone knows, nobody says.", "%ATT% sell, %DEF% buy, at %TOWN%. Don't ask what.", "Busy nights at %TOWN%: %ATT% and %DEF% trading things best left unnamed. Not my business." },
+    slaves_freed = { "%ATT% struck a %DEF% slave column and set them all free.", "Heard %ATT% freed slaves of %DEF%.", "%ATT% broke %DEF% chains.", "%ATT% freed %DEF% slaves. Good. Some things need doing." },
+    succession_crisis = { "%ATT% are fighting over who leads them.", "They say nobody rules %ATT% now. Knives are out.", "%ATT% have no boss. Chaos.", "%ATT% are tearing themselves apart over the top seat. Fools." },
+    succession_resolved = { "%ATT% have a new master.", "Word is the squabbling in %ATT% is over.", "%ATT% got a new boss.", "%ATT% settled on a new leader. Let's see if this one lasts." },
+    faction_split = { "%ATT% broke away from %DEF%.", "Heard %DEF% split. %ATT% walk their own road now.", "%ATT% left %DEF%. Clean break.", "%ATT% went their own way from %DEF%. Trouble will follow." },
+    warlord_rose = { "A warlord gathers men. %ATT%, they call themselves.", "They say some warlord is rallying the angry ones of %DEF%. %ATT%.", "New warband out there: %ATT%.", "%ATT% are a warlord's crew. Men like that end badly, and take others with them." },
+    chaos_cult = { "Strange cultists in %TOWN%. Whispering about dark gods.", "Word is people vanish at night in %TOWN%.", "Cultists in %TOWN%. Stay away.", "Something foul grows in %TOWN%. I wouldn't sleep there." },
+    base_raid = { "%ATT% want what's in that new settlement of the Nameless.", "Heard %ATT% plan to hit the Nameless settlement.", "%ATT% are coming for the Nameless.", "%ATT% keep talking about the Nameless and their settlement. Won't end well for someone." },
+    recruit_merc_hired = { "%LEADER% of %ATT% hired %DEF% blades near %TOWN%.", "They say %ATT% paid %DEF% to guard %LEADER%. Two days.", "%LEADER% has %DEF% guards now.", "%LEADER% hired %DEF% swords. Strike when the contract runs out, if you're clever." },
+    recruit_merc_left = { "The %DEF% blades left %LEADER% of %ATT%. Contract's over.", "Word is %LEADER% of %ATT% walks without guards again.", "%LEADER%'s guards went home.", "%LEADER% of %ATT% is on his own again. Careless." },
+    recruit_slave_bought = { "%ATT% bought the strongest slave in %TOWN%: %LEADER%.", "Heard %ATT% took %LEADER% from the %TOWN% cages first.", "%LEADER% went to %ATT%. Sold.", "%ATT% snapped up %LEADER% in %TOWN%. Nobody else had a chance." },
+    recruit_slave_freed = { "%LEADER%, bought by %ATT%, walks free.", "They say somebody broke %LEADER% out of %ATT% chains.", "%LEADER% got loose from %ATT%.", "%LEADER% slipped the %ATT% chains. Good for him." },
+    ally_joins = { "%ATT% marched out against %DEF%, beside some drifters.", "Word is %ATT% joined a fight against %DEF%.", "%ATT% went after %DEF%.", "%ATT% took on %DEF% with the Nameless at their side. Strange company." },
+    relic_salvage = { "%ATT% dragged something ancient out of the ruins.", "They say %ATT% found a vault of the old ones.", "%ATT% got an old-world relic.", "%ATT% found something that still hums. I'd leave it buried." },
+    elite_seen = { "%ATT% sent their elite out near %TOWN%.", "Heard an honour guard of %ATT% was seen by %TOWN%.", "%ATT% elite near %TOWN%. Steer clear.", "%ATT% heavy armour near %TOWN%. Cold eyes. Nothing good comes of that." },
+    stock_shortage = { "%TOWN% is running out of %CAT%.", "Word is you can't find %CAT% in %TOWN% for love or money.", "No %CAT% in %TOWN%.", "%CAT% is short in %TOWN%. Prices will climb, you'll see." },
+    stock_glut = { "%TOWN% is drowning in %CAT%.", "They say traders sell %CAT% for nothing in %TOWN%.", "Cheap %CAT% in %TOWN%.", "Too much %CAT% in %TOWN%. Good time to buy, if you're smart." },
+    stock_sacked = { "%ATT% stripped %TOWN% bare.", "Heard the warehouses of %TOWN% were looted by %ATT%.", "%ATT% emptied %TOWN%.", "%ATT% sacked %TOWN%. Those poor traders." },
+    town_shortage = { "Workshops in %TOWN% are short on %CAT%.", "Word is the smiths of %TOWN% stand idle. No %CAT%.", "%TOWN% is out of %CAT%.", "No %CAT% in the workshops of %TOWN%. Idle hands, empty bellies." },
+    smuggle_run = { "Smugglers got a load of %CAT% into %TOWN% past the guards.", "They say somebody ran %CAT% into %TOWN% in the night.", "Smuggled %CAT% in %TOWN%. Don't ask.", "Smugglers brought %CAT% to %TOWN%. Pricey, but at least it's there." },
+    contraband_caught = { "%ATT% guards nabbed a drifter selling %CAT% in %TOWN%.", "Heard a Nameless trader was caught peddling %CAT% in %TOWN%.", "Somebody got caught with %CAT% in %TOWN%. %ATT% are furious.", "Selling %CAT% under %ATT% noses in %TOWN%. Brave or stupid." },
+    gear_worn = { "%ATT% patrols walk about in rusted armour.", "Word is %ATT% armouries are empty.", "%ATT% soldiers in rust and rags.", "%ATT% kit is falling apart. Hard times for them, easier for their enemies." },
+    player_sold = { "Some drifter has been selling %CAT% in %TOWN%. Prices are falling.", "They say a Nameless trader unloaded a lot of %CAT% in %TOWN%.", "Cheap %CAT% in %TOWN%. Some drifter dumped it.", "A drifter is flooding %TOWN% with %CAT%. The local traders hate it." },
+    caravan_lost = { "A %ATT% caravan never arrived.", "Heard %ATT% lost a trade caravan on the road. Bodies by the track.", "%ATT% caravan's gone. Wolves or bandits.", "Another %ATT% caravan lost. The roads get worse every season." },
+    refugees = { "Refugees from %TOWN% are on the roads.", "Word is whole families left %TOWN% with what they could carry.", "%TOWN% folk on the run. Hungry ones.", "Refugees from %TOWN% everywhere. Poor souls, and nobody wants them." },
+    relic_forge_known = { "The Nameless built a thinking machine of the ancients.", "They say some drifters assembled a machine mind.", "Drifters made a machine that thinks. Madness.", "A machine mind, built by drifters. Fools or geniuses, I can't decide." },
+    trade_for = { "%ATT% are buying up %CAT% from %DEF%.", "Heard caravans of %ATT% carry %CAT% from %DEF%. Paid in full.", "%ATT% want %CAT%. %DEF% sell.", "%ATT% pay %DEF% any price for %CAT%. Somebody's getting rich." },
+    raid_surplus = { "%ATT% came back from %TOWN% loaded with %CAT%.", "Word is %ATT% have more %CAT% than they can store after %TOWN%.", "%ATT% robbed %TOWN%. Swimming in %CAT% now.", "%ATT% sit on piles of %CAT% from %TOWN%. Stolen goods sell cheap." },
+    waylay = { "%ATT% are robbing travellers of %DEF% on the roads.", "They say %ATT% wait in the hills for %DEF% caravans.", "%ATT% on the roads. Take an escort.", "%ATT% keep picking off %DEF% caravans. Nobody's safe out there." },
+    loot_sold = { "Somebody is selling plundered %CAT% in %TOWN%.", "Heard %ATT% unload their loot in %TOWN%. Mostly %CAT%.", "Stolen %CAT% in %TOWN%. Cheap.", "%ATT% loot on the %TOWN% market. Buy it and you're no better than them." },
+    chaos_incursion = { "Something tore the sky open near %TOWN%. Things with horns came out.", "They say daemons walk near %TOWN%.", "Daemons near %TOWN%. I'm not joking.", "Horned things near %TOWN%. End of the world, some say. I'd believe it." },
+    nemesis_contempt = { "%LEADER% caught the Nameless with empty pockets and let them crawl off.", "They say %LEADER% spat at the Nameless and walked away. Not worth robbing.", "%LEADER% didn't even bother with the Nameless. Too poor.", "%LEADER% let the Nameless go, broke and beaten. That's a grudge in the making." },
+    nemesis_beat_again = { "%LEADER% put the Nameless in the dirt again.", "Heard %LEADER% beat the Nameless once more. %ATT% drink to it.", "%LEADER% beat the Nameless. Again.", "%LEADER% keeps beating the Nameless. One day it'll go the other way." },
+    trade_route = { "%ATT% caravans run to %TOWN% now.", "Word is %ATT% and %DEF% are doing business at %TOWN%.", "New road to %TOWN%. %ATT% trade there.", "%ATT% caravans to %TOWN%, steady trade with %DEF%. Good for everyone, for once." },
+    loot_carried = { "A band of %ATT% went by, hauling loot from a fight.", "They say %ATT% are dragging plunder off a battlefield to the markets.", "%ATT% with loot. Keep away.", "%ATT% hauling plunder again. Somebody lost that fight badly." },
+    base_campaign = { "%ATT% want what's in that new settlement of the Nameless.", "Heard %ATT% plan to hit the Nameless settlement.", "%ATT% are coming for the Nameless.", "%ATT% keep talking about the Nameless and their settlement. Won't end well for someone." },
+    -- формы для типов без шаблона (готовый текст события %TEXT%): та же манера по номеру
+    wrap = { "%TEXT%", "Word on the road: %TEXT%", "%TEXT% That's all I know.", "%TEXT% Mark my words, there's more to it." },
+    -- story_* (выше): сюжет идёт оборотами (~5 лет), каждый может звучать снова — тексты без «впервые/навсегда»; номер оборота (cycle) не выводится
     cats = { food = "food", metal = "metal", weapons = "weapons", armor = "armour", med = "medicine", drugs = "drugs", lux = "luxuries", scrap = "scrap", goods = "goods" },
-    chaos_incursion = { "Something tore the sky open near %TOWN%. Things with horns came out.", "Daemons near %TOWN%. I'm not joking." },
     some_leader = "some big shot", some_faction = "someone", far = "somewhere far to the %DIR%",
     dirs = { n = "north", s = "south", e = "east", w = "west" },
     hedge = { " Or so they say.", " Don't quote me.", "" },
     herald = "Newcomers off the road say: ",
     msg = "Rumour (%WHO%): %TEXT%",
-    nemesis_contempt   = { "%LEADER% caught the Nameless with empty pockets and let them crawl off. Not worth the bother, he says.",
-                           "They say %LEADER% spat at the Nameless and walked away. Come back when you are worth robbing, he told them." },
-    nemesis_beat_again = { "%LEADER% put the Nameless in the dirt again. He has stopped counting.",
-                           "Heard %LEADER% beat the Nameless once more. %ATT% drink to it every night." },
-    trade_route     = { "%ATT% caravans run to %TOWN% now. Steady trade with %DEF%.", "New trade road to %TOWN%: %ATT% and %DEF% are doing business." },
-    loot_carried = { "A band of %ATT% went by, hauling plunder from a fight.", "%ATT% are dragging loot off a battlefield to the markets." },
     merged = " And not for the first time, either.",
     place_dir = "a place to the %DIR%", place_any = "somewhere out in the wastes",
     journal_owner = "Rumour", journal_day = "Day %d, %s: %s", journal_day0 = "Day %d: %s",
@@ -171,6 +178,17 @@ local T = {
       courier = { "A %FAC% runner went by at full tilt. Something is up." },
       traveler = { "Drifters on the road again. More every week." },
       quiet = { "Quiet week. Caravans come, caravans go.", "Nothing much happens here. That is how we like it.", "Same dust, same faces. Buy something or move on." },
+      -- бытовая болтовня (B1): без годового учёта форм, может повторяться; вес — по состоянию города (smallLines)
+      weather = { "Hot again. The wind just moves the dust around.", "Dust storm coming, by the look of the sky.", "Cold night last night. Couldn't sleep.",
+                  "Rain? Haven't seen rain in years." },
+      work = { "Long day at the workshop. My back is killing me.", "Pay's late again. Always late.", "Somebody has to haul the crates. Today it was me.",
+               "The mines want more hands. Not mine, thanks." },
+      guard = { "Guards are on edge today. Keep your hands where they can see them.", "Watch for pickpockets near the bar.",
+                "The patrol came through twice this morning. Twice." },
+      tense = { "Somebody threw a rock at the guards last night. It'll get worse.", "People whisper in corners. Nobody trusts anybody.",
+                "The guards beat a man in the street today. Folk just watched." },
+      hunger = { "Bread is thin and dear. My kids ate twice this week.", "Saw a man fight a dog for scraps today.", "Everyone's counting rations. Nobody says it out loud." },
+      prices = { "Prices went up again. Everything costs double.", "Traders smile and charge you twice. Same as ever.", "Can't afford a decent meal on my pay." },
     },
   },
   ru = {
@@ -429,10 +447,10 @@ local function roleOf(ch)
   name = (ok and name or ""):lower()
   for _, r in ipairs(CFG.ROLES) do
     for _, m in ipairs(r.match) do
-      if name:find(m, 1, true) then return r.level, r.prefer, name end
+      if name:find(m, 1, true) then return r.level, r.prefer, name, r.kind end
     end
   end
-  return CFG.DEFAULT_LEVEL, 0, name
+  return CFG.DEFAULT_LEVEL, 0, name, "default"
 end
 
 local function direction(fromX, fromZ, toX, toZ)
@@ -505,16 +523,55 @@ R.clean = { name = cleanName, text = cleanText, place = placeDesc }   -- офл�
 
 -- слух можно сложить из события: есть шаблон, или тип внешнего модуля с готовым текстом
 local PFX = { "fate_", "relic_", "predator_", "siege_", "herd", "veteran", "bounty_hunters", "slave_caravan", "famine_refugees", "outlaw_", "nemesis_", "debt_", "deed", "base_raid_", "recruit_", "settlement_", "goal_milestone", "lie_low" }   -- deed: дела мира из KMM_Deeds (ядро affectRelations); B1: settlement_/goal_milestone/lie_low — готовый текст мира
+local NON_TYPE = { cats = true, dirs = true, hedge = true, small = true, wrap = true }   -- служебные таблицы текстов, не типы событий
 local function tellable(e)
   local L = T[CFG.LANG] or T.en
   local kind = tostring(e.type)
-  if type(L[kind]) == "table" and kind ~= "cats" and kind ~= "dirs" and kind ~= "hedge" and kind ~= "small" then return true end
+  if type(L[kind]) == "table" and not NON_TYPE[kind] then return true end
   if not (e.text and e.text ~= "") then return false end
   for _, p in ipairs(PFX) do if kind:sub(1, #p) == p then return true end end
   return false
 end
 
-local function compose(e, level, dist, dir, merged)
+----------------------------------------------------------------------- B1 ФОРМЫ РЕЧИ: годовой учёт по ключу «тип#номер»
+-- R.forms[key] = игровой день, когда форма прозвучала. Свободна, если не звучала FORM_YEAR_DAYS (или время ушло назад).
+-- Выбор среди свободных — с весом по манере рассказчика (CFG.MANNER). Свободных нет — слух этого типа не говорится (nil).
+R.forms = R.forms or {}
+local function formFree(key, day)
+  local last = R.forms[key]
+  return not (last and day and day >= last and day - last < CFG.FORM_YEAR_DAYS)
+end
+local function pickForm(n, kind, rkind, day)
+  local w = CFG.MANNER[rkind or "default"] or CFG.MANNER.default
+  local opts, tot = {}, 0
+  for i = 1, n do
+    if formFree(kind .. "#" .. i, day) then
+      local wi = w[i] or w[2] or 1
+      opts[#opts + 1] = { i, wi }; tot = tot + wi
+    end
+  end
+  if #opts == 0 then return nil end
+  local r = math.random() * tot
+  for _, o in ipairs(opts) do r = r - o[2]; if r <= 0 then return o[1] end end
+  return opts[#opts][1]
+end
+-- годовой учёт: старше года — долой, сверх FORMS_MAX — самые старые
+local function pruneForms(day)
+  local keys = {}
+  for k, d in pairs(R.forms) do
+    if type(d) ~= "number" or (day and (day - d >= CFG.FORM_YEAR_DAYS or d > day + 1)) then R.forms[k] = nil else keys[#keys + 1] = k end
+  end
+  local cut = 0
+  if #keys > CFG.FORMS_MAX then
+    table.sort(keys, function(a, b) if R.forms[a] ~= R.forms[b] then return R.forms[a] < R.forms[b] end return a < b end)
+    for i = 1, #keys - CFG.FORMS_MAX do R.forms[keys[i]] = nil; cut = cut + 1 end
+  end
+  return cut
+end
+R.formsfn = { free = formFree, pick = pickForm, prune = pruneForms }   -- офлайн-тест
+
+-- текст слуха: (текст, тип, ключ формы) или nil, reason ("forms_used" — все формы типа звучали за год)
+local function compose(e, level, dist, dir, merged, rkind, day)
   local L = T[CFG.LANG] or T.en
   local kind = e.type
   if level >= 2 and math.random() < CFG.WRONG_OUTCOME_CHANCE then
@@ -524,14 +581,20 @@ local function compose(e, level, dist, dir, merged)
   end
   local pool = L[kind]
   local tail = (merged and merged > 1 and L.merged) or ""   -- V6: слитая группа однотипного шума
-  if type(pool) ~= "table" or kind == "small" then   -- ЖИВОЙ МИР (2026-11-13): типы внешних модулей без шаблона — готовый текст события (en), с оговоркой по дальности
+  local function esc(x) return (tostring(x):gsub("%%", "%%%%")) end   -- % в подстановке gsub
+  if type(pool) ~= "table" or NON_TYPE[kind] then   -- ЖИВОЙ МИР (2026-11-13): типы внешних модулей без шаблона — готовый текст события (en) в форме-обёртке
     if not tellable({ type = kind, text = e.text }) then return nil end
-    local s0 = cleanText(e.text, dir)
+    local wrap = L.wrap or T.en.wrap
+    local fi = pickForm(#wrap, kind, rkind, day)
+    if not fi then return nil, "forms_used" end
+    local s0 = wrap[fi]:gsub("%%TEXT%%", esc(cleanText(e.text, dir)))
     s0 = s0 .. tail
-    if level >= 1 and L.hedge then s0 = s0 .. L.hedge[math.random(#L.hedge)] end
-    return s0, kind
+    if level >= 1 and L.hedge and fi ~= 2 then s0 = s0 .. L.hedge[math.random(#L.hedge)] end
+    return s0, kind, kind .. "#" .. fi
   end
-  local s = pool[math.random(#pool)]
+  local fi = pickForm(#pool, kind, rkind, day)
+  if not fi then return nil, "forms_used" end
+  local s = pool[fi]
   local leader = cleanName(e.leader, L.some_leader)
   if level >= 1 then leader = L.some_leader end
   local town = cleanName(e.town, placeDesc(dir))
@@ -539,13 +602,12 @@ local function compose(e, level, dist, dir, merged)
   local att = cleanName(e.att, L.some_faction)
   local def = cleanName(e.def, L.some_faction)
   if level >= 2 and math.random() < 0.5 then if math.random() < 0.5 then att = L.some_faction else def = L.some_faction end end   -- путает, кто это был
-  local function esc(x) return (tostring(x):gsub("%%", "%%%%")) end   -- % в подстановке gsub
   s = s:gsub("%%LEADER%%", esc(leader)):gsub("%%TOWN%%", esc(town)):gsub("%%ATT%%", esc(att)):gsub("%%DEF%%", esc(def))
   local cats = L.cats or {}
   s = s:gsub("%%CAT%%", esc(cats[e.cat or ""] or cats.goods or "goods"))
   s = cleanText(s, dir) .. tail   -- страховка: в шаблон ничего грязного не просочилось
-  if level >= 1 then s = s .. L.hedge[math.random(#L.hedge)] end
-  return s, kind
+  if level >= 1 and fi ~= 2 then s = s .. L.hedge[math.random(#L.hedge)] end
+  return s, kind, kind .. "#" .. fi
 end
 
 ----------------------------------------------------------------------- ДОСТАВКА
@@ -922,9 +984,14 @@ local function smallLines(tsid, lx, lz)
   local opts = {}
   local function esc(x) return (tostring(x):gsub("%%", "%%%%")) end
   local C = rawget(_G, "KMM_Conductor")
+  local food, unrest, short = nil, 0, false   -- состояние города для весов бытовой болтовни
   if tsid and C and C.town_mood then
     local okm, mood = pcall(C.town_mood, tsid)
     local owner = okm and type(mood) == "table" and mood.owner
+    if okm and type(mood) == "table" then
+      if type(mood.food) == "number" and mood.food == mood.food then food = mood.food end
+      unrest = tonumber(mood.unrest) or 0
+    end
     local pf
     pcall(function() pf = C.cfg().player_faction end)
     if owner and owner ~= pf and C.name then
@@ -940,6 +1007,8 @@ local function smallLines(tsid, lx, lz)
       local okl, lv = pcall(K.level, tsid, cat)
       if okl and type(lv) == "number" and lv == lv and lv >= 0 then
         local word = cats[cat] or cat
+        if cat == "food" and food == nil then food = lv end
+        if lv < CFG.STOCK_LOW then short = true end
         if lv < CFG.STOCK_LOW then opts[#opts + 1] = { "stock_low", (pickOne(S.low):gsub("%%CAT%%", esc(word))) }
         elseif lv > CFG.STOCK_HIGH then opts[#opts + 1] = { "stock_high", (pickOne(S.high):gsub("%%CAT%%", esc(word))) } end
       end
@@ -979,16 +1048,28 @@ local function smallLines(tsid, lx, lz)
       end
     end
   end
+  for _, o in ipairs(opts) do o[3] = (o[1] == "owner") and 2 or 3 end   -- местное из модели — весомее болтовни
+  -- B1 бытовая болтовня: всегда есть, вес по состоянию города; годовому учёту форм не подлежит (может повторяться)
+  local function chat(kind, w) if w > 0 and S[kind] then opts[#opts + 1] = { "chat_" .. kind, pickOne(S[kind]), w } end end
+  chat("weather", 1)
+  chat("work", (food and food < CFG.STOCK_LOW) and 0.5 or 1)
+  if unrest >= 0.5 then chat("tense", 3) else chat("guard", 1) end
+  if food and food < CFG.STOCK_LOW then chat("hunger", 3) end
+  if short then chat("prices", 2) end
+  chat("quiet", (#opts <= 3) and 1 or 0.3)
   return opts
 end
 local function smallTalk(listener, tkey, tsid, now, lx, lz)
   local opts = smallLines(tsid, lx, lz)
   local L = T[CFG.LANG] or T.en
   local last = R.smallLast and R.smallLast[tkey]
-  local pickFrom = {}
-  for _, o in ipairs(opts) do if o[1] ~= last then pickFrom[#pickFrom + 1] = o end end
-  if #pickFrom == 0 then pickFrom = opts end
-  local o = (#pickFrom > 0) and pickFrom[math.random(#pickFrom)] or { "quiet", pickOne(L.small.quiet) }
+  local pickFrom, tot = {}, 0
+  for _, o in ipairs(opts) do if o[1] ~= last then pickFrom[#pickFrom + 1] = o; tot = tot + (o[3] or 1) end end
+  if #pickFrom == 0 then pickFrom = opts; for _, o in ipairs(opts) do tot = tot + (o[3] or 1) end end
+  local o
+  local r = math.random() * tot
+  for _, x in ipairs(pickFrom) do r = r - (x[3] or 1); if r <= 0 then o = x; break end end
+  o = o or pickFrom[#pickFrom] or { "quiet", pickOne(L.small.quiet) }
   local speaker = findSpeaker(listener)
   if not speaker then return nil end   -- никого рядом — повтор на следующей проверке
   local text = cleanText(o[2])
@@ -1063,9 +1144,13 @@ local function tryTell()
       local e, dist, dir = c.e, c.dist, c.dir
       local speaker = findSpeaker(listener)
       if not speaker then break end
-      local level, _, role = roleOf(speaker)
+      local level, _, role, rkind = roleOf(speaker)
       if dist and dist > CFG.FAR_DISTANCE then level = level + 1 end
-      local text, kind = compose(e, level, dist, dir, #c.members)
+      local text, kind, fkey = compose(e, level, dist, dir, #c.members, rkind, dayNow)
+      if not text and kind == "forms_used" then   -- B1: все формы типа звучали за год — берём другое событие (или мелочь города)
+        R.formSkip = R.formSkip or {}
+        if not R.formSkip[e.id] then R.formSkip[e.id] = true; log("skip event=" .. tostring(e.id) .. " reason=forms_used type=" .. tostring(e.type)) end
+      end
       if text then
         if c.herald then text = ((T[CFG.LANG] or T.en).herald or "") .. text end
         local okSay, errSay = pcall(function() speaker:say(text) end)
@@ -1086,11 +1171,12 @@ local function tryTell()
         if CFG.NOISY[e.type] and not e.by_player then R.noisyDay.n[e.type] = (R.noisyDay.n[e.type] or 0) + 1 end
         local okF, f = pcall(io.open, CFG.TOLD_PATH, "a")
         if okF and f then f:write(key .. "\n"); f:close() end
-        log(string.format("told event=%s town=%s speaker=%s role=%s level=%d dist=%s herald=%s kind=%s merged=%d score=%.3f say=%s text=%s",
-          e.id, tkey, who, role, level, dist and string.format("%.0f", dist) or "?", tostring(c.herald), kind, #c.members - 1, c.score,
+        log(string.format("told event=%s town=%s speaker=%s role=%s level=%d dist=%s herald=%s kind=%s merged=%d score=%.3f form=%s say=%s text=%s",
+          e.id, tkey, who, role, level, dist and string.format("%.0f", dist) or "?", tostring(c.herald), kind, #c.members - 1, c.score, tostring(fkey),
           okSay and "ok" or tostring(errSay), text))
         if #c.members > 1 then log(string.format("merge kind=%s n=%d event=%s", tostring(e.type), #c.members, e.id)) end
         if okSay then
+          if fkey then R.forms[fkey] = dayNow end   -- B1: форма прозвучала — год не повторять
           journalAdd(e.id, who, cleanName(tkey, nil), text, dayI)   -- V3: услышанное остаётся в журнале
           mapHint(e, level, dist, now)   -- R2: наводка на карте (своя защита, ошибка выключает только карту)
         end
@@ -1172,6 +1258,7 @@ local function resetWorld()
   R.told, R.townLastHour, R.heard, R.townCount, R.smallHour = {}, {}, {}, {}, {}
   R.visit, R.spk, R.noisyDay, R.smallLast, R.lastTellClock, R.visSig = nil, nil, nil, nil, nil, nil
   R.jq, R.jday, R.jdone, R.pruneDay = {}, { day = -1, n = 0 }, {}, nil
+  R.forms, R.formSkip = {}, nil   -- B1: годовой учёт форм — свой у каждого мира
 end
 
 local function onTick()
@@ -1194,7 +1281,7 @@ local function onTick()
   local ok, err = pcall(function()
     if not readConductor() then readChronicle() end
     local d = h and math.floor(h / 24)
-    if d and R.pruneDay ~= d then R.pruneDay = d; pruneTold(h / 24) end   -- раз в игровой день
+    if d and R.pruneDay ~= d then R.pruneDay = d; pruneTold(h / 24); pruneForms(h / 24) end   -- раз в игровой день
     tryTell()
   end)
   if ok and t - (R.visT or -1e9) >= CFG.VIS_LOG_SEC then R.visT = t; pcall(visLog, false) end   -- B1: метрика видимости
@@ -1235,6 +1322,7 @@ end))
 
 -- Список рассказанного живёт в сейве мира (как журнал KMM_Conductor): новая игра = пустой список, загрузка = список этого сейва.
 local TOLD_KEY = "kmm_rumors_told"
+local FORMS_KEY = "kmm_rumors_forms"   -- B1: годовой учёт форм «тип#номер<TAB>день»; необязательное поле: старый сейв без него = пустой учёт
 if R.saveHandler then pcall(Events.off, R.saveHandler) end
 if R.loadHandler then pcall(Events.off, R.loadHandler) end
 function R.save_ids()
@@ -1261,9 +1349,18 @@ R.saveHandler = Events.on("PlayerInterface::serialise", guarded("save", function
   local ok, err = pcall(function() gd.sdata[TOLD_KEY] = str end)
   if not ok then log("serialise told list failed: " .. tostring(err)) end
   pcall(visLog, true)   -- B1: метрика видимости на каждом сохранении
+  pcall(function() local h = gameHours(); pruneForms(h and h / 24) end)
+  local fl = {}
+  for k, d in pairs(R.forms) do if type(d) == "number" then fl[#fl + 1] = k .. "\t" .. string.format("%.2f", d) end end
+  table.sort(fl)
+  local fstr = table.concat(fl, "\n")
+  local okF, errF = pcall(function() gd.sdata[FORMS_KEY] = fstr end)
+  if not okF then log("serialise forms failed: " .. tostring(errF)) end
   for _, id in ipairs(R.save_ids()) do   -- PERSIST 2026-11-13: запасная копия (загрузка sdata в игре вернула пусто)
     local okf, f = pcall(io.open, "C:/KenshiModMap/state/" .. id .. ".rumors", "w")
     if okf and f then pcall(function() f:write(str) end); f:close() end
+    local okg, g = pcall(io.open, "C:/KenshiModMap/state/" .. id .. ".rumorforms", "w")
+    if okg and g then pcall(function() g:write(fstr) end); g:close() end
   end
 end))
 R.loadHandler = Events.on("PlayerInterface::loadFromSerialise", guarded("load", function(_, gd)
@@ -1290,6 +1387,25 @@ R.loadHandler = Events.on("PlayerInterface::loadFromSerialise", guarded("load", 
     end
   end
   log("told list loaded from save: " .. n .. " via " .. how)
+  -- B1: учёт форм (нет поля — старый сейв: пусто)
+  local okv, fv = pcall(function() return gd.sdata[FORMS_KEY] end)
+  local fhow = "index"
+  if not (okv and type(fv) == "string" and fv ~= "") then
+    local okt, t = pcall(function() return gd.sdata:toTable() end)
+    if okt and type(t) == "table" and type(t[FORMS_KEY]) == "string" then okv, fv, fhow = true, t[FORMS_KEY], "toTable" end
+  end
+  if not (okv and type(fv) == "string" and fv ~= "") and how:sub(1, 5) == "file:" then   -- сейв читался из файла — и формы оттуда
+    local okf, f = pcall(io.open, "C:/KenshiModMap/state/" .. how:sub(6) .. ".rumorforms", "r")
+    if okf and f then local okr, fs = pcall(function() return f:read("*a") end); f:close(); if okr and type(fs) == "string" then okv, fv, fhow = true, fs, how end end
+  end
+  local nf = 0
+  if okv and type(fv) == "string" then
+    for k, d in fv:gmatch("([^\t\n]+)\t([%d%.%-]+)") do
+      local dn = tonumber(d)
+      if dn then R.forms[k] = dn; nf = nf + 1 end
+    end
+  end
+  log("forms ledger loaded from save: " .. nf .. " via " .. fhow)
 end))
 
 -- Отладка из консоли KenshiLua (Ctrl+Shift+L):
@@ -1315,5 +1431,6 @@ R.CFG = CFG
 R.news = { townXZ = townXZ, eventXZ = eventXZ, delay = newsDelay, heralds = scanHeralds }
 R.mapfn = { hint = mapHint, expire = mapExpire, find = findPlace, outlaw = findOutlaw }   -- R2: офлайн-тест
 R.fn = { tellable = tellable, compose = compose, small = smallLines, told = toldIndex, journal = journalFlush, vislog = visLog }   -- B1: офлайн-тест
+R.T = T   -- тексты (только читать; офлайн-тест форм)
 log("loaded v1: chronicle=" .. CFG.CHRONICLE_PATH .. " news_speed=" .. CFG.NEWS_SPEED .. " max_days=" .. CFG.NEWS_MAX_DAYS .. " lang=" .. CFG.LANG .. " map=" .. tostring(CFG.MAP.ON) .. " map_places_day=" .. CFG.MAP.MAX_PLACES_DAY ..
   " town_window_h=" .. CFG.TOWN_COOLDOWN_HOURS .. " per_town=" .. CFG.MAX_PER_TOWN .. " journal=" .. tostring(CFG.JOURNAL_ON) .. " smalltalk=" .. tostring(CFG.SMALLTALK_ON))
