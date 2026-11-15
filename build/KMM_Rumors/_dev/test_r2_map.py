@@ -35,6 +35,7 @@ function check(c, what) N = N + 1; if not c then FAILS[#FAILS + 1] = what end en
 local C, R = KMM_Conductor, KMM_Rumors
 local hs = Events.h["GameWorld::charsUpdate"]; Events.h["GameWorld::charsUpdate"] = { hs[#hs] }
 C.reset()
+R.CFG.SMALLTALK_ON = false   -- B1 V4 мелочь города проверяет test_visibility.py; здесь — только слухи
 local TI = C.cfg().town_info
 local sids = {}; for sid in pairs(TI) do sids[#sids + 1] = sid end; table.sort(sids)
 local A, Bn
