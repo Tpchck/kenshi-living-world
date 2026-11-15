@@ -123,7 +123,7 @@ check(pc.n == 0, "world change drops queue")
 pc.notifySquadDefeated = function() error("boom") end
 step(); fc.size = 92; kill(fc, "c2", "tc"); step()
 check(C.coresync().ys.off == true, "error disables Y2")
-check(logtxt():find("PROSPERITY disabled until restart", 1, true) ~= nil, "disable logged (probe already passed)")
+check(logtxt():find("PROSPERITY call failed (Y2 ", 1, true) ~= nil, "failure logged (probe already passed; Y2 paused or off)")
 check(not C.coresync().off, "coresync keeps running")
 local G = KMM_C_INT.GL
 -- 10. проба FAIL на первом вызове (чистое состояние Y2)

@@ -157,8 +157,12 @@ check(made and #made.leader.bty == nb + 1 and made.leader.bty[#made.leader.bty][
 check(made and made.leader.bty[#made.leader.bty][1].id == OM.law(victim), "bounty from victim's law faction")
 check(logged("native ok"), "marker: deed native ok")
 -- 4) повторная встреча: родная память через KMM_Nemesis
+-- шаг судьбы дня 501 (гибель/плен/рана/правосудие по случайному броску, death_p T0 = 5 %) мог снять героя до встречи: 1 падение
+-- на ~12 прогонов (fate_death в логе). Здесь проверяется память при встрече, а не судьба — шаги судьбы на время встречи выключены.
+C.cfg().params.fates.step_p = 0
 M.live = {}; M.pend = nil; hero.sp = -1000
 for i = 1, 40 do tick(501); if M.live["h" .. hero.i] then break end; CLOCK = CLOCK + 80 end
+C.cfg().params.fates.step_p = nil
 check(hero.met == 2 and #REM == 1 and REM[1][2] == "LT_FRIENDLY_AQUAINTANCE", "repeat meeting -> remember: " .. tostring(REM[1] and REM[1][2]))
 check(logged("memory LT_FRIENDLY_AQUAINTANCE for " .. hero.n), "marker: memory")
 -- 5) враждебность из ядра с фолбэком

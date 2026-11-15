@@ -56,13 +56,18 @@ function getGameWorld()
   return g
 end
 local T, TX, TZ, B, A
-for sid, I in pairs(C.cfg().town_info) do
-  for fid, f in pairs(C.state().F) do
-    if f.alive and f.towns[sid] and tr.live_caravans[fid] and tr.factions[fid] and tr.factions[fid].refugees and tr.factions[fid].tiers and next(tr.factions[fid].tiers) and I.x and not f.player then T, TX, TZ, B = sid, I.x, I.z, fid end
+local function sorted(t) local k = {}; for x in pairs(t) do k[#k + 1] = x end; table.sort(k); return k end   -- выбор не зависит от порядка pairs
+local FK = sorted(C.state().F)
+-- жертва B: у неё есть шаблон разорённого каравана (tr.caravans — его спавнит след caravan) и живой караван (видимый vcaravan)
+for _, sid in ipairs(sorted(C.cfg().town_info)) do
+  local I = C.cfg().town_info[sid]
+  for _, fid in ipairs(FK) do
+    local f = C.state().F[fid]
+    if not T and f.alive and f.towns[sid] and tr.caravans[fid] and tr.live_caravans[fid] and tr.factions[fid] and tr.factions[fid].refugees and tr.factions[fid].tiers and next(tr.factions[fid].tiers) and I.x and not f.player then T, TX, TZ, B = sid, I.x, I.z, fid end
   end
   if T then break end
 end
-for fid, f in pairs(C.state().F) do if f.alive and not f.player and fid ~= B and tr.factions[fid] and tr.factions[fid].tiers and next(tr.factions[fid].tiers) then A = fid; break end end   -- пустые tiers (Fogmen) = {} истинно в Lua: такой грабитель не выводит отрядов
+for _, fid in ipairs(FK) do local f = C.state().F[fid]; if not A and f.alive and not f.player and fid ~= B and tr.factions[fid] and tr.factions[fid].tiers and next(tr.factions[fid].tiers) then A = fid end end   -- пустые tiers (Fogmen) = {} истинно в Lua: такой грабитель не выводит отрядов
 check(T and A and B, "найдены город, жертва и грабитель")
 local function setpcs(list)
   PCS = {}; CHARS = {}
@@ -92,12 +97,16 @@ local kinds = { { kind = "refugees", fid = A }, { kind = "column", fid = A, enem
 if tr.daemons and tr.daemons.faction and #(tr.daemons.squads or {}) > 0 then kinds[#kinds + 1] = { kind = "daemons", fid = tr.daemons.faction } end
 for round = 1, 3 do
   for _, j in ipairs(kinds) do
-    local jj = {}; for k, v in pairs(j) do jj[k] = v end; jj.ev = round
+    local jj = {}; for k, v in pairs(j) do jj[k] = v end; jj.ev = round; jj.mine = true
     KMM_Traces._enqueue(jj)
+    local q = KMM_Traces.queue(); for i = #q, 1, -1 do if not q[i].mine then table.remove(q, i) end end   -- события мира (колонны, гонцы) не вытесняют проверяемые виды
     DAYV = DAYV + 1; CLOCK = CLOCK + 100; ticks(2)
   end
 end
-for _ = 1, 12 do if #KMM_Traces.queue() == 0 then break end; DAYV = DAYV + 1; CLOCK = CLOCK + 100; ticks(2) end   -- дослить очередь: порядок задач зависит от адресов таблиц (pairs), виды не должны теряться
+for _ = 1, 40 do
+  local q = KMM_Traces.queue(); for i = #q, 1, -1 do if not q[i].mine then table.remove(q, i) end end
+  if #q == 0 then break end; DAYV = DAYV + 1; CLOCK = CLOCK + 100; ticks(2)
+end   -- дослить очередь: порядок задач зависит от адресов таблиц (pairs), виды не должны теряться
 check(#SPAWNS - s0 >= #kinds, "следы всех видов спавнятся (" .. (#SPAWNS - s0) .. ")")
 local ok1, w1, m1 = far_ok(s0 + 1)
 check(ok1, string.format("следы: все >= 3500 и <= 6000 (min %.0f, max %.0f)", w1, m1))
@@ -124,13 +133,15 @@ check((bk.vcaravan or 0) >= 1 and (bk.vrefugees or 0) >= 1, "видимые со
 -- 2) нет допустимой точки -> нет спавна (и не ближе), задача остаётся
 TP.unseen_max = 3400
 local s2 = #SPAWNS
-KMM_Traces._enqueue({ kind = "band", fid = A, n = 2, ev = 777 })
-for i = 1, 5 do CLOCK = CLOCK + 100; DAYV = DAYV + 1; ticks(3) end
+local function only_mine() local q = KMM_Traces.queue(); for i = #q, 1, -1 do if not q[i].mine then table.remove(q, i) end end end
+only_mine()
+KMM_Traces._enqueue({ kind = "band", fid = A, n = 2, ev = 777, mine = true })
+for i = 1, 5 do CLOCK = CLOCK + 100; DAYV = DAYV + 1; only_mine(); ticks(3) end
 check(#SPAWNS == s2, "нет допустимой точки: спавна нет (" .. (#SPAWNS - s2) .. ")")
 check(#KMM_Traces.queue() >= 1, "задача осталась в очереди (повтор позже)")
 TP.unseen_max = 6000
-CLOCK = CLOCK + 5000; DAYV = DAYV + 5; ticks(3)
-check(#SPAWNS > s2, "точка появилась: спавн состоялся после повтора")
+CLOCK = CLOCK + 5000; DAYV = DAYV + 5; only_mine(); ticks(3)
+check(#SPAWNS > s2, "точка появилась: спавн состоялся после повтора" .. (function() if #SPAWNS > s2 then return "" end; local o = " Q="; for _, j in ipairs(KMM_Traces.queue()) do o = o .. tostring(j.kind) .. ":" .. tostring(j.at and j.at - CLOCK) .. ":" .. tostring(j.tries) .. "," end; local nn = KMM_Traces.native(); return o .. " nat=" .. tostring(nn and nn.live) end)())
 local ok2, w2 = far_ok(s2 + 1); check(ok2, "после повтора тоже >= 3500")
 
 -- 3) засада. Мир: у жертвы город T и дальний пункт D; режим wait, если на маршруте есть допустимая точка

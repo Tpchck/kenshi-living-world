@@ -194,6 +194,28 @@ local nbm = MKBM(npc)
 local q0 = #M.b1.pend
 for i = 1, 20000 do M.b1_on_crime(nbm, FAC(TOWNF), nil, 1, 4) end
 check(#M.b1.pend == q0, "npc crimes not queued")
+-- 13. B2: голодный вор (ванильное MedicalSystem:isReallyHungry) — кража почти без доплаты; убийство голодом не оправдано; ставки из params
+HUNGRY = true
+function pc:getMedical() return { isReallyHungry = function() return HUNGRY end } end
+CLOCK = CLOCK + 2; M.b1.pend = {}; M.C1 = M.cfg()
+M.b1_on_crime(bm, FAC(TOWNF), VICTIM("hs1", TOWNF, { trader = true }), 100, 3)
+local e1 = M.b1.pend[#M.b1.pend]
+check(e1 and math.abs(e1.w - 1.3 * 0.25) < 1e-9 and e1.why == "trader+hungry", "hungry theft from trader: weight x0.25, got " .. tostring(e1 and e1.w) .. " " .. tostring(e1 and e1.why))
+M.b1_on_crime(bm, FAC(TOWNF), VICTIM("hm1", TOWNF), 100, 4)
+local e2 = M.b1.pend[#M.b1.pend]
+check(e2 and e2.cn == "murder" and e2.w == 1, "hungry murder: no discount")
+HUNGRY = false
+M.b1_on_crime(bm, FAC(TOWNF), VICTIM("hs2", TOWNF, { trader = true }), 100, 3)
+local e3 = M.b1.pend[#M.b1.pend]
+check(e3 and e3.w == 1.3 and e3.why == "trader", "fed thief: full weight")
+C.cfg().params.outlaws.b1_w_hungry = 0.5; HUNGRY = true; M.C1 = M.cfg()
+M.b1_on_crime(bm, FAC(TOWNF), VICTIM("hs3", TOWNF), 100, 3)
+local e4 = M.b1.pend[#M.b1.pend]
+check(e4 and e4.w == 0.5, "b1_w_hungry from params.outlaws overrides M.DEF")
+C.cfg().params.outlaws.b1_w_hungry = nil
+local okd = pcall(function() return M.DEF.b1_price.stealing == 800 and M.DEF.b1_w_hungry == 0.25 end)
+check(okd, "M.DEF fallback kept")
+M.b1.pend = {}
 RESULT = #FAILS == 0 and ("OK " .. N) or ("FAIL: " .. table.concat(FAILS, "; "))
 '''.replace("TMPDIR", TMP), "test")
 L.lua_getfield(st, -10002, b"RESULT")
