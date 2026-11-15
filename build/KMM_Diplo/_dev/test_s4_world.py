@@ -122,6 +122,21 @@ KMM_Outlaws.state = function() return { L = { o5 = { n = "Old", pg = {}, st = "a
 CLOCK = CLOCK + 5; FIRE("GameWorld::charsUpdate")
 OK("rival: after world change old squads untouched, new one gets talk", STALE_CALLS == 0 and #ADDED == 4 and not Dm.disabled().rival_talk,
    STALE_CALLS .. " " .. #ADDED)
+-- ревью: деньги игрока — через персонажа (у PlayerInterface нет getOwnerships); мёртвый пропускается; платун — запасной путь
+do
+  local sp, sm = PCS, MONEY
+  local dead = CH("pcd", "P", 0, 0, true); dead.isDead = function() return true end; dead.getOwnerships = function() return { getMoney = function() return 1 end } end
+  local alive = CH("pca", "P", 0, 0, true); MONEY = 4321
+  PCS = { dead, alive }
+  OK("money: Character:getOwnerships of a live player char", Dm._money() == 4321, Dm._money())
+  local plat = CH("pcp", "P", 0, 0, true); plat.getOwnerships = function() error("no ownerships") end; plat.getMoney = nil
+  plat.getPlatoon = function() return { me = { getOwnerships = function() return { getMoney = function() return 777 end } end } } end
+  PCS = { plat }
+  OK("money: platoon ownerships fallback", Dm._money() == 777, Dm._money())
+  PCS = {}
+  OK("money: no player chars -> 0", Dm._money() == 0)
+  PCS, MONEY = sp, sm
+end
 -- B1: имя условия не числом (биндинги обещают целое) — терпим, считаем, пишем тип в debug.log; маркеры мира — в debug.log
 local hk = Dm.hook(); local c0 = hk.calls
 local r1 = Dm._check(nil, "6", 0, 9001)
