@@ -21,11 +21,30 @@ local function dlog(msg)
   if ok and f then f:write(os.date("%Y-%m-%d %H:%M:%S"), " [KMM_Elite] ", tostring(msg), "\n"); f:close() end
   log(msg)
 end
+-- HEALTH (2026-11-15): отказ шага -> реестр ядра KMM_Gov (ключ KMM_Elite.<шаг>): пауза 1/5/30 мин и повтор, не «до перезапуска».
+-- DISABLED — только навсегда (нет Gov: прежнее поведение). off(nm) — шаг сейчас не работает (выключен или на паузе).
+local function HG() local g = rawget(_G, "KMM_Gov"); if type(g) == "table" and type(g.h_fail) == "function" then return g end end
+local function off(nm)
+  if DISABLED[nm] then return true end
+  local g = HG(); if not g then return false end
+  local ok, up = pcall(g.h_up, "KMM_Elite." .. nm)
+  return ok and up == false
+end
+local function h_ok(nm) local g = HG(); if g then pcall(g.h_ok, "KMM_Elite." .. nm) end end
+local function h_off(nm, why, kind) DISABLED[nm] = true; local g = HG(); if g and type(g.h_off) == "function" then pcall(g.h_off, "KMM_Elite." .. nm, why, kind) end end
+local function fail(nm, err)   -- отказ шага: пауза в реестре (вернёт секунды), без Gov — до перезапуска (nil)
+  local g, p = HG(), nil
+  if g then local ok, r = pcall(g.h_fail, "KMM_Elite." .. nm, err); if ok then p = r end end
+  if type(p) == "number" then dlog(nm .. " failed, retry in " .. p .. " s: " .. tostring(err)); return p end
+  if not DISABLED[nm] then DISABLED[nm] = true; dlog(nm .. " disabled until restart: " .. tostring(err)) end
+  return nil
+end
 local function guarded(nm, fn)
   return function(...)
-    if DISABLED[nm] then return end
+    if off(nm) then return end
     local ok, err, r2, r3 = pcall(fn, ...)
-    if not ok then DISABLED[nm] = true; dlog(nm .. " disabled until restart: " .. tostring(err)); return end
+    if not ok then fail(nm, err); return end
+    h_ok(nm)
     return err, r2, r3
   end
 end
