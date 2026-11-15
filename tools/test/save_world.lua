@@ -361,6 +361,10 @@ rawset(GW, "theFactory", obj("Factory", {
   createRandomSquad = function(self, f, pos, home, maxnum, b, gd, o, m, ap, perm, target, ttown, mult, sqtype, refresh)
     stats.spawn_calls = stats.spawn_calls + 1
     if FAIL_SPAWN then error("engine refused squad") end
+    -- как в игре (лог 2026-11-15): шаблон отряда squad: GameData nil не принимает (#6 при вызове через ':'), число maxnum по значению тоже
+    if gd == nil then error("bad argument #6 to 'createRandomSquad' (KenshiLua.GameData expected, got nil)") end
+    if type(gd) ~= "table" and type(gd) ~= "userdata" then error("bad argument #6 to 'createRandomSquad' (KenshiLua.GameData expected, got " .. type(gd) .. ")") end
+    if type(maxnum) ~= "number" then error("bad argument #4 to 'createRandomSquad' (number expected, got " .. type(maxnum) .. ")") end
     if target == nil then error("bad argument #12 to 'spawn' (KenshiLua.hand expected, got nil)") end
     if type(mult) ~= "number" then error("bad argument #14 (number expected)") end
     if type(sqtype) ~= "number" then error("bad argument #15 to 'spawn' (number expected, got nil)") end

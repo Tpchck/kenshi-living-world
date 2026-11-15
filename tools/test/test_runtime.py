@@ -128,6 +128,8 @@ function getGameWorld()
                      if FAIL_SPAWN then error("engine refused squad") end
                      -- как в игре (лог 2026-11-12): hand и числа по значению не принимают nil
                      if target == nil then error("bad argument #12 to 'spawn' (KenshiLua.hand expected, got nil)") end
+                     if gd == nil then error("bad argument #6 to 'createRandomSquad' (KenshiLua.GameData expected, got nil)") end   -- как save_world.lua: шаблон отряда обязателен
+                     if type(gd) ~= "table" and type(gd) ~= "userdata" then error("bad argument #6 to 'createRandomSquad' (KenshiLua.GameData expected, got " .. type(gd) .. ")") end
                      if type(mult) ~= "number" then error("bad argument #14 (number expected)") end
                      if type(sqtype) ~= "number" then error("bad argument #15 to 'spawn' (number expected, got nil)") end
                      if type(pos) ~= "table" or not pos.x then error("bad pos") end
