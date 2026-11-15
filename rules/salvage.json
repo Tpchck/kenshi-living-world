@@ -1,0 +1,65 @@
+{
+  "_doc": "KMM_Native 2.4: loot of the context-menu orders 'Salvage Parts' (downed robot race: skeletons, robot spiders) and 'Butcher' (downed animal). Read once at plugin start (game restart to apply); each sid is checked when the first menu opens (not loaded ITEM -> entry skipped, logged). Missing/broken file -> both entries off (logged). state/salvage.off turns the entries off at once. Per section: task (KILL_CAGE_OCCUPANT | MELEE_ATTACK_ANIMAL | MELEE_ATTACK | FOCUSED_MELEE_ATTACK | UNPROVOKED_FOCUSED_MELEE_ATTACK), rolls (1..10), items [{sid, weight, min, max}], races [{match, rolls?, items?}]: match = '|'-separated case-insensitive substrings of the RACE name, first matching rule wins (put 'megacrab' before 'crab'); a rule without items keeps the section items with its own rolls. The loot comes ON TOP of the vanilla death items of the body, so a roll set is kept near half to one small vanilla carcass (meat 160, skin 400, robotics 600, electrical 400, iron plates 250 cats). credit_radius is in world units (assumed ~10 per metre, so 300 ~ 30 m, unverified); window_sec counts unpaused real seconds.",
+  "version": 1,
+  "window_sec": 60,
+  "credit_radius": 300,
+  "robot": {
+    "caption": "Salvage Parts",
+    "task": "KILL_CAGE_OCCUPANT",
+    "rolls": 2,
+    "items": [
+      {"sid": "583-gamedata.base", "name": "Robotics Components", "weight": 25, "min": 1, "max": 1},
+      {"sid": "42164-gamedata.base", "name": "Electrical Components", "weight": 30, "min": 1, "max": 2},
+      {"sid": "42159-gamedata.base", "name": "Iron Plates", "weight": 25, "min": 1, "max": 2},
+      {"sid": "579-gamedata.base", "name": "Steel Bars", "weight": 15, "min": 1, "max": 2},
+      {"sid": "42160-gamedata.base", "name": "Copper Alloy Plates", "weight": 10, "min": 1, "max": 1},
+      {"sid": "97090-rebirth.mod", "name": "Spring Steel", "weight": 8, "min": 1, "max": 1},
+      {"sid": "43398-changes_otto.mod", "name": "Power Core (rare)", "weight": 1, "min": 1, "max": 1}
+    ],
+    "races": [
+      {"match": "spider|crimper|beak thing bot", "rolls": 1}
+    ]
+  },
+  "animal": {
+    "caption": "Butcher",
+    "task": "KILL_CAGE_OCCUPANT",
+    "rolls": 2,
+    "items": [
+      {"sid": "42243-rebirth.mod", "name": "Raw Meat", "weight": 60, "min": 1, "max": 2},
+      {"sid": "42241-rebirth.mod", "name": "Animal Skin", "weight": 25, "min": 1, "max": 1},
+      {"sid": "42315-changes_otto.mod", "name": "Animal Teeth", "weight": 15, "min": 1, "max": 2}
+    ],
+    "races": [
+      {"match": "leviathan", "rolls": 5, "items": [
+        {"sid": "42243-rebirth.mod", "name": "Raw Meat", "weight": 55, "min": 2, "max": 4},
+        {"sid": "42241-rebirth.mod", "name": "Animal Skin", "weight": 30, "min": 1, "max": 2},
+        {"sid": "42315-changes_otto.mod", "name": "Animal Teeth", "weight": 15, "min": 1, "max": 3}
+      ]},
+      {"match": "megacrab", "rolls": 3, "items": [
+        {"sid": "42243-rebirth.mod", "name": "Raw Meat", "weight": 70, "min": 1, "max": 3},
+        {"sid": "42315-changes_otto.mod", "name": "Animal Teeth", "weight": 27, "min": 1, "max": 2},
+        {"sid": "56122-rebirth.mod", "name": "Megacrab Ganglion (rare)", "weight": 3, "min": 1, "max": 1}
+      ]},
+      {"match": "beak|gorillo", "rolls": 3},
+      {"match": "goat|garru|bull|turtle|cage beast", "rolls": 2, "items": [
+        {"sid": "42243-rebirth.mod", "name": "Raw Meat", "weight": 65, "min": 1, "max": 2},
+        {"sid": "42241-rebirth.mod", "name": "Animal Skin", "weight": 30, "min": 1, "max": 1},
+        {"sid": "42315-changes_otto.mod", "name": "Animal Teeth", "weight": 5, "min": 1, "max": 1}
+      ]},
+      {"match": "bonedog|wolf|dog|raptor|land bat|skimmer|spider|cat", "rolls": 2, "items": [
+        {"sid": "42243-rebirth.mod", "name": "Raw Meat", "weight": 45, "min": 1, "max": 2},
+        {"sid": "42241-rebirth.mod", "name": "Animal Skin", "weight": 20, "min": 1, "max": 1},
+        {"sid": "42315-changes_otto.mod", "name": "Animal Teeth", "weight": 35, "min": 1, "max": 2}
+      ]},
+      {"match": "crab", "rolls": 2, "items": [
+        {"sid": "42243-rebirth.mod", "name": "Raw Meat", "weight": 70, "min": 1, "max": 2},
+        {"sid": "42315-changes_otto.mod", "name": "Animal Teeth", "weight": 30, "min": 1, "max": 2}
+      ]},
+      {"match": "fishman", "rolls": 2, "items": [
+        {"sid": "50567-rebirth.mod", "name": "Foul Raw Meat", "weight": 60, "min": 1, "max": 2},
+        {"sid": "42243-rebirth.mod", "name": "Raw Meat", "weight": 20, "min": 1, "max": 1},
+        {"sid": "42315-changes_otto.mod", "name": "Animal Teeth", "weight": 20, "min": 1, "max": 2}
+      ]}
+    ]
+  }
+}
