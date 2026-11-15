@@ -19,6 +19,7 @@ local CFGP = { max_nests = 6, daily_chance = 0.4, hit_radius = 7000, vis_radius 
                patrol_min = 4, patrol_span = 4, patrol_days = 3, max_age = 22, cool_days = 14, max_per_fid = 2, vis_gap = 900, vis_per_day = 1, tick_gap = 5,
                loss_base = 0.15, loss_per_power = 0.12, loss_cap = 0.6, min_score = 1.0, cell_cool = 0.4, sdir = "C:/KenshiModMap/state/",
                smell = true, smell_r = 12000, smell_gap = 90, smell_day = 12, smell_ttl = 0.5, smell_max_src = 8, smell_cell = 16000,
+               smell_aop_gap = 1800, smell_aop_poor_down = true,   -- кровь от нападения на игрока: пауза (реальные с) и не у лежащего нищего
                squadjob = true, hold_h = 6, hold_pp = 1, sq_max = 9, sq_scan = 800, sq_retry_s = 30, sq_grace_d = 3, sq_verify_h = 1, sq_drift_r = 3000 }
 M.P = CFGP
 local RT = {}      -- runtime: {[ключ] = os.clock последнего вызова Traces}
@@ -207,12 +208,51 @@ local function smell_age(C)
 end
 -- шина дирижёра -> запах: бой и смерть рядом с игроком (KMM_Deeds даёт x/z = позиция игрока; без координат — тоже игрок)
 local SMELL_KIND = { killed = "corpse", executed = "corpse", killed_enemy = "corpse", defeated = "blood", defeated_enemy = "blood", captured = "blood" }
+-- число из rules/conductor.json params.predators, иначе CFGP
+function M.pp(k)
+  local C = C_()
+  local ok, v = pcall(function() return C.cfg().params.predators[k] end)
+  if ok and v ~= nil then return v end
+  return CFGP[k]
+end
+-- кровь от нападения НА игрока: не ловушка для избитого. Не чаще smell_aop_gap реальных секунд (на все фракции), и не пока свой игрока
+-- лежит, а отряд нищ и слаб (KMM_Nemesis.poor — ванильные числа: деньги, цена вещей, награда, прозвище, численность, навык).
+function M.aop_ok()
+  local now = os.clock()
+  local t = SM.aop_t
+  if t and now >= t and now - t < M.pp("smell_aop_gap") then return false, "aop gap" end
+  if M.pp("smell_aop_poor_down") ~= false then
+    local NM = rawget(_G, "KMM_Nemesis")
+    local okp, poor = false, false
+    if NM and NM.poor then okp, poor = pcall(NM.poor) end
+    if okp and poor == true then
+      local down = false
+      pcall(function()
+        for _, c in pairs(getPlayerInterface():getAllPlayerCharacters()) do
+          local ok, d = pcall(function() return c:isDown() or c:isUnconcious() end)
+          if ok and d == true then down = true; break end
+        end
+      end)
+      if down then return false, "poor and down" end
+    end
+  end
+  SM.aop_t = now
+  return true
+end
 function M.on_bus(ev)
   if type(ev) ~= "table" then return end
   local kind, key
   if ev.type == "deed" then kind, key = SMELL_KIND[ev.kind], ev.b
   elseif ev.type == "player_raid" then kind, key = "blood", ev.b
-  elseif ev.type == "attack_on_player" then kind, key = "blood", ev.a end
+  elseif ev.type == "attack_on_player" then
+    local ok, why = M.aop_ok()
+    if not ok then
+      SM.st.aop_skip = (SM.st.aop_skip or 0) + 1
+      if (SM.st.aop_skip or 0) <= 20 then dlog("smell skipped (attack_on_player): " .. tostring(why)) end
+      return
+    end
+    kind, key = "blood", ev.a
+  end
   if not kind then return end
   SM.st.bus = (SM.st.bus or 0) + 1
   smell(ev.x, ev.z, kind, key, ev.type .. (ev.kind and (":" .. ev.kind) or ""))

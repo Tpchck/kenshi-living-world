@@ -254,17 +254,29 @@ KC.test_steps = {
     local fobj = best and KC.faction_obj(best)
     if not fobj then KC.dlog("2 createRandomSquad: SKIP no faction object"); return end
     local okp, p = pcall(function() return pc:getPosition() end)
+    if not (okp and p) then KC.dlog("2 createRandomSquad: SKIP no player position"); return end
     local x, z = KC.xz(p)
+    -- 2026-11-15 игра: «bad argument #6 to 'createRandomSquad' (KenshiLua.GameData expected, got nil)» — шаблон отряда (squad: GameData,
+    -- BindingsReference RootObjectFactory) nil не принимает. Шаблон берём как Traces: tier_pick(фракция) -> gamedata:getData(sid, 52 = SQUAD_TEMPLATE);
+    -- нет шаблона -> SKIP (nil движку не отдаём), отказ движка -> строка в лог, остальные пробы и модуль работают дальше.
+    local T, sid = rawget(_G, "KMM_Traces"), nil
+    if T and T.tier_pick then local okt, s = pcall(T.tier_pick, best, 0); if okt and type(s) == "string" then sid = s end end
+    if not sid then KC.dlog("2 createRandomSquad: SKIP no squad template for " .. tostring(best) .. " (KMM_Traces.tier_pick)"); return end
+    local okg, gd = pcall(function() return getGameWorld().gamedata:getData(sid, 52) end)
+    if not (okg and gd) then KC.dlog("2 createRandomSquad: SKIP squad template " .. sid .. " not in gamedata (" .. tostring(gd) .. ")"); return end
+    local okh, h = pcall(function() return pc:getHandle() end)
+    if not (okh and h) then KC.dlog("2 createRandomSquad: SKIP no player hand"); return end
     local tries = {
       { "table +800", function() return { x = x + 800, y = p.y or 0, z = z + 800 } end },
       { "player Vector3", function() return p end },
     }
     for _, t in ipairs(tries) do
       local ok, res = pcall(function()
-        return getGameWorld().theFactory:createRandomSquad(fobj, t[2](), nil, 3, nil, nil, nil, nil, nil, false, pc:getHandle(), nil, 1.0, 2, false)
+        return getGameWorld().theFactory:createRandomSquad(fobj, t[2](), nil, 3, nil, gd, nil, nil, nil, false, h, nil, 1.0, 2, false)
       end)
-      KC.dlog(string.format("2 createRandomSquad %s (%s, rel %s) pos=%s: ok=%s result=%s", KC.name(best), best, tostring(bv), t[1], tostring(ok), tostring(res)))
+      KC.dlog(string.format("2 createRandomSquad %s (%s, rel %s, squad %s) pos=%s: ok=%s result=%s", KC.name(best), best, tostring(bv), sid, t[1], tostring(ok), tostring(res)))
       if ok then KC.S.stats.dispatch = KC.S.stats.dispatch + 1; return end
+      if tostring(res):find("bad argument", 1, true) then return end   -- неверный аргумент не зависит от точки: вторая попытка даст то же
     end
   end,
   function()   -- 3. смена вещи у ближайшего неуникального NPC (без проверки «не на экране» — нужно увидеть)

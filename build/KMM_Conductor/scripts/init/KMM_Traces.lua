@@ -261,6 +261,7 @@ local function tier_sid(fid, shift, adj)
   return nil
 end
 
+local stats = { spawned = 0, by_kind = {} }
 local function null_hand()   -- в игре createRandomSquad требует hand (nil -> "KenshiLua.hand expected", лог 2026-11-12); конструктора нет.
   -- getCarryingObject/getMySlaveOwner возвращают hand ПО ЗНАЧЕНИЮ (копия) — её можно обнулить. getHandle() отдаёт const& — его не трогать.
   for _, c in pairs(getPlayerInterface():getAllPlayerCharacters()) do
@@ -271,16 +272,20 @@ local function null_hand()   -- в игре createRandomSquad требует han
   end
   return nil
 end
+-- нет шаблона отряда (sid пуст или не найден в gamedata) -> nil без вызова движка: createRandomSquad с nil 6-м аргументом в игре даёт
+-- «bad argument #6» и выключает весь спавн до перезапуска. Вызывающий видит nil (do_job: «notemplate», задание снято без счёта спавна).
 local function spawn(fid, squad_sid, x, y, z, maxnum, target_handle, target_town)
-  if target_handle == nil then target_handle = null_hand(); if target_handle == nil then error("no null hand") end end
   local gw = getGameWorld()
+  local gd = squad_sid and gw.gamedata:getData(squad_sid, SQUAD_TYPE) or nil
+  if gd == nil then
+    stats.no_template = (stats.no_template or 0) + 1
+    if stats.no_template <= 20 then dlog(string.format("spawn skipped: no squad template for %s (sid %s)", tostring(fid), tostring(squad_sid))) end
+    return nil
+  end
+  if target_handle == nil then target_handle = null_hand(); if target_handle == nil then error("no null hand") end end
   local fobj = gw.factionMgr:getFactionByStringID(fid)
   if not fobj then error("no faction object " .. tostring(fid)) end
-  local gd = nil
-  if squad_sid then
-    gd = gw.gamedata:getData(squad_sid, SQUAD_TYPE)
-    if not gd then error("no squad template " .. tostring(squad_sid)) end
-  end
+  stats.spawn_calls = (stats.spawn_calls or 0) + 1
   return gw.theFactory:createRandomSquad(fobj, { x = x, y = y, z = z }, nil, maxnum or 5, nil, gd, nil, nil, nil, false,
                                          target_handle, target_town, 1.0, 2, false)
 end
@@ -332,7 +337,6 @@ end
 
 ---------------------------------------------------------------------------------------------- очередь следов
 local Q, recent = {}, {}
-local stats = { spawned = 0, by_kind = {} }
 local last_spawn, day_key, day_count = -1000, -1, 0
 local EXTB = { day = -1, n = 0, tag = {} }   -- EXT-бюджет внешних модулей
 local function day_roll()   -- дневной лимит общий для следов, видимых событий и засад: сброс при любой смене дня
@@ -368,9 +372,117 @@ function PACE.score(job, now)
   local c = PACE.class(job)
   return PACE.PRIO[c] + math.min(40, PACE.stale(PACE.tag(job)) * 10) + math.min(10, (now - (job.qt or now)) / 30)
 end
-function PACE.blocked(job, now)   -- враждебная встреча слишком скоро после прошлой
+-- Ворота силы и богатства (общее правило, не тип старта): задание с poor_gate ждёт, пока отряд игрока нищ и слаб
+-- (KMM_Nemesis.poor: деньги, цена вещей, награда ядра, прозвище, численность, навык — ванильные числа). Нет Nemesis -> не ждёт.
+function PACE.poor()
+  local NM = rawget(_G, "KMM_Nemesis")
+  if not (NM and NM.poor) then return false end
+  local ok, v = pcall(NM.poor)
+  return ok and v == true
+end
+-- свой игрока лежит (ванильные isDown/isUnconcious): метка ko_t; враждебная встреча не раньше hostile_after_ko_seconds после того,
+-- как последний раз видели лежащего (нокаут длиннее hostile_gap — без цепочки нокаутов)
+function PACE.ko_step(now)
+  local down = false
+  pcall(function()
+    for _, c in pairs(getPlayerInterface():getAllPlayerCharacters()) do
+      local ok, d = pcall(function() return c:isDown() or c:isUnconcious() end)
+      if ok and d == true then down = true; break end
+    end
+  end)
+  if down then
+    if not PACE.ko_t or now - PACE.ko_t > (P.hostile_after_ko_seconds or 300) then dlog("PACE: player squad down - hostile encounters wait") end
+    PACE.ko_t = now
+  end
+  return down
+end
+function PACE.blocked(job, now)   -- враждебная встреча слишком скоро после прошлой (или пока отряд игрока нищ и слаб — для poor_gate)
+  if job.poor_gate and PACE.poor() then PACE.waited_poor = (PACE.waited_poor or 0) + 1; return true end
   if PACE.class(job) == "critical" or not PACE.hostile(job) then return false end
-  return now - PACE.last_host < (P.hostile_gap_seconds or 240)
+  if PACE.ko_t and now >= PACE.ko_t and now - PACE.ko_t < (P.hostile_after_ko_seconds or 300) then PACE.waited_ko = (PACE.waited_ko or 0) + 1; return true end
+  return now - PACE.last_host < (P.hostile_gap_seconds or 600)
+end
+-- ПОДПИСЬ И ВЕСТНИК (B1 V1): отряд следа подписан по сути (ActivePlatoon:setName — подпись на карте и над головами), вожак беженцев,
+-- колонны, гонца, каравана, патруля, освобождённых один раз говорит строку о своём деле (Character:say), когда игрок подойдёт на herald_r.
+-- Вожак хранится как указатель не дольше herald_ttl_seconds и трогается только пока он в живом наборе движка
+-- (getCharacterUpdateList():has — без разыменования); проверить нечем -> вестники выключены, подписи остаются.
+PACE.HER = {}
+function PACE.clean(n) if type(n) == "string" and n ~= "" and not n:find("[\128-\255%(%)%d]") then return n end end
+function PACE.fname(fid) local ok, n = pcall(C.name, fid); return (ok and PACE.clean(n)) or nil end
+function PACE.tname(sid, fallback)
+  local I = sid and CFG.town_info and CFG.town_info[sid]
+  return (I and PACE.clean(I.name)) or PACE.clean(fallback)
+end
+PACE.LINES = {
+  refugees = { "We left with what we could carry.", "%s is lost to us. We carry what we could.", "Do not go towards %s. There is nothing left there.", "We had homes near %s. Now we have this road." },
+  column = { "We march on %s. Stay off the road.", "War with %s. Keep clear, stranger." },
+  courier = { "Word for the garrisons. Out of my way.", "Urgent news for %s. Move." },
+  caravan = { "Goods for the market. Keep your hands to yourself.", "Long road, thin margins. Don't make it longer." },
+  garrison = { "Trouble in town. Move along.", "Orders from %s. Nobody loiters here." },
+  freed = { "We were in chains until yesterday.", "Free. Thanks to %s. Never again." },
+}
+function PACE.label(pl, kind, fid, ex)   -- подпись отряда + вестник; ex: { town = имя, enemy = fid, ev = id }
+  if not pl or P.trace_names == false then return end
+  ex = ex or {}
+  local fn = PACE.fname(fid) or "Travelling"
+  local nm, lk, arg
+  if kind == "refugees" then nm = ex.town and ("Refugees from " .. ex.town) or (fn .. " refugees"); lk, arg = "refugees", ex.town
+  elseif kind == "column" then local en = ex.enemy and PACE.fname(ex.enemy); nm = en and (fn .. " column against " .. en) or (fn .. " war column"); lk, arg = en and "column", en
+  elseif kind == "garrison" then nm = fn .. " patrol"; lk, arg = "garrison", fn
+  elseif kind == "band" then nm = fn .. " band"
+  elseif kind == "slave_caravan" then nm = fn .. " slave caravan"
+  elseif kind == "bounty_hunt" then nm = fn .. " bounty hunters"
+  elseif kind == "courier" then nm = fn .. " courier"; lk, arg = "courier", ex.town or fn
+  elseif kind == "caravan" then nm = fn .. " caravan"; lk = "caravan"
+  elseif kind == "wanderer" then nm = fn .. " wanderers"
+  elseif kind == "freed" then nm = fn .. " and the freed"; lk, arg = "freed", fn
+  elseif kind == "expedition" then nm = fn .. " expedition"
+  elseif kind == "smugglers" then nm = fn .. " smugglers"
+  end
+  if not nm then return end
+  local okn = pcall(function() pl:getActivePlatoon():setName(nm) end)
+  stats.named = (stats.named or 0) + (okn and 1 or 0)
+  if not okn then stats.name_fail = (stats.name_fail or 0) + 1 end
+  if lk and PACE.LINES[lk] and P.heralds ~= false and not PACE.her_off and #PACE.HER < (P.herald_max or 6) then
+    local okl, leader = pcall(function() return pl:getSquadLeader() end)
+    if okl and leader then
+      local fmt = PACE.LINES[lk][math.random(#PACE.LINES[lk])]
+      if fmt:find("%s", 1, true) and not arg then fmt = PACE.LINES[lk][1]; if fmt:find("%s", 1, true) then fmt = nil end end
+      if fmt then
+        PACE.HER[#PACE.HER + 1] = { ch = leader, line = fmt:find("%s", 1, true) and string.format(fmt, arg) or fmt, kind = kind, ev = ex.ev,
+                                    t1 = os.clock() + (P.herald_ttl_seconds or 900), nm = nm }
+      end
+    end
+  end
+end
+function PACE.herald_step(px, pz, now)
+  if #PACE.HER == 0 or PACE.her_off then return end
+  local okS, set = pcall(function() return getGameWorld():getCharacterUpdateList() end)
+  local keep = {}
+  for _, h in ipairs(PACE.HER) do
+    if now < h.t1 and now >= h.t1 - (P.herald_ttl_seconds or 900) - 1 then
+      local okh, live = false, nil
+      if okS and set then okh, live = pcall(function() return set:has(h.ch) end) end
+      if not okh or type(live) ~= "boolean" then
+        PACE.her_off = true; PACE.HER = {}
+        dlog("herald off until restart: no liveness check (getCharacterUpdateList has unavailable) - names stay, lines off")
+        return
+      end
+      if live then
+        local okp, x, z = pcall(function() local p = h.ch:getPosition(); return p.x, p.z end)
+        local okd, gone = pcall(function() return h.ch:isDead() or h.ch:isDown() end)
+        if okp and x and okd and not gone then
+          if dist(px, pz, x, z) <= (P.herald_r or 700) then
+            local oks = pcall(function() h.ch:say(h.line) end)
+            if not oks then oks = pcall(function() h.ch:sayALine(h.line, true) end) end
+            stats.herald = (stats.herald or 0) + (oks and 1 or 0)
+            dlog(string.format("herald said: kind=%s event=%s squad=%s ok=%s line=%s", h.kind, tostring(h.ev), h.nm, tostring(oks), h.line))
+          else keep[#keep + 1] = h end
+        end
+      end
+    end
+  end
+  PACE.HER = keep
 end
 function PACE.took(job, now)
   local tag = PACE.tag(job)
@@ -733,6 +845,7 @@ local function do_job(job, px, pz, py, pc)
   local pcs = pc_xz()
   local sx, sz = pick_any(pcs)
   if not sx then return false, "nopoint" end
+  local nt0, sc0 = stats.no_template or 0, stats.spawn_calls or 0
   local r = dist(px, pz, sx, sz)
   local name = (job.kind == "daemons") and "Chaos daemons" or C.name(job.fid)
   if job.kind == "refugees" then
@@ -743,8 +856,9 @@ local function do_job(job, px, pz, py, pc)
       if not plan then plan = C.road_plan("refugees", job.fid, { from = job.sid, x = job.tx, z = job.tz }) end
     end
     local tt = dest_town(plan, job.fid) or town_of(job.fid, px + (px - (job.tx or px)), pz + (pz - (job.tz or pz)))
-    local pl = spawn(job.fid, TR.factions[job.fid].refugees, sx, py, sz, P.refugee_size or 4, nil, tt)
+    local pl = spawn(job.fid, TR.factions[job.fid] and TR.factions[job.fid].refugees, sx, py, sz, P.refugee_size or 4, nil, tt)
     settle(pl, tt)
+    PACE.label(pl, "refugees", job.fid, { town = PACE.tname(job.sid), ev = job.ev })
     local led = tt and NAT.apply(pl, "refugees", job.fid, "refugee", plan ~= nil)   -- U1: ванильные беженцы идут в новый город сами
     if plan then trv_register("refugees", job.fid, pl, sx, sz, plan, plan.id, nil, nil, led) end
   elseif job.kind == "column" or job.kind == "band" or job.kind == "garrison" then
@@ -759,6 +873,7 @@ local function do_job(job, px, pz, py, pc)
     for i = 1, n do
       local jx, jz = jit(sx, sz, 200, pcs)
       local pl = spawn(job.fid, sid, jx, py, jz, P.tier_squad_size or 5, nil, tt)
+      if i == 1 then PACE.label(pl, job.kind, job.fid, { enemy = job.enemy, ev = job.ev }) end
       local led = tt and NAT.apply(pl, job.kind, job.fid, wplan and "wander" or (job.kind ~= "band" and "travel" or nil), false)   -- U1: колонна/гарнизон — к городу-цели, бродяги — по городам
       if wplan and i == 1 then trv_register("wanderer", job.fid, pl, jx, jz, wplan, C.road_depart(wplan), nil, nil, led) end
     end
@@ -793,8 +908,9 @@ local function do_job(job, px, pz, py, pc)
     if job.on_spawn then local okc, e = pcall(job.on_spawn, pls, bx, bz); if not okc then dlog("ext on_spawn error (" .. tostring(job.tag) .. "): " .. tostring(e)) end end
     stats.by_tag = stats.by_tag or {}; stats.by_tag[job.tag or "?"] = (stats.by_tag[job.tag or "?"] or 0) + 1
   elseif job.kind == "slave_caravan" then   -- SLAVES: караван (живой шаблон) + охрана тира фракции, цель — город хозяина рабов
+    if not TR.caravans[job.fid] then stats.no_template = (stats.no_template or 0) + 1; return false, "notemplate" end
     local tt = (job.owner and getGameWorld().factionMgr:getFactionByStringID(job.owner) and town_of(job.owner, job.tx or px, job.tz or pz)) or town_of(job.fid, job.tx or px, job.tz or pz)
-    spawn(job.fid, TR.caravans[job.fid], sx, py, sz, P.caravan_size or 4, nil, tt)
+    PACE.label(spawn(job.fid, TR.caravans[job.fid], sx, py, sz, P.caravan_size or 4, nil, tt), "slave_caravan", job.fid, { ev = job.ev })
     local gs = tier_sid(job.fid)
     if gs then local jx, jz = jit(sx, sz, 150, pcs); spawn(job.fid, gs, jx, py, jz, P.tier_squad_size or 5, nil, tt) end
   elseif job.kind == "bounty_hunt" then   -- BOUNTY: охотники за головой идут на отряд игрока; сила растёт с наградой
@@ -814,6 +930,7 @@ local function do_job(job, px, pz, py, pc)
     for i = 1, k do
       local jx, jz = jit(sx, sz, 150, pcs)
       local hpl = spawn(hfid, sid, jx, py, jz, P.tier_squad_size or 5, h, nil)
+      PACE.label(hpl, "bounty_hunt", hfid)
       NAT.apply(hpl, "bounty_hunt", hfid, "assault", false)   -- U1: охоту на отряд игрока (AItarget) ведёт ядро
       if i == 1 and hpl and NM and NM.on_hunt then pcall(NM.on_hunt, hpl, hfid, job.fid, job.amount) end
     end
@@ -827,6 +944,7 @@ local function do_job(job, px, pz, py, pc)
     if not csid then return false, "noplan" end
     local ctt = dest_town(plan, plan.fid)
     local pl = spawn(plan.fid, csid, sx, py, sz, 3, nil, ctt)
+    PACE.label(pl, "caravan", plan.fid)
     local led = ctt and NAT.apply(pl, "caravan", plan.fid, nil, true)   -- U1: живой шаблон каравана (свой ванильный пакет торговца) + постоянный отряд
     trv_register("caravan", plan.fid, pl, sx, sz, plan, C.road_depart(plan), nil, nil, led)
     name = C.name(plan.fid)
@@ -836,6 +954,7 @@ local function do_job(job, px, pz, py, pc)
     if not wsid then return false, "noplan" end
     local wtt = dest_town(plan, plan.fid)
     local pl = spawn(plan.fid, wsid, sx, py, sz, 2, nil, wtt)
+    PACE.label(pl, "wanderer", plan.fid)
     local led = wtt and NAT.apply(pl, "wanderer", plan.fid, "wander", false)
     trv_register("wanderer", plan.fid, pl, sx, sz, plan, C.road_depart(plan), nil, nil, led)
     name = C.name(plan.fid)
@@ -845,6 +964,7 @@ local function do_job(job, px, pz, py, pc)
     if not csid then return false, "noplan" end
     local ctt = dest_town(plan, job.fid)
     local pl = spawn(job.fid, csid, sx, py, sz, 2, nil, ctt)
+    PACE.label(pl, "courier", job.fid, { town = PACE.tname(plan.to, plan.to), ev = job.ev })
     local led = ctt and NAT.apply(pl, "courier", job.fid, "travel", false)
     trv_register("courier", job.fid, pl, sx, sz, plan, nil, nil, nil, led)
     C.emit({ type = "courier", a = job.fid, from = plan.from, to = plan.to, why = job.why })
@@ -854,10 +974,19 @@ local function do_job(job, px, pz, py, pc)
     if job.squad then for _, x in ipairs(list) do if tostring(x) == tostring(job.squad) then sq = x; break end end end
     spawn(TR.daemons.faction, sq, sx, py, sz, 4, nil, nil)
   elseif job.kind == "caravan" then
-    spawn(job.fid, TR.caravans[job.fid], sx, py, sz, P.caravan_dead or 3, nil, nil)
-    dead_watch[#dead_watch + 1] = { until_t = os.clock() + 20, x = sx, z = sz }
+    local cs = TR.caravans[job.fid]   -- шаблон «мёртвого» каравана (его персонажей kill_dead_caravans кладёт телами); живой вместо него не годится
+    if not cs then
+      stats.no_template = (stats.no_template or 0) + 1
+      dlog(string.format("trace caravan skipped: %s has no dead-caravan template", tostring(job.fid)))
+      return false, "notemplate"
+    end
+    if spawn(job.fid, cs, sx, py, sz, P.caravan_dead or 3, nil, nil) then dead_watch[#dead_watch + 1] = { until_t = os.clock() + 20, x = sx, z = sz } end
   else
     return false
+  end
+  if (stats.spawn_calls or 0) == sc0 and (stats.no_template or 0) > nt0 then   -- ни одного отряда: шаблона не нашлось
+    dlog(string.format("trace %s skipped: %s (%s) - no squad template", job.kind, tostring(name), tostring(job.why)))
+    return false, "notemplate"
   end
   stats.spawned = stats.spawned + 1
   stats.by_kind[job.kind] = (stats.by_kind[job.kind] or 0) + 1
@@ -1225,20 +1354,27 @@ local function first_hour(px, pz)
   end
   table.sort(near, function(a, b) return a.d < b.d end)
   local jobs = {}
-  for _, a in ipairs(near) do   -- 1) колонна на войну: ближайшая пара в смертельной вражде
-    for _, b in ipairs(near) do
-      if a.fid ~= b.fid and C.rel(a.fid, b.fid) <= -50 then jobs[#jobs + 1] = { kind = "column", fid = a.fid, enemy = b.fid, tx = b.x, tz = b.z, why = "first hour: war" }; break end
-    end
-    if #jobs > 0 then break end
-  end
+  -- порядок: сперва то, что даёт шанс (разорённый караван — лут; беженцы — весть), потом война, отряд фракции — последним и за воротами
+  -- силы и богатства (poor_gate: ждёт, пока отряд игрока нищ и слаб, не дольше first_hour_poor_seconds, потом отменён)
+  for _, a in ipairs(near) do if TR.caravans[a.fid] then jobs[#jobs + 1] = { kind = "caravan", fid = a.fid, why = "first hour: road ambush" }; break end end   -- 1)
   local poor, pw   -- 2) беженцы из самого бедного соседа
   for _, a in ipairs(near) do local w = S.F[a.fid].wealth / math.max(1, S.F[a.fid].wealth0); if TR.factions[a.fid].refugees and (not pw or w < pw) then poor, pw = a, w end end
   if poor then jobs[#jobs + 1] = { kind = "refugees", fid = poor.fid, tx = poor.x, tz = poor.z, why = "first hour: hardship" } end
-  for _, a in ipairs(near) do if TR.caravans[a.fid] then jobs[#jobs + 1] = { kind = "caravan", fid = a.fid, why = "first hour: road ambush" }; break end end   -- 3)
-  if near[1] then jobs[#jobs + 1] = { kind = "band", fid = near[1].fid, n = 1, why = "first hour: patrol in wealth tier" } end           -- 4)
+  local col
+  for _, a in ipairs(near) do   -- 3) колонна на войну: ближайшая пара в смертельной вражде
+    for _, b in ipairs(near) do
+      if not col and a.fid ~= b.fid and C.rel(a.fid, b.fid) <= -50 then col = { kind = "column", fid = a.fid, enemy = b.fid, tx = b.x, tz = b.z, why = "first hour: war" } end
+    end
+    if col then break end
+  end
+  if col then jobs[#jobs + 1] = col end
+  if near[1] then jobs[#jobs + 1] = { kind = "band", fid = near[1].fid, n = 1, why = "first hour: patrol in wealth tier", poor_gate = true,
+                                      pg_until = os.clock() + (P.first_hour_poor_seconds or 5400) } end           -- 4)
   local gap = P.first_hour_gap_seconds or 420
   for i = 1, math.min(#jobs, P.first_hour_traces or 4) do jobs[i].at = os.clock() + 60 + (i - 1) * gap; jobs[i].ox, jobs[i].oz = px, pz; enqueue(jobs[i]) end
-  dlog(string.format("first hour: %d traces scheduled near player", math.min(#jobs, P.first_hour_traces or 4)))
+  dlog(string.format("first hour: %d traces scheduled near player (order:%s; player poor now=%s)", math.min(#jobs, P.first_hour_traces or 4),
+       (function() local t = {}; for i = 1, math.min(#jobs, P.first_hour_traces or 4) do t[#t + 1] = " " .. jobs[i].kind end; return table.concat(t) end)(),
+       tostring(PACE.poor())))
 end
 
 ---------------------------------------------------------------------------------------------- видимые события (шина → отряд рядом с игроком)
@@ -1317,6 +1453,7 @@ local function visible_materialize(px, pz, py)
             local plan = roads_on("caravans") and C.road_plan("caravan", fid, { x = ex, z = ez, fids = TR.live_caravans }) or nil   -- ROADS: груз из избытка в дефицит
             local ctt = dest_town(plan, fid) or town_of(fid, ex, ez)
             local pl = spawn(fid, sid, sx, py, sz, 3, nil, ctt)
+            PACE.label(pl, "caravan", fid, { ev = ev.id })
             local led = plan and ctt and NAT.apply(pl, "caravan", fid, nil, true)   -- U1: караван с грузом — постоянный отряд ядра
             if plan then trv_register("caravan", fid, pl, sx, sz, plan, C.road_depart(plan), nil, nil, led) end
             ok = true
@@ -1332,6 +1469,7 @@ local function visible_materialize(px, pz, py)
             local rtt = dest_town(plan, fid) or town_of(fid, px + (px - ex), pz + (pz - ez))
             local pl = spawn(fid, rs, sx, py, sz, P.refugee_size or 4, nil, rtt)
             settle(pl, rtt)
+            PACE.label(pl, "refugees", fid, { town = PACE.tname(ev.town_sid, ev.town_name), ev = ev.id })
             local led = rtt and NAT.apply(pl, "refugees", fid, "refugee", plan ~= nil)
             if plan then trv_register("refugees", fid, pl, sx, sz, plan, plan.id, nil, nil, led) end
             ok = true
@@ -1346,6 +1484,7 @@ local function visible_materialize(px, pz, py)
             local rtt = town_of(fid, ex, ez)
             local pl = spawn(fid, rs, sx, py, sz, P.refugee_size or 4, nil, rtt)
             settle(pl, rtt)
+            PACE.label(pl, "freed", fid, { ev = ev.id })
             if rtt then NAT.apply(pl, "freed", fid, "refugee", false) end
             if es then local epl = spawn(fid, es, sx + 60, py, sz + 60, 2, nil, rtt); if rtt then NAT.apply(epl, "escort", fid, "travel", false) end end
             ok = true
@@ -1355,13 +1494,13 @@ local function visible_materialize(px, pz, py)
         local sid = tier_sid(fid, 0, true)
         if sid then
           local sx, sz = at_event(300)
-          if sx then spawn(fid, sid, sx, py, sz, 3, nil, nil); ok = true else nopoint = true end
+          if sx then PACE.label(spawn(fid, sid, sx, py, sz, 3, nil, nil), "expedition", fid, { ev = ev.id }); ok = true else nopoint = true end
         end
       elseif q.kind == "vsmuggle" then
         local sid = tier_sid(fid, -9)   -- самый бедный тир фракции: малый отряд без блеска
         if sid then
           local sx, sz = at_event(400)
-          if sx then spawn(fid, sid, sx, py, sz, 2, nil, nil); ok = true else nopoint = true end
+          if sx then PACE.label(spawn(fid, sid, sx, py, sz, 2, nil, nil), "smugglers", fid, { ev = ev.id }); ok = true else nopoint = true end
         end
       end
       if nopoint then return end   -- нет допустимой точки: остаётся в очереди, повтор в следующем тике (не ближе)
@@ -1977,6 +2116,13 @@ local g_spawn = guarded("spawn", function(px, pz, py, pc)
   local now = os.clock()
   if now - last_spawn < (P.min_gap_seconds or 75) then return end
   if day_count >= (P.max_per_day or 8) then return end
+  for i = #Q, 1, -1 do   -- ворота богатства: отряд так и остался нищ и слаб до срока — след отменён (мир не ждёт вечно)
+    local j = Q[i]
+    if j.poor_gate and j.pg_until and now > j.pg_until and PACE.poor() then
+      table.remove(Q, i); stats.skipped_poor = (stats.skipped_poor or 0) + 1
+      dlog(string.format("trace %s dropped: %s - player squad stayed poor and weak", tostring(j.kind), tostring(j.why)))
+    end
+  end
   local best, bs = nil, -1   -- PACE: лучший готовый не-base_raid по счёту; base_raid обрабатывается по-старому (шлюз/разведка) и важнее всех
   local full = NAT.full()   -- U1: у игрока уже nat_live_max живых временных отрядов ядра — ждут только некритичные
   for i, job in ipairs(Q) do
@@ -2021,6 +2167,8 @@ local g_loot = guarded("loot_scan", loot_scan)
 local g_base = guarded("base_track", base_track)
 local g_tier = guarded("tier_watch", tier_watch)
 local g_first = guarded("first_hour", first_hour)
+local g_pko = guarded("pace_ko", PACE.ko_step)
+local g_her = guarded("herald", PACE.herald_step)
 local g_visible = guarded("visible", visible_materialize)
 local g_vsub = guarded("visible_sub", visible_sub)
 local g_amb = guarded("ambush", amb_materialize)
@@ -2042,6 +2190,8 @@ local function tick_a(px, pz, py, pc)   -- секундный такт, част
     if last_ev == 0 then last_ev = -1 end
     g_first(px, pz)
   end
+  g_pko(os.clock())
+  g_her(px, pz, os.clock())
   g_events(px, pz)
   g_spawn(px, pz, py, pc)
   g_vsub()
@@ -2127,7 +2277,10 @@ KMM_Traces = {
   near = function(x, z, r) if not init() then return false end; local px, pz = player_pos(); if not px or not x then return false end; return dist(px, pz, x, z) <= (r or P.radius or 70000) end,
   bounty = function() return BNT end,
   tgm = TGM,   -- B5: town_of/read/set/probe родного Town.tradeGoodsMults
-  pace = function() return { n = PACE.n, seen = PACE.seen, waited_host = PACE.waited_host, drought = PACE.drought, last_host = PACE.last_host } end,
+  pace = function() return { n = PACE.n, seen = PACE.seen, waited_host = PACE.waited_host, drought = PACE.drought, last_host = PACE.last_host,
+                              waited_ko = PACE.waited_ko or 0, waited_poor = PACE.waited_poor or 0, ko_t = PACE.ko_t } end,
+  heralds = function() return PACE.HER end,
+  _pace = PACE,
   pace_class = function(job) return PACE.class(job), PACE.hostile(job) end,
   loot_state = function() return LT, gstat end,
   _equip = function(ch, inv, now, h) return try_equip(ch, inv, now or os.clock(), h or "h") end,
