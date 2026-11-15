@@ -464,16 +464,12 @@
    "cold_accept": 0.4
   },
   "story": {
-   "_doc": "STORY: «Сумерки реликтов» — акты мира. Раз в игровой день модуль KMM_Conductor.lua (блок STORY) считает метрики мира, выбирает акт по переходам и ставит параметры дирижёра = база × множители акта (база снимается при старте; ничего нового не создаётся, мир не пишется). mods: [путь в params, op, значение]; op: mul (множитель; сила акта k от семени сжимает/растягивает отклонение от 1), add, set; '*' в конце пути — все ключи таблицы. next: первый переход, у которого сработало любое из условий any (внутри условия — И). Условия: y_ge/y_lt — игровой год (+сдвиг семени shift), act_days_ge, ore_crisis, ore_fracture, ore_stress_ge, know_ge, comp_le (средние), heat_ge/heat_le (число держав с индексом кризиса >= heat_ci), forged (игрок ковал реликты). Метрики видны в S.story.m. docs\\STORY.md. final: к этому году (+shift) любой акт сменяется финальным.",
+   "_doc": "STORY: «Сумерки реликтов» — обороты мира (финала нет). Раз в игровой день блок STORY (KMM_Conductor_Runtime.lua) считает метрики мира, ведёт фазу оборота (cycle) и ставит параметры дирижёра = база × множители фазы (база снимается один раз; ничего нового не создаётся, мир не пишется). acts.<фаза>.mods: [путь в params, op, значение]; op: mul (сила фазы k от семени × kx оборота сжимает/растягивает отклонение от 1), add, set; '*' в конце пути — все ключи таблицы. Метрики и давление ветвей видны в S.story.m (pf/pt/pn), обороты — S.story.cur и S.story.cycles. docs\\STORY.md.",
    "enabled": true,
    "start": "quiet",
    "heat_ci": 2.5,
    "seed": {
-    "_doc": "каждая новая игра: shift_years — сдвиг временных порогов ±; k — сила каждого акта (0.75..1.3); heat_k — масштаб порогов heat_ge",
-    "shift_years": [
-     -0.6,
-     0.8
-    ],
+    "_doc": "раз на кампанию: k — сила каждой фазы (0.75..1.3); heat_k — масштаб роста heat в давлении Ночи",
     "k": [
      0.75,
      1.3
@@ -484,6 +480,146 @@
     ]
    },
    "min_act_days": 120,
+   "cycle": {
+    "_doc": "Оборот: start -> rise -> кризис из crises (выбор по давлению; до max_crises подряд) -> [after_act, если кризис тяжёлый] -> recover -> start. Длина оборота = years × campaign_k (семя) + after.<кризис прошлого оборота>.years ± jitter_years, в пределах min_years..max_years (год = день/365). Срок фазы = share × длина (crisis — на все кризисы оборота; recover добирает до длины оборота); выход возможен с window[0]×срока по состоянию мира, обязателен на window[1]×срока. Давление (0..1.5): famine — ore_stress / его средняя (ratio) + fresh, если рудный кризис начался в этом обороте; twilight — на сколько очков компонентов реликтов ниже их средней (lag; износ быстрее обычного); night — рост heat над средней (rise, /heat_k) + share_w × доля держав в кризисе (share). Средние — скользящие, ema_days. Выбор ветви: давление × шум оборота (noise) × repeat_penalty[i], если этот кризис был i оборотов назад. Переходы: start -> rise при давлении >= restless или ковке игрока в этом обороте; rise -> кризис при счёте >= pick; кризис -> другой кризис при счёте >= escalate, пока потрачено < esc_frac бюджета кризиса; кризис стихает, когда его давление <= recede × давления на входе; after_act/recover -> дальше, когда все давления <= calm. heavy: кризис из crises, или их >= count_ge, или давление >= p_ge -> после кризиса after_act. after.<кризис>.same — доли (share) и сила (k) фаз этого же оборота, .next — следующего; recover сильнее на know_k × рост know за оборот (до know_cap).",
+    "years": 5,
+    "min_years": 4,
+    "max_years": 6,
+    "campaign_k": [
+     0.92,
+     1.08
+    ],
+    "jitter_years": 0.35,
+    "rise": "scramble",
+    "crises": [
+     "famine",
+     "twilight",
+     "night"
+    ],
+    "after_act": "ashes",
+    "recover": "forge",
+    "share": {
+     "quiet": 0.15,
+     "scramble": 0.25,
+     "crisis": 0.34,
+     "ashes": 0.09,
+     "forge": 0.17
+    },
+    "window": [
+     0.6,
+     1.5
+    ],
+    "recover_window": [
+     0.85,
+     1.2
+    ],
+    "recover_min": 0.5,
+    "ema_days": 540,
+    "pressure": {
+     "famine": {
+      "ratio": [
+       1.0,
+       1.5
+      ],
+      "floor": 0.5,
+      "fresh": 0.8,
+      "fresh_days": 365
+     },
+     "twilight": {
+      "lag": [
+       1.5,
+       7
+      ]
+     },
+     "night": {
+      "rise": [
+       0,
+       2.5
+      ],
+      "share": [
+       0.15,
+       0.45
+      ],
+      "share_w": 0.3
+     }
+    },
+    "restless": 0.6,
+    "pick": 1.0,
+    "escalate": 1.1,
+    "esc_frac": 0.55,
+    "max_crises": 2,
+    "recede": 0.6,
+    "calm": 0.6,
+    "heavy": {
+     "crises": [
+      "night"
+     ],
+     "count_ge": 2,
+     "p_ge": 1.1
+    },
+    "noise": [
+     0.85,
+     1.15
+    ],
+    "repeat_penalty": [
+     0.5,
+     0.8
+    ],
+    "know_k": 0.5,
+    "know_cap": 0.3,
+    "after": {
+     "night": {
+      "years": 0.35,
+      "same": {
+       "share": {
+        "ashes": 1.3,
+        "forge": 1.2
+       },
+       "k": {
+        "forge": 1.15
+       }
+      },
+      "next": {
+       "share": {
+        "quiet": 1.35,
+        "scramble": 0.85
+       },
+       "k": {
+        "quiet": 1.15
+       }
+      }
+     },
+     "famine": {
+      "years": -0.2,
+      "same": {
+       "k": {
+        "forge": 1.1
+       }
+      },
+      "next": {
+       "share": {
+        "quiet": 0.85,
+        "scramble": 1.15
+       }
+      }
+     },
+     "twilight": {
+      "years": 0,
+      "same": {
+       "share": {
+        "forge": 1.1
+       }
+      },
+      "next": {
+       "k": {
+        "scramble": 1.15
+       }
+      }
+     }
+    },
+    "keep_hist": 60,
+    "keep_cycles": 12
+   },
    "acts": {
     "quiet": {
      "name": "Тишина у костров",
@@ -508,23 +644,6 @@
        "mul",
        0.7
       ]
-     ],
-     "next": [
-      {
-       "to": "scramble",
-       "any": [
-        {
-         "y_ge": 2.2
-        },
-        {
-         "forged": true
-        },
-        {
-         "ore_stress_ge": 1.5,
-         "y_ge": 1.5
-        }
-       ]
-      }
      ]
     },
     "scramble": {
@@ -560,27 +679,6 @@
        "mul",
        1.2
       ]
-     ],
-     "next": [
-      {
-       "to": "famine",
-       "any": [
-        {
-         "ore_crisis": true
-        }
-       ]
-      },
-      {
-       "to": "twilight",
-       "any": [
-        {
-         "comp_le": 35
-        },
-        {
-         "y_ge": 6
-        }
-       ]
-      }
      ]
     },
     "famine": {
@@ -621,40 +719,6 @@
        "mul",
        1.1
       ]
-     ],
-     "next": [
-      {
-       "to": "night",
-       "any": [
-        {
-         "heat_ge": 4,
-         "act_days_ge": 150
-        }
-       ]
-      },
-      {
-       "to": "twilight",
-       "any": [
-        {
-         "comp_le": 35,
-         "act_days_ge": 200
-        },
-        {
-         "act_days_ge": 700
-        }
-       ]
-      },
-      {
-       "to": "forge",
-       "any": [
-        {
-         "act_days_ge": 1100
-        },
-        {
-         "y_ge": 10
-        }
-       ]
-      }
      ]
     },
     "twilight": {
@@ -690,40 +754,6 @@
        "mul",
        1.1
       ]
-     ],
-     "next": [
-      {
-       "to": "famine",
-       "any": [
-        {
-         "ore_crisis": true
-        }
-       ]
-      },
-      {
-       "to": "night",
-       "any": [
-        {
-         "heat_ge": 4,
-         "ore_crisis": true
-        },
-        {
-         "act_days_ge": 600,
-         "heat_ge": 3
-        }
-       ]
-      },
-      {
-       "to": "forge",
-       "any": [
-        {
-         "act_days_ge": 800
-        },
-        {
-         "y_ge": 9
-        }
-       ]
-      }
      ]
     },
     "night": {
@@ -764,23 +794,36 @@
        "mul",
        1.5
       ]
-     ],
-     "next": [
-      {
-       "to": "forge",
-       "any": [
-        {
-         "heat_le": 1,
-         "act_days_ge": 600
-        },
-        {
-         "act_days_ge": 1100
-        },
-        {
-         "y_ge": 11.5
-        }
-       ]
-      }
+     ]
+    },
+    "ashes": {
+     "name": "Пепельная эпоха",
+     "mods": [
+      [
+       "treaties.propose_chance",
+       "mul",
+       1.1
+      ],
+      [
+       "utility.weights.capture.*",
+       "mul",
+       1.08
+      ],
+      [
+       "shards.warlord_chance",
+       "mul",
+       1.2
+      ],
+      [
+       "utility.weights.hide.*",
+       "mul",
+       1.1
+      ],
+      [
+       "chaos.incursion_chance",
+       "mul",
+       0.8
+      ]
      ]
     },
     "forge": {
@@ -816,53 +859,8 @@
        "mul",
        0.8
       ]
-     ],
-     "next": [
-      {
-       "to": "ashes",
-       "any": [
-        {
-         "y_ge": 12.5
-        }
-       ]
-      }
      ]
-    },
-    "ashes": {
-     "name": "Пепельная эпоха",
-     "mods": [
-      [
-       "treaties.propose_chance",
-       "mul",
-       1.1
-      ],
-      [
-       "utility.weights.capture.*",
-       "mul",
-       1.08
-      ],
-      [
-       "shards.warlord_chance",
-       "mul",
-       1.2
-      ],
-      [
-       "utility.weights.hide.*",
-       "mul",
-       1.1
-      ],
-      [
-       "chaos.incursion_chance",
-       "mul",
-       0.8
-      ]
-     ],
-     "next": []
     }
-   },
-   "final": {
-    "to": "ashes",
-    "y_ge": 12.5
    }
   },
   "goals": {
