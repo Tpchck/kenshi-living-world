@@ -51,7 +51,6 @@ local stats = { decisions = 0, applied = 0, letters = 0, tokens = 0, by_outcome 
 -- S4: перехват условий. WV[код] = true/false — единственное, что читает горячий путь.
 local WV = {}
 local HK = { on = false, live = false, reg = false, cond = -1, lo = 1, hi = 0, base = 0, n = 0, fail = 0, asked = {}, logged = {},
-             calls = 0, cond_n = 0, ctype = nil, vtype = nil, stat_sig = nil, stat_t = -1e9,   -- B1: счётчики перехвата для debug.log
              sig = nil, town = nil, owner0 = nil, gd_rival = nil, rivals = {}, rival_n = 0, world = nil,
              stale = setmetatable({}, { __mode = "k" }) }
 local CONV_CODES = { "has_pact", "liege_due", "vassal_due", "dec_accept", "dec_refuse", "dec_counter_s", "dec_counter_l" }
@@ -282,13 +281,6 @@ end
 -- горячий путь (каждая проверка условия у каждого говорящего): только сравнения и чтение WV, без вызовов движка
 local function on_check(_, cname, _, val)
   HK.live = true
-  HK.calls = HK.calls + 1
-  if type(cname) ~= "number" then   -- биндинги обещают целое (BindingsReference «Enums»); иначе — запомнить тип для отчёта и попробовать число
-    HK.ctype = HK.ctype or type(cname)
-    cname = tonumber(cname)
-  end
-  if type(val) ~= "number" then HK.vtype = HK.vtype or type(val); val = tonumber(val) end
-  if cname == HK.cond then HK.cond_n = HK.cond_n + 1 end   -- условие DC_FACTION_VARIABLE вообще проверяется (любое значение)
   if cname ~= HK.cond or type(val) ~= "number" or val < HK.lo or val > HK.hi then return nil end
   local c = val - HK.base
   HK.n = HK.n + 1
@@ -371,21 +363,11 @@ local function world_refresh()   -- раз в world_refresh_seconds: состо�
   if sig ~= HK.sig then
     HK.sig = sig
     local ti = tsid and CFG.town_info and CFG.town_info[tsid]
-    -- B1: в debug.log (dlog), а не только в KenshiLua.log: тот перезаписывается при каждом запуске игры, и session_report его не читает
-    dlog(string.format("DIPLO_WORLD town=%s flags=%s", tsid and ((ti and ti.name) or tsid) or "none", (#on > 0) and table.concat(on, ",") or "-"))
+    log(string.format("DIPLO_WORLD town=%s flags=%s", tsid and ((ti and ti.name) or tsid) or "none", (#on > 0) and table.concat(on, ",") or "-"))
   end
   if HK.live and not HK.logged.live then HK.logged.live = true; dlog("DIPLO_COND hook live: reserved world codes answered by table; envoy tokens off") end
   for c, a in pairs(HK.asked) do
-    if not HK.logged[c] then HK.logged[c] = true; dlog(string.format("DIPLO_COND asked %s (code %d) -> %s", code_name(c), c, tostring(a))) end
-  end
-  -- B1: счётчики перехвата — отличить «условие мира не доходит до проверки» (reserved=0 при calls>0) от «тип аргумента не тот»
-  local nowS = os.clock()
-  local ssig = string.format("%d|%d|%s|%s", HK.cond_n > 0 and 1 or 0, HK.n > 0 and 1 or 0, tostring(HK.ctype), tostring(HK.vtype))
-  if HK.live and (ssig ~= HK.stat_sig or nowS - HK.stat_t >= ((P and P.cond_stats_seconds) or 600)) then
-    HK.stat_sig, HK.stat_t = ssig, nowS
-    local na = 0; for _ in pairs(HK.asked) do na = na + 1 end
-    dlog(string.format("DIPLO_COND stats: calls=%d cond6=%d reserved=%d asked_codes=%d cname_type=%s val_type=%s", HK.calls, HK.cond_n, HK.n, na,
-      HK.ctype or "number", HK.vtype or "number"))
+    if not HK.logged[c] then HK.logged[c] = true; log(string.format("DIPLO_COND asked %s (code %d) -> %s", code_name(c), c, tostring(a))) end
   end
   local now = os.clock()   -- коды разговора не переживают разговор
   if PENDING and now - PENDING.at > (P.token_ttl_seconds or 90) then conv_clear(true) end
