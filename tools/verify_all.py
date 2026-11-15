@@ -2,7 +2,8 @@ r"""Единый вход перед установкой (RELY): python -I -X u
 
 1. окружение: kenshi_x64.exe == откатанный 1.0.65 (rules/env_baseline.json), RE_Kenshi.dll / KenshiLib.dll на месте и совпадают с эталоном,
    KenshiLua (3817000612) на диске, md5 модов из mods.cfg против rules/installed_manifest.json (изменённые Steam-моды - предупреждение);
-2. все test_*.py (build/**/_dev, KMM_Rumors/tools, tools/cpp/kmm_native, tools/conductor, tools/test) параллельно, каждый из своей папки;
+2. все test_*.py (build/**/_dev, KMM_Rumors/tools, tools/cpp/kmm_native, tools/conductor, tools/test) параллельно, каждый из своей папки,
+   через tools/test/log_sandbox.py (logs/ теста -> своя временная папка); живые logs/ до и после прогона сверяются (рост = FAIL);
 3. lua_lint; mods_cfg check; test_conflict (ДОЛЖЕН остановить сборку: «СБОРКА ОСТАНОВЛЕНА»/EXIT 1 = успех); kmm_build холостой (errors == []).
 Итог последней строкой: OK / OK, предупреждений: N / FAIL (N). Код выхода 0 только при OK.
   --init-env        записать текущие хэши exe/dll как эталон rules/env_baseline.json
@@ -16,6 +17,7 @@ import json
 import os
 import subprocess
 import sys
+import tempfile
 import time
 
 try:
@@ -134,19 +136,44 @@ def check_env(fails, warns, info):
         fails.append(f"моды из mods.cfg не найдены на диске: {missing[:10]}")
 
 
+SANDBOX = os.path.join(ROOT, "tools", "test", "log_sandbox.py")   # B3 И9: тесты пишут logs/ в свою временную папку
+LOGS = os.path.join(ROOT, "logs")
+
+
+def sandbox_env():
+    return dict(ENV, KMM_TEST_LOG_DIR=tempfile.mkdtemp(prefix="kmm_testlogs_"))
+
+
+def logs_snapshot():
+    """Размер и mtime живых logs/* (кроме verify_fail_*, их пишет сам verify_all)."""
+    snap = {}
+    for p in glob.glob(os.path.join(LOGS, "*")):
+        n = os.path.basename(p)
+        if os.path.isfile(p) and not n.startswith("verify_fail_"):
+            st = os.stat(p)
+            snap[n] = (st.st_size, st.st_mtime_ns)
+    return snap
+
+
+def logs_changed(before, after):
+    return sorted(n for n in set(before) | set(after) if before.get(n) != after.get(n))
+
+
 def run_test(f):
     t = time.time()
-    try:
-        p = subprocess.run([sys.executable, "-I", "-X", "utf8", f], cwd=os.path.dirname(f), capture_output=True, text=True,
-                           encoding="utf-8", errors="replace", env=ENV, timeout=300)
-        return f, p.returncode, time.time() - t, p.stdout + p.stderr
-    except subprocess.TimeoutExpired:
-        return f, -1, time.time() - t, "таймаут 300 с"
+    with tempfile.TemporaryDirectory(prefix="kmm_testlogs_", ignore_cleanup_errors=True) as d:
+        try:
+            p = subprocess.run([sys.executable, "-I", "-X", "utf8", SANDBOX, f], cwd=os.path.dirname(f), capture_output=True, text=True,
+                               encoding="utf-8", errors="replace", env=dict(ENV, KMM_TEST_LOG_DIR=d), timeout=300)
+            return f, p.returncode, time.time() - t, p.stdout + p.stderr
+        except subprocess.TimeoutExpired:
+            return f, -1, time.time() - t, "таймаут 300 с"
 
 
 def py(args, **kw):
+    kw.setdefault("env", ENV)
     return subprocess.run([sys.executable, "-I", "-X", "utf8"] + args, capture_output=True, text=True, encoding="utf-8",
-                          errors="replace", env=ENV, **kw)
+                          errors="replace", **kw)
 
 
 def _last(r):
@@ -164,7 +191,7 @@ def build_checks(fails, info):
     if r.returncode != 0:
         fails.append("api_audit: " + _last(r))
     # 2026-11-13: офлайн-прогон Lua на мире из реального сейва и аудит зон мира (снимковые откаты после KMM_Fix должны быть 0)
-    r = py([os.path.join(ROOT, "tools", "test", "save_replay.py"), "--days", "4"], timeout=600)
+    r = py([SANDBOX, os.path.join(ROOT, "tools", "test", "save_replay.py"), "--days", "4"], timeout=600, env=sandbox_env())
     if r.returncode != 0:
         fails.append("save_replay: " + _last(r))
     r = py([os.path.join(ROOT, "tools", "zone_audit.py")], timeout=600)
@@ -197,10 +224,14 @@ def run(quiet=False):
     fails, warns, info = [], [], []
     check_env(fails, warns, info)
     files = sorted({f for g in TEST_GLOBS for f in glob.glob(os.path.join(ROOT, g))})
+    logs0 = logs_snapshot()
     with cf.ThreadPoolExecutor(1) as bex, cf.ThreadPoolExecutor(8) as tex:
         bfut = bex.submit(build_checks, fails, info)       # сборочные проверки идут последовательно в своём потоке
         results = list(tex.map(run_test, files))
         bfut.result()
+    changed = logs_changed(logs0, logs_snapshot())
+    if changed:   # B3 И9: рост живого лога от тестов даёт ложные [+] в session_report
+        fails.append("прогон изменил живые logs/ (тест пишет мимо песочницы или игра/другой процесс писал во время проверки): " + ", ".join(changed[:10]))
     for f, rc, dt, out in results:
         if rc != 0:
             name = os.path.splitext(os.path.basename(f))[0]

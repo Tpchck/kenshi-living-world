@@ -4,7 +4,7 @@ import glob, os, re, sys, collections
 try: sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 except Exception: pass
 DOC = r"C:\Program Files (x86)\Steam\steamapps\workshop\content\233860\3817000612\docs\BindingsReference.md"
-ROOT = r"C:\KenshiModMap\build"
+ROOT = os.environ.get("KMM_AUDIT_ROOT") or r"C:\KenshiModMap\build"   # KMM_AUDIT_ROOT: самопроверка на фикстурах (tools/test/test_api_contract.py)
 cls, methods, fields = None, collections.defaultdict(set), collections.defaultdict(set)
 sect = None
 for line in open(DOC, encoding="utf-8"):
@@ -83,14 +83,23 @@ real = [b for b in bad if b[4] not in KNOWN_FP]
 EARLY_FAIL = bool(real or stub_bad or unknown)
 
 # --- сигнатуры: число аргументов и явный nil там, где игра ждёт значение (баг squadType 2026-11-12)
-sigs = collections.defaultdict(list)   # method -> [ [ (name, type), ... ], ... ]
+sigs = collections.defaultdict(list)   # method -> [ [ type, ... ], ... ]
+signames = collections.defaultdict(list)   # method -> [ [ имя, ... ], ... ]
 for line in open(DOC, encoding="utf-8"):
     m = re.match(r"^\| (\w+)(?: \[\d+\])? \| `([^`]*)` \| `[^`]*` \| `obj:", line)
     if m:
         args = [a.strip() for a in m.group(2).split(",") if a.strip()]
         sigs[m.group(1)].append([tuple(x.split(":", 1)[1].strip() for _ in [0]) [0] if ":" in x else x for x in args])
+        signames[m.group(1)].append([x.split(":", 1)[0].strip() for x in args])
 # проверено в игре (лог 2026-11-12): createItem принимает nil вместо hand (печать посланника выдана), createRandomSquad — нет
 NIL_OK = {("createItem", 2)}
+# Контракт движка (B3 И1): параметр-объект, который НЕ принимает nil, хотя большинство указателей sol2 nil пропускает
+# (createRandomSquad: homeTown/home/ownr/maparea/_activePlatoon = nil работают в Traces; createItem: weaponMesh/matData = nil работают).
+# (метод, позиция без self) -> источник. ✓игра — из лога; ? — аналог по той же сигнатуре BindingsReference, в игре не видели.
+NIL_BAD = {("createRandomSquad", 6): "✓игра 2026-11-15: bad argument #6 to 'createRandomSquad' (KenshiLua.GameData expected, got nil)",
+           ("createRandomUnloadedSquad", 6): "? аналог createRandomSquad: тот же squad: GameData",
+           ("createRandomUnloadedCharacter", 4): "? аналог: characterTemplate: GameData (шаблон, как squad)"}
+VEC_T = {"Vector3", "Quaternion"}   # таблица {x=,y=,z=} вместо Vector3 работает в игре (Traces, 2026-11-12)
 VALUE_T = re.compile(r"^(integer|number|boolean|string|hand|bool|float|int|[A-Z]\w*Type|itemType|AttachSlot|\w+Enum)$")
 
 
@@ -121,7 +130,28 @@ def split_args(src, i):
     return out
 
 
-sig_bad = []
+def maybe_nil(src, pos, name):
+    """Эвристика: в теле функции до вызова есть `local name = nil` или `local name` без значения; name получает значение только
+    глубже по отступу (внутри if); проверки `if not name` / `if name == nil` / `assert(name` / безусловного присваивания на уровне
+    объявления нет -> вернуть строку объявления."""
+    fs = max(src.rfind("function", 0, pos), 0)
+    body = src[fs:pos].split(chr(10))
+    decl = None
+    for idx, l in enumerate(body):
+        if re.match(r"^\s*local\s+" + name + r"\s*(=\s*nil\s*)?(--.*)?$", l):
+            decl = idx
+    if decl is None:
+        return None
+    ind = len(body[decl]) - len(body[decl].lstrip())
+    guard = re.compile(r"^\s*(if\s+not\s+\(?\s*" + name + r"\b|if\s+" + name + r"\s*==\s*nil|assert\(\s*" + name + r"\b|" + name + r"\s*=[^=])")
+    for l in body[decl + 1:]:
+        li = len(l) - len(l.lstrip())
+        if l.strip() and li <= ind and guard.match(l):
+            return None
+    return body[decl].strip()
+
+
+sig_bad, sig_warn = [], []
 for p in glob.glob(ROOT + r"\KMM_*\scripts\**\*.lua", recursive=True):
     src = open(p, encoding="utf-8").read()
     for m in re.finditer(r"(\w+):(\w+)\s*\(", src):
@@ -138,12 +168,29 @@ for p in glob.glob(ROOT + r"\KMM_*\scripts\**\*.lua", recursive=True):
             sig_bad.append(f"{rel}:{line}  {m.group(1)}:{meth}() аргументов {len(args)}, в игре {sorted(counts)}")
             continue
         for k, a in enumerate(args):
+            types = {s[k] for s in sigs[meth] if len(s) == len(args)}
             if a == "nil" and (meth, k + 1) not in NIL_OK:
-                types = {s[k] for s in sigs[meth] if len(s) == len(args)}
-                if types and all(VALUE_T.match(t) for t in types):
+                if (meth, k + 1) in NIL_BAD:
+                    sig_bad.append(f"{rel}:{line}  {m.group(1)}:{meth}() аргумент #{k + 1} = nil, а игра ждёт {sorted(types)} ({NIL_BAD[(meth, k + 1)]})")
+                elif types and all(VALUE_T.match(t) for t in types):
                     sig_bad.append(f"{rel}:{line}  {m.group(1)}:{meth}() аргумент #{k + 1} = nil, а игра ждёт {sorted(types)}")
+                continue
+            # литерал не того типа на месте объекта движка (строка sid вместо GameData, число/true вместо Faction и т.п.)
+            lit = ("string" if a[:1] in "\"'" or a.startswith("[[") else "number" if re.fullmatch(r"-?\d+(\.\d+)?", a)
+                   else "boolean" if a in ("true", "false") else "table" if a.startswith("{") else None)
+            obj_t = types and all(not VALUE_T.match(t) and t not in ("userdata", "any", "object", "table", "function", "sol::object")
+                                  and t[:1].isupper() for t in types)
+            if lit and obj_t and not (lit == "table" and types <= VEC_T):
+                sig_bad.append(f"{rel}:{line}  {m.group(1)}:{meth}() аргумент #{k + 1} = {lit}-литерал, а игра ждёт {sorted(types)}")
+            # возможный nil (предупреждение): local X = nil / local X, присвоен только внутри if, проверки на уровне объявления нет
+            if (meth, k + 1) in NIL_BAD and re.fullmatch(r"[A-Za-z_]\w*", a):
+                w = maybe_nil(src, m.start(), a)
+                if w:
+                    sig_warn.append(f"{rel}:{line}  {m.group(1)}:{meth}() аргумент #{k + 1} '{a}' может быть nil ({w}); {NIL_BAD[(meth, k + 1)]}")
 print(f"нарушений сигнатур: {len(sig_bad)}")
 for s in sig_bad: print("  " + s)
+print(f"возможный nil в аргументах контракта движка (предупреждение, код выхода не меняет): {len(sig_warn)}")
+for s in sig_warn: print("  " + s)
 # --- события: каждое Events.on("X") должно быть в CallbacksReference.md
 CB = os.path.join(os.path.dirname(DOC), "CallbacksReference.md")
 cbtxt = open(CB, encoding="utf-8").read()
