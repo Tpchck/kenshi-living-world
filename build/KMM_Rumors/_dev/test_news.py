@@ -33,6 +33,7 @@ function check(c, what) N = N + 1; if not c then FAILS[#FAILS + 1] = what end en
 local C, R = KMM_Conductor, KMM_Rumors
 local hs = Events.h["GameWorld::charsUpdate"]; Events.h["GameWorld::charsUpdate"] = { hs[#hs] }   -- только тик Rumors: дирижёр не плодит свои события
 C.reset()
+R.CFG.SMALLTALK_ON = false   -- B1 V4 мелочь города проверяет test_visibility.py; здесь — только слухи
 local TI = C.cfg().town_info
 local function dist(a, b) return math.sqrt((a.x - b.x) ^ 2 + (a.z - b.z) ^ 2) end
 -- игрок стоит в городе A; B близко (<12k, но >0), F далеко (>100k)
