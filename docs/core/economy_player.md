@@ -196,3 +196,51 @@ EventTriggerEnum (75): EV_PLAYER_TALK_TO_ME 1, EV_ANNOUNCEMENT 2, EV_I_SEE_NEUTR
 10. **Краденое по состоянию мира (Override `iBuyStolenGoods`/`iBuyIllegalGoods`, Notify `notifyTheftFrom`).** Кризис в городе виден по поведению скупщиков. Кража становится событием для фракции.
 11. **Иерархия каналов без модальных окон.** Своё — `showPlayerAMessage_withLog`, мир — `ManagementScreen:addMessage`, рядом — `say`, опознание — `ScreenLabel` с трекингом.
 12. **Артефакты исследований как добыча гонки** (`isResearchArtifact`, лут руин, `progressResearch` малыми долями). Соперники опережают игрока у руин, а ваниль сама решает, что делать с найденным.
+
+---
+
+## 8. Руда (ORE3, 2026-11-15)
+
+### Схема одной строкой
+Жила региона (модель дирижёра `S.ore[город]`: R, R0) ← черпают фракции (`ore_step`, по нужде металла) и игрок (`KMM_Ore` → `player_mined`) → остаток жил региона (`region_ore`) задаёт выход узлов игрока (`_resourceMiningLevel`, подпись «ore left … vein …») → нехватка металла фракций = `f.stress` → `ore_stress`, `metal_price` (цены торговцев через Traces `price_mult` ✓игра), рейды по нужде (`raid_base` «need»), рудный кризис и излом (сюжет) → брошенные жилы медленно восстанавливаются (`vein_regen_per_year`). Добыча игрока на чужой земле злит владельца жилы (`ore_claim` → отношения → RELSYNC в ванильные отношения фракций).
+
+### Что было в игре до ORE3 (аудит по logs/ и сейвам)
+- `ore.log` во всех 12 сессиях — только строка `active … nodes in state=0`. Сессии — новые игры (ключ мира каждый раз новый, день старта 1.42, максимум ~12 дней). В последнем сейве (KMM_New_test9) у фракции игрока 204-gamedata.base нет ни одного здания (разбор zone/*.zone через kmod). Ни ошибки, ни строки SKIP: цепочка опроса ни разу не дошла до рудного шаблона. Вывод: признаков добычи игроком в этих сессиях нет (?), но модуль и не смог бы увидеть часть добычи:
+  - автоматические буры (Ore Drill III Automated, SC Auto…) работают без шахтёра — опрос персонажей их не видит;
+  - список шаблонов был ручным: не было буров Copper drill.mod и Soulbody (14 шаблонов);
+  - цель бралась только из `Tasker.subject` (без `currentSubTarget`); диагностики до стадии шаблона не было;
+  - `getGameData/getPosition/getName` вызывались у `ProductionBuilding`; в игре проверены только у `Building` (KMM_Town/KMM_Stock ✓игра);
+  - состояние узлов — файл на семя мира, не сейв: откат на старый сейв не откатывал узлы.
+- Модель дирижёра работала (✓игра: в state/*.kmmstate есть `ore_stress`, `ore_share`, `metal_price`; 255 жил, 35 рудников), но `stats.player_mined` = nil во всех сейвах — добыча игрока в мир не попадала ни разу.
+
+### Механики ORE3 (реализовано, офлайн-проверено)
+| Что | Где | Ванильный рычаг | Статус |
+|---|---|---|---|
+| Шаблоны рудных узлов и машин всей цепочки модов (30: 5 природных, 25 шахт/буров, 9 автоматических) | `build/KMM_Ore/scripts/ore_templates.lua` (генератор `_dev/gen_ore_templates.py`: BUILDING_FUNCTIONALITY «world resource mining» 1/3) | данные игры | ✓код |
+| Запасная классификация в игре по функциональности шаблона | `GameData:getFromList("functionality", i)` B:6652 | — | ✓код (LEARN template в логе) |
+| Труд персонажа: действие → `subject`/`currentSubTarget` → `Building` → шаблон | kmm_ore.lua `work_of` | `CharBody:getCurrentAction`, `Tasker.subject/currentSubTarget` B:12994 | ✓код (у NPC эта цепочка ✓игра в KMM_Town) |
+| Приказ игрока на рудный узел учит TaskType (LEARN, ≤4) | подписка в первом рабочем тике | Notify `PlayerInterface::newPlayerTaskSelectedCharacters` (CallbacksReference) | ✓код |
+| Автобуры игрока: скан зданий вокруг персонажа раз в 30 с, часы под питанием при `productionState` NORMAL | kmm_ore.lua `scan` | `getObjectsWithinSphere` (✓игра в KMM_Stock), `Building:isPowerOn/isBroken/isThePlayer`, `ProductionBuilding.productionState` | ✓код |
+| Выход узла = base·max(floor,(R/R0)^k)·max(0.2, доля жил региона) | `apply_level` | `ProductionBuilding._resourceMiningLevel` RW | ? (влияет ли поле на выход — не проверено с v0) |
+| Подпись узла «Iron [ore left 73% vein 40%]» | `show_left` | `RootObjectBase:getName/setName` у Building | ✓код |
+| Узлы в состоянии мира `S.ore_nodes` (в сейве, откат вместе с сейвом); старый сейв — импорт из `logs/ore_nodes_<мир>.tsv` | `ensure_world` | `PlayerInterface::serialise` дирижёра | ✓код |
+| Труд → жила мира порциями раз в 2 игровых часа | `flush_feed` → `KMM_Conductor.player_mined` | — | ✓код |
+| Жила, из которой за тик не черпали, восстанавливается 1,5 % R0 в год | `KC.ore_regen` (World.lua), `params.ore.vein_regen_per_year` | — (модель) | ✓код |
+| Владелец жилы и добыча игрока: каждые 3 % R0 (не чаще 20 дней) отношение −1.5·(1+стресс металла ≤2), пол −30; договор — без претензии; событие `ore_claim` | `KC.ore_claim`, `params.ore.claim` | отношения фракций → RELSYNC (✓игра RELSYNC ×49) | ✓код |
+| Сводка рудного хозяйства игрока `S.base.ore = {active, recent, auto, x, z, day}` (только при известной базе) | `summary` | — (контракт для читателей) | ✓код, читателей пока нет |
+
+Проверки: `build/KMM_Ore/_dev/test_ore.py` 21/21, `test_ore_world.py` 21 проверка, `build/KMM_Conductor/_dev/test_story.py`, `test_conductor.py`, `test_conductor_core.py` — зелёные; `tools/api_audit.py` — по kmm_ore.lua неизвестных методов и нарушений сигнатур нет. Прогон 8 лет (копия sim_years.py): семя 2026 — без восстановления кризис на дне 2260, с 1,5 %/год — на дне 2495; семя 7 с 1,5 %/год — день 2115. Кризис и излом остаются, цикл сюжета сохраняется.
+
+### Маркеры ore.log для session_report
+`KMM_Ore v3 active: … source=save|save(new)|file->save|file` · `order hook ok` · `ORDER task=N node=SID …` · `LEARN task=N` · `LEARN template SID` · `NEW node` · `MINE` (персонаж) · `AUTO` (автобур) · `CHAIN ok=… far=… not_ore=… no_target=… task_other=… tasks=87:5,…` (раз в 12 игровых часов: где обрывается цепочка) · `DEPLETED` · `scan unavailable` · в debug.log `[KMM_Ore] <часть> disabled until restart`. Шина: событие `ore_claim` (chronicle.log).
+
+### Отложено (L) — порядок внедрения
+1. **Рудник игрока как цель войск в «Железном голоде»** (KMM_Conductor_Econ.lua `raid_base`, владелец Econ): если `S.base.ore.active > 0` и `f.stress > player_base.need_stress`, мотив «ore» (вес × min(2, recent/24)) и точка цели `S.base.ore.x/z` вместо дома. Для родной кампании (`CA.base_try`, Sync) — `getNearestTown` от точки рудника. Сначала маркер `raid_base why=ore` в логе, потом вес акта.
+2. **Налог владельца ванильной кампанией** (Sync, владелец Sync/campaigns): `ore_claim` при отношении ≤ −15 запускает «visit»-кампанию владельца (у UC/Traders Guild это ванильные TaxMan: 61061-Dialogue.mod, 61568-Dialogue.mod в campaigns.json) через `CA.fire`, не чаще 60 дней. Тогда «требует долю» = ванильный сборщик у ворот.
+3. **Богатство аутпоста для бандитов** (KMM_Traces `base_track`, KMM_Nemesis `worth`): `B.value += S.base.ore.recent/4 + 10·S.base.ore.auto`; `N.worth` — то же слагаемое в `gear`, чтобы богатый рудник снимал «poor/contempt».
+4. **Цена руды и слитков по городам** (Traces TGM, владелец Traces): `Town.tradeGoodsMults[Raw Iron 1866 / Raw Copper 42158 / Iron Plates 42159 / Copper Alloy 42160] = clamp(metal_price · (1 + 0.5·metal_def города), 0.7, 2.5)`. Запись TGM из Lua в игре идёт (debug.log 2026-11-15: `TGM probe OK … newidx=true`, `TGM town … writes=110`), но **видна ли новая цена в открытом окне торговли без перезагрузки сейва — не проверено**.
+   Ограничение (поиск по сети 2026-11-16): автор экономического мода пишет, что ванильные цены у него менялись только после перезагрузки сейва; модов с истощением руды и живыми ценами в Кенши не нашлось. У нас это касается двух путей: `tradeGoodsMults` (Traces TGM) и `Platoon.priceMultWhenITrade` (Traces фолбэк). Если окно торговли кэширует цены (вероятно, при создании торговца или `refreshInventory`), рудный кризис в ценах будет виден с запозданием: после пополнения ассортимента или перезагрузки, но не мгновенно. Для руды это допустимо: `metal_price` меняется раз в тик дирижёра (5 дней), а не за минуты. Остальная реакция мира от этого не зависит: рейды, отношения, `ore_claim`, слухи и выход узлов.
+   Шаг владельца (в STATUS): в одной сессии записать цену Raw Iron у торговца, дождаться строки `TGM town <город>` в debug.log с другим `metal=`, открыть окно снова без перезагрузки. Если цена не изменилась, Traces должен после записи TGM вызывать `ActivePlatoon::refreshInventory(false)` (B:659) у торговцев города, не чаще раза за тик дирижёра.
+5. **Слухи** (KMM_Rumors, шаблон `ore_claim`): en «%A% says the Nameless dig its iron near %TOWN%. They want their cut.» / ru «%A% считает железо, что Безымянные копают у %TOWN%. Хотят свою долю.».
+6. **NPC-шахтёры загруженных городов** (KMM_Town): их труд у рудных узлов (те же шаблоны) списывать с жилы города (`player_mined`-подобный вызов `region_mined(fid, …)`), чтобы видимая работа и модель совпадали.
+7. **Проверка рычага выхода**: в живой игре сравнить скорость наполнения Raw Iron при `write_level=true/false` (маркеры MINE с level). Если поле не влияет — выход резать плагином KMM_Native (`ProductionBuilding::getMiningResourceLevel` hook), остальное ORE3 остаётся.
