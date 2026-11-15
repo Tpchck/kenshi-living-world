@@ -58,7 +58,11 @@ local CFG = {
   NEAR_TRAVELER_R      = 15000,
   STOCK_LOW            = 0.5,      -- полка KMM_Stock ниже доли нормы — «дорого»
   STOCK_HIGH           = 1.4,      -- выше — «дёшево»
-  VIS_LOG_SEC          = 300,      -- B1 метрика: строка VISIBILITY в rumors.log не чаще (и при сохранении)
+  VIS_LOG_SEC          = 300,
+  -- ревью: память рассказанного в сейве не растёт годами — раз в игровой день и при сохранении удаляются записи о событиях,
+  -- которых нет в журнале дирижёра или которые старше TOLD_KEEP_DAYS, и самые старые сверх TOLD_MAX (только при источнике-дирижёре)
+  TOLD_KEEP_DAYS       = 120,      -- > MAX_AGE_DAYS: такие события слухом уже не станут
+  TOLD_MAX             = 3000,     -- ключей told + heard      -- B1 метрика: строка VISIBILITY в rumors.log не чаще (и при сохранении)
   WRONG_OUTCOME_CHANCE = 0.3,      -- уровень искажения 2: шанс перепутать исход (убит <-> пленён / отбились <-> пал)
   -- роль рассказчика по имени шаблона (data.name), первое совпадение; уровень: 0 точно, 1 без имён, 2 преувеличивает/путает
   ROLES = {
@@ -325,6 +329,7 @@ local function readChronicle()
   end
   f:close()
   R.fileSize = size
+  R.src = "file"
   log(string.format("chronicle read: %d event lines, %d known events", n, #R.order))
 end
 
@@ -346,7 +351,7 @@ local function readConductor()
     order[#order + 1] = id
    end
   end
-  R.events, R.order = events, order
+  R.events, R.order, R.src = events, order, "conductor"
   return true
 end
 
@@ -797,6 +802,22 @@ end
 -- Окна нет (ранняя загрузка) — строка ждёт в очереди; класса нет и SHOW_IN_MESSAGE_LOG — showPlayerAMessage_withLog. Ошибка вызова выключает только журнал.
 R.jq = R.jq or {}
 R.jday = R.jday or { day = -1, n = 0 }
+R.jdone = R.jdone or {}   -- id событий, записанных в журнал за сессию (KMM_Rumors.journaled — для хроники Nemesis)
+-- ревью: хроника Nemesis уже записала это событие во вкладку сообщений — не дублировать. KMM_Nemesis.chronicled(event_id) -> bool;
+-- нет модуля/функции или ошибка — прежнее поведение. id дирижёра — число, у нас строка: спрашиваем числом, потом строкой
+local function chronicled(id)
+  local NM = rawget(_G, "KMM_Nemesis")
+  local f = type(NM) == "table" and NM.chronicled
+  if type(f) ~= "function" then return false end
+  local n = tonumber(id)
+  local ok, r = pcall(f, n or id)
+  if ok and r == true then return true end
+  if n ~= nil and type(id) == "string" then
+    local ok2, r2 = pcall(f, tostring(id))
+    if ok2 and r2 == true then return true end
+  end
+  return false
+end
 local function journalFlush()
   if not CFG.JOURNAL_ON or R.journalOff or #R.jq == 0 then return end
   local MS = rawget(_G, "ManagementScreen")
@@ -815,6 +836,7 @@ local function journalFlush()
   local okc, c0 = pcall(function() return col and col.ML_NORMAL end)
   while #R.jq > 0 do
     local q = table.remove(R.jq, 1)
+    if chronicled(q.id) then log("journal skip event=" .. tostring(q.id) .. " reason=chronicled"); return journalFlush() end
     local ok, err = pcall(function() ms:addMessage(q.owner, q.msg, (okc and c0) or 0) end)
     if not ok then
       R.journalOff = true; R.vstat.journal_fail = R.vstat.journal_fail + 1
@@ -822,12 +844,14 @@ local function journalFlush()
       return
     end
     R.vstat.journal = R.vstat.journal + 1
+    R.jdone[tostring(q.id)] = true
     if not R.journalOkLogged then R.journalOkLogged = true; log("journal: addMessage ok (ManagementScreen message log)") end
     log("journal event=" .. tostring(q.id) .. " owner=" .. q.owner .. " text=" .. q.msg)
   end
 end
 local function journalAdd(id, who, place, text, day)
   if not CFG.JOURNAL_ON or R.journalOff then return end
+  if chronicled(id) then log("journal skip event=" .. tostring(id) .. " reason=chronicled"); return end
   if R.jday.day ~= day then R.jday.day, R.jday.n = day, 0 end
   if R.jday.n >= CFG.JOURNAL_MAX_DAY then log("journal skip event=" .. tostring(id) .. " reason=day_cap"); return end
   R.jday.n = R.jday.n + 1
@@ -879,6 +903,7 @@ local function visLog(force)
     h and math.floor(h / 24) or -1, v.events, v.shown, v.merged, v.pct, R.vstat.journal, R.vstat.small, v.types))
 end
 R.visibility = visibility
+R.journaled = function(id) return R.jdone[tostring(id)] == true end   -- для хроники Nemesis: слух уже в журнале
 
 ----------------------------------------------------------------------- V4 МЕЛОЧЬ ГОРОДА: в визите не прозвучало новостей — житель говорит о местном
 -- Только чтение модели: хозяин города (KMM_Conductor.town_mood/name), полки (KMM_Stock.level), разыскиваемые рядом
@@ -1109,10 +1134,41 @@ local function applyOverrides()
   end
   log("config: " .. n .. " overrides from conductor params.rumors")
 end
+-- чистка R.told / R.heard (см. TOLD_KEEP_DAYS / TOLD_MAX). Источник не дирижёр или журнал пуст — не трогаем (нечем проверить)
+local function pruneTold(dayNow)
+  if R.src ~= "conductor" or #R.order == 0 then return 0 end
+  local gone, old, cap = 0, 0, 0
+  local function bad(id)
+    local e = R.events[id]
+    if not e then gone = gone + 1; return true end
+    if dayNow and (e.day or 0) < dayNow - CFG.TOLD_KEEP_DAYS then old = old + 1; return true end
+    return false
+  end
+  for k in pairs(R.told) do
+    local id = tostring(k):match("^([^|]*)")
+    if bad(id) then R.told[k] = nil end
+  end
+  for id in pairs(R.heard) do if bad(tostring(id)) then R.heard[id] = nil end end
+  local keys = {}
+  for k in pairs(R.told) do keys[#keys + 1] = { k = k, t = true, n = tonumber(tostring(k):match("^([^|]*)")) or 0 } end
+  for k in pairs(R.heard) do keys[#keys + 1] = { k = k, t = false, n = tonumber(k) or 0 } end
+  if #keys > CFG.TOLD_MAX then
+    table.sort(keys, function(a, b) if a.n ~= b.n then return a.n < b.n end return tostring(a.k) < tostring(b.k) end)
+    for i = 1, #keys - CFG.TOLD_MAX do
+      if keys[i].t then R.told[keys[i].k] = nil else R.heard[keys[i].k] = nil end
+      cap = cap + 1
+    end
+  end
+  local n = gone + old + cap
+  if n > 0 then log(string.format("told prune: removed=%d gone=%d old=%d cap=%d kept=%d", n, gone, old, cap, math.min(#keys, CFG.TOLD_MAX))) end
+  return n
+end
+R.prune = pruneTold   -- офлайн-тест
+
 local function resetWorld()
   R.told, R.townLastHour, R.heard, R.townCount, R.smallHour = {}, {}, {}, {}, {}
   R.visit, R.spk, R.noisyDay, R.smallLast, R.lastTellClock, R.visSig = nil, nil, nil, nil, nil, nil
-  R.jq, R.jday = {}, { day = -1, n = 0 }
+  R.jq, R.jday, R.jdone, R.pruneDay = {}, { day = -1, n = 0 }, {}, nil
 end
 
 local function onTick()
@@ -1132,7 +1188,12 @@ local function onTick()
     local okE, errE = pcall(mapExpire, h)
     if not okE then mapOff("expire", errE) end
   end
-  local ok, err = pcall(function() if not readConductor() then readChronicle() end; tryTell() end)
+  local ok, err = pcall(function()
+    if not readConductor() then readChronicle() end
+    local d = h and math.floor(h / 24)
+    if d and R.pruneDay ~= d then R.pruneDay = d; pruneTold(h / 24) end   -- раз в игровой день
+    tryTell()
+  end)
   if ok and t - (R.visT or -1e9) >= CFG.VIS_LOG_SEC then R.visT = t; pcall(visLog, false) end   -- B1: метрика видимости
   if not ok then
     R.disabled = true
@@ -1189,6 +1250,7 @@ function R.save_ids()
   return ids
 end
 R.saveHandler = Events.on("PlayerInterface::serialise", guarded("save", function(_, gd)
+  pcall(function() local h = gameHours(); pruneTold(h and h / 24) end)   -- в сейв — только нужное
   local keys = {}
   for k in pairs(R.told) do keys[#keys + 1] = k end
   for id in pairs(R.heard) do keys[#keys + 1] = "@" .. tostring(id) end   -- NEWS: старый код прочтёт это как безвредный ключ told
