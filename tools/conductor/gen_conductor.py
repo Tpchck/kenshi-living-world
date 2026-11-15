@@ -172,6 +172,31 @@ ARCH_POWER = {"bandit": (34, 60), "savage": (28, 40), "trader": (20, 120), "reli
 HOME_SITE = {"bandit", "savage", "robot", "chaos", "xeno", "imperium"}   # лагерь в руине/точке интереса; остальные — у города дружественной фракции
 ATLAS = os.path.join(ROOT, "rules", "streams", "atlas.json")
 AUDIT = os.path.join(ROOT, "data", "world_audit.json")
+
+
+def _culture():
+    """rules/culture.json (B4 И12): явные архетип/амбиция/видимое имя фракции; fix.json rename_auto.dict — видимые имена
+    (нелатиница и франшизы переименованы в KMM_Fix, модель и слухи должны называть так же). Нет файла — пусто."""
+    try:
+        cf = json.load(open(os.path.join(ROOT, "rules", "culture.json"), encoding="utf-8")).get("factions", {})
+    except FileNotFoundError:
+        cf = {}
+    try:
+        rd = json.load(open(os.path.join(ROOT, "rules", "streams", "fix.json"), encoding="utf-8"))["junk_unlink"]["rename_auto"]
+        rd = {k: v for k, v in rd.get("dict", {}).items() if not k.startswith("_")} if rd.get("enabled") else {}
+    except (FileNotFoundError, KeyError):
+        rd = {}
+    return cf, rd
+
+
+CULTURE, RENAME = _culture()
+
+
+def shown(n):
+    """Имя, которое видит игрок (culture display > словарь переименований fix > как в данных)."""
+    if not isinstance(n, str):
+        return n
+    return (CULTURE.get(n) or {}).get("display") or RENAME.get(n) or RENAME.get(n.strip()) or n
 MINE_WORDS = ("mine", "drill", "quarr", "iron", "copper", "ore ", "mining")
 
 
@@ -257,7 +282,7 @@ def main():
         elif cities:
             cap = cities[0]
         facs[sid] = {"name": f.name, "relic": relic, "ftype": ftype, "cities": cities, "capital": cap,
-                     "ambition": AMBITION.get(f.name) or ("faith" if relic else BY_TYPE.get(ftype, "survival")),
+                     "ambition": (CULTURE.get(f.name) or {}).get("ambition") or AMBITION.get(f.name) or ("faith" if relic else BY_TYPE.get(ftype, "survival")),
                      "towns": [t.sid for t in tw], "town_names": [t.name for t in tw][:12],
                      "x": round(cx) if cx is not None else None, "z": round(cz) if cz is not None else None,
                      "wealth": 60 + 90 * len(tw) + (200 if relic else 0),
@@ -276,6 +301,9 @@ def main():
     for r in aud:
         if r.get("participant") and r.get("archetype"):
             arch_by_name.setdefault(r["name"], r["archetype"])
+    for n_, spec_ in CULTURE.items():   # rules/culture.json важнее аудита (B4 Н3: лаборатория роботов-убийц не «поселенцы»)
+        if spec_.get("archetype"):
+            arch_by_name[n_] = spec_["archetype"]
     FT_ARCH = {8: "bandit", 1: "religion", 3: "trader", 7: "trader", 2: "savage"}
     RELIC_ARCH = {"hunt_chaos": "imperium", "hunt_xenos": "imperium", "guard_tomb": "robot", "spread_chaos": "chaos"}
 
@@ -516,6 +544,19 @@ def main():
                 if facs[a_]["rel"].get(b_, 0) >= 0 and facs[b_]["rel"].get(a_, 0) >= 0:
                     cohab.add((a_, b_))
     print(f"COHAB: соседей по городу {len(cohab)} пар")
+    # видимые имена (B4 Н1/Н2): после всех сопоставлений по имени — как их покажет игра с KMM_Fix
+    for fd in facs.values():
+        fd["name"] = shown(fd["name"])
+        if fd.get("town_names"):
+            fd["town_names"] = [shown(x) for x in fd["town_names"]]
+        if fd.get("camp_name"):
+            fd["camp_name"] = shown(fd["camp_name"])
+    for ti in town_info.values():
+        ti["name"] = shown(ti.get("name"))
+    for st_ in sites:
+        st_["name"] = shown(st_.get("name"))
+    for m_ in markets:
+        m_["name"] = shown(m_.get("name"))
     throes = any("Throes" in b.get("file", "") or b.get("id") == "1762149693" for b in lo.get("extra", []))
     out = {"_doc": "CONDUCTOR v1 (tools/conductor/gen_conductor.py). params — правится руками; factions/towns — генерируются.",
            "version": 1, "params": params, "player_faction": player, "factions": facs, "towns": pairs, "town_info": town_info,
