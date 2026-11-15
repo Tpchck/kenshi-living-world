@@ -105,6 +105,7 @@ function KC.ore_step()
   local O = KC.P.ore or {}
   local k = O.k or 1.5
   local tR, tR0, ssum, sn = 0, 0, 0, 0
+  local drawn = {}   -- ORE3: жилы, из которых в этот тик черпали (фракции); остальные медленно восстанавливаются ниже
   for _, n in pairs(KC.S.ore) do tR = tR + n.R; tR0 = tR0 + n.R0 end
   for fid, f in pairs(KC.S.F) do
     if f.alive and not f.player then
@@ -133,6 +134,7 @@ function KC.ore_step()
             local n = KC.S.ore[t]
             local d = take * y / csum
             n.R = math.max(0, n.R - d)
+            if d > 0 then drawn[t] = true end
             supply = supply + d
             if not n.told and n.R < 0.05 * n.R0 then
               n.told = true
@@ -169,6 +171,7 @@ function KC.ore_step()
       if f.relic then f.components = math.max(0, (f.components or 100) - ((f.mode == "mobilized") and (O.comp_wear_mobilized or 0.3) or (O.comp_wear_focused or 0.04))) end   -- Сумерки реликтов
     end
   end
+  KC.ore_regen(drawn, O)
   KC.S.ore_share = tR / math.max(1, tR0)
   KC.S.ore_stress = ssum / math.max(1, sn)
   KC.S.metal_price = (O.metal_price_base or 1) * KC.clamp(0.7 + 0.5 * KC.S.ore_stress + 0.8 * (1 - KC.S.ore_share), 0.6, 3)
@@ -188,13 +191,57 @@ function KC.ore_step()
   end
 end
 
--- добыча игрока истощает ближайшую жилу мира (вызывает KMM_Ore)
+-- ORE3: жила, из которой в этот тик никто не черпал (ни фракции, ни игрок последние 2 тика), медленно восстанавливается:
+-- vein_regen_per_year доли R0 в игровой год (0 — выключено). Брошенный рудник «зарастает», работающий — нет.
+-- Выработанная жила, поднявшаяся выше regen_told_share, снова может дать слух mine_exhausted.
+function KC.ore_regen(drawn, O)
+  local rg = O.vein_regen_per_year or 0
+  if rg <= 0 then return end
+  local td = KC.P.tick_days or 5
+  local dy, busy = td / 365, 2 * td
+  for t, n in pairs(KC.S.ore) do
+    if not drawn[t] and n.R < n.R0 and not (n.pm_day and KC.DAY - n.pm_day < busy) then
+      n.R = math.min(n.R0, n.R + n.R0 * rg * dy)
+      if n.told and n.R >= (O.regen_told_share or 0.25) * n.R0 then n.told = nil end
+    end
+  end
+end
+-- ORE3: владелец жилы считает руду, которую игрок берёт на его земле (ванильный рычаг — отношения фракций, их видит RELSYNC):
+-- каждые claim.share*R0 добытого игроком (не чаще claim.cooldown_days на жилу) отношение владельца к игроку падает на
+-- claim.rel*(1+стресс по металлу, до 2), не ниже claim.rel_floor. Договор владельца с игроком — право копать: без претензии.
+function KC.ore_claim(t, n, amount)
+  local C = (KC.P.ore or {}).claim or {}
+  if C.enabled == false then return end
+  local pf = KC.CFG.player_faction
+  local fid = KC.owner_of and KC.owner_of(t)
+  if not (pf and fid and fid ~= pf and KC.S.F[fid] and KC.S.F[pf]) then return end
+  n.pm_acc = (n.pm_acc or 0) + amount
+  if n.pm_acc < (C.share or 0.03) * n.R0 or KC.DAY - (n.claim_day or -1000) < (C.cooldown_days or 20) then return end
+  n.pm_acc, n.claim_day = 0, KC.DAY
+  if KC.treaty_between(fid, pf) then KC.S.stats.ore_claim_pact = (KC.S.stats.ore_claim_pact or 0) + 1; return end
+  local f = KC.S.F[fid]
+  local cur, floor = KC.rel(fid, pf), C.rel_floor or -30
+  local dv = math.min((C.rel or 1.5) * (1 + KC.clamp(f.stress or 0, 0, 2)), cur - floor)
+  if dv > 0 then KC.add_rel(fid, pf, -dv) end
+  KC.S.stats.ore_claims = (KC.S.stats.ore_claims or 0) + 1
+  KC.emit({ type = "ore_claim", a = fid, b = pf, town_sid = t, town_name = KC.TOWN_NAME[t] or t, rel = KC.rel(fid, pf),
+         text = string.format("%s counts the iron the Nameless dig near %s and wants its share.", KC.name(fid), KC.TOWN_NAME[t] or t) })
+end
+-- добыча игрока истощает ближайшую жилу мира (вызывает KMM_Ore порциями); владелец жилы реагирует (ore_claim)
 function KC.PLAYER_MINED(amount, x, z)
+  amount = tonumber(amount) or 0
+  if amount <= 0 or not (x and z) then return end
   local best, bd
   for t, I in pairs(KC.CFG.town_info or {}) do
-    if I.x and KC.S.ore[t] then local d = (I.x - x) ^ 2 + (I.z - z) ^ 2; if not bd or d < bd then best, bd = t, d end end
+    if I.x and KC.S.ore[t] then local d = (I.x - x) ^ 2 + (I.z - z) ^ 2; if not bd or d < bd or (d == bd and t < best) then best, bd = t, d end end
   end
-  if best then local n = KC.S.ore[best]; n.R = math.max(0, n.R - amount * ((KC.P.ore or {}).player_drain_mult or 1)) end
+  if best then
+    local n = KC.S.ore[best]
+    n.R = math.max(0, n.R - amount * ((KC.P.ore or {}).player_drain_mult or 1))
+    n.pm, n.pm_day = (n.pm or 0) + amount, KC.DAY
+    local ok, err = pcall(KC.ore_claim, best, n, amount)
+    if not ok then KC.dlog("ore_claim error: " .. tostring(err)) end
+  end
   KC.S.stats.player_mined = (KC.S.stats.player_mined or 0) + amount
 end
 function KC.REGION_ORE(x, z)   -- доля остатка жил вокруг точки (0..1), для стартового запаса новых узлов игрока

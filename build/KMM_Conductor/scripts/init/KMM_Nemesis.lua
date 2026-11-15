@@ -18,12 +18,7 @@ N.DEF = {
   max_wait_s = 900,       -- лежачего ждём не дольше (встал / игрок ушёл / добит)
   min_hits = 2,
   rival_p_spared = 0.35,  -- уложен игроком и оставлен жить
-  rival_p_fled = 0.12,    -- ушёл из боя на ногах (игрок при этом не ложился)
-  rival_p_beat = 0.25,    -- ОБРАТНАЯ ПАМЯТЬ: персонаж игрока лёг, победитель (ванильное Character.lastGuyWhoDefeatedMe) стоял — запомнил игрока
-  beat_win_r = 2500,      -- победитель жив и не дальше от уложенного персонажа игрока (поле хранит последнего победителя)
-  beat_scan_s = 3,        -- опрос «свой встал/лёг» не чаще
-  weak_max_rivals = 1,    -- игрок нищ и слаб (N.worth): живых соперников не больше (спираль поражений)
-  weak_rival_mult = 0.5,  -- и шанс нового соперника x
+  rival_p_fled = 0.12,    -- ушёл из боя на ногах
   avenger_p = 0.3,        -- убит вожак/именной -> мститель
   leader_mult = 2.0,
   max_rivals = 4,         -- живых соперников одновременно
@@ -148,18 +143,6 @@ N.DEF = {
   appr_broken = 0.5,       -- дух отряда игрока сломлен: видимая сила x
   appr_regroup_days = 2,   -- ушедший постоянный соперник снова берёт след (пакет охоты)
   appr_withdraw_days = 2,  -- окно отхода: в нём повторный отход того же соперника не даёт нового события, KMM_Nemesis.withdrew_recent = true
-  -- ПРЕЗРЕНИЕ (contempt): отряд игрока слабее (ratio < appr_attack) и взять с него нечего (N.worth: деньги ядра, цена надетого и носимого,
-  -- награда ядра, прозвище по делам, численность, навык) — соперник не нападает ради добычи: пакет «бродить», реплика, регрупп через
-  -- appr_regroup_days, при следующей встрече оценка снова. Разбогател / прославился — та же оценка даёт штурм. Мститель (avenger) не презирает.
-  appr_contempt = true,
-  appr_contempt_days = 2,  -- окно: повторное презрение того же соперника без нового события
-  worth_money = 1000,      -- деньги игрока (Ownerships:getMoney) не больше
-  worth_gear = 2500,       -- суммарная цена вещей своих (InventoryItemBase:getValueAll) не больше
-  worth_bounty = 0,        -- награда ядра (CrimeManager:getTotalBounty) не больше
-  worth_squad = 2,         -- живых своих не больше
-  worth_skill = 25,        -- средний общий навык (CharStats:getOverallSkillLevel_0_100) не выше; не читается — не учитывается
-  worth_ttl_s = 10,        -- кэш оценки богатства, реальные секунды
-  chron_type_day = 2,      -- ХРОНИКА: событий одного «ближнего» типа в журнал за игровой день не больше
   generic_rx = "bandit|thug|guard|soldier|hungry|starving|dust|raider|ninja|samurai|recruit|mercenary|slaver|hunter|warrior|cannibal|" ..
                "fogman|skeleton|drifter|outlaw|scout|sentry|paladin|knight|trader|worker|peasant|farmer|vagrant|thief|pirate|nomad|" ..
                "leader|boss|captain|sergeant|grunt|thrall|member|militia|patrol",
@@ -167,14 +150,12 @@ N.DEF = {
 N.EPI = {
   spared = { "Who Got Up", "the Unbroken", "Grudgebearer", "Sandscar" },
   fled   = { "Lastlaugh", "the Runner", "Long-Memory" },
-  beat   = { "the Boot", "Knuckles", "the Lesson", "Dustmaker" },
   again  = { "Twice-Spared", "the Stubborn", "Who Keeps Coming" },
   escaped = { "Chainbreaker", "Who Slipped the Collar", "the Uncaged" },
 }
 N.SAY = {
   spared = { "You left me in the dirt near %s. I didn't stay there.", "Remember %s? I do. Every night.", "%s. You should have finished it." },
   fled   = { "I ran at %s. I'm done running.", "You chased me off at %s. Now I've brought friends." },
-  beat   = { "Back for more? I left you in the sand at %s.", "You again. %s wasn't lesson enough?", "I remember you. Face down at %s." },
   avenger = { "%s was mine to bury. You put him there.", "You killed %s. I came to collect.", "They still talk about %s. Nobody will talk about you." },
   again  = { "Again? You keep leaving me alive. Mistake.", "%s, and now this. Third time ends it." },
 }
@@ -183,7 +164,6 @@ N.TALK = {
   debt_made_healed = { "Heard you patched up %s around here. Decent of you.", "%s says you stopped the bleeding. Not many would.", "You are the one who helped %s. People noticed." },
   debt_made_freed = { "You cut %s loose. Some here liked that. Some did not.", "%s walks free because of you. Word gets around.", "Breaking chains, now? %s told everyone." },
   nemesis_born_spared = { "%s still talks about you. Watch your back.", "You left %s alive. He did not take it as a kindness.", "%s asks about you in every bar." },
-  nemesis_born_beat = { "%s laughs about you in every bar. Says you went down easy.", "%s beat you once and tells everyone.", "If you want your pride back, %s has it." },
   nemesis_born_fled = { "%s ran from you. He is not running anymore.", "%s is telling everyone how he got away from you.", "They say %s is gathering men. Because of you." },
   nemesis_born_avenger = { "%s swore an oath over a grave. Your name was in it.", "A man called %s is looking for you. Not to talk.", "Someone you killed had a friend. %s." },
   nemesis_born_escaped = { "%s got out of your chains. Folk here saw it.", "%s laughs about your locks.", "You lost a prisoner, I hear. %s." },
@@ -204,7 +184,6 @@ N.EV = { EV_I_SEE_NEUTRAL_SQUAD = 3, EV_LAUNCH_ATTACK = 16, EV_BOUNTY_SPOTTED = 
          EV_I_SEE_ENEMY_PLAYER = 66 }   -- EnumsReference EventTriggerEnum (✓код)
 N.SAY.appr_parley = { "Count your blades, Nameless. I am counting mine.", "Not here. Not yet. But I see you.", "Walk on. While I let you." }
 N.SAY.appr_attack = { "Enough talk. Take them!", "They are breaking. Now!", "Look at them. Finish it." }
-N.SAY.appr_contempt = { "Nothing on you worth the sweat. Walk.", "Look at you. Come back when you're worth robbing.", "Not worth the blade. Go on, crawl." }
 N.SAY.appr_withdraw = { "Too many of you. Another day.", "Not today. I can wait.", "You got lucky. I know where you sleep." }
 N.SAY.rescue = { "Where is %s? We know you took him.", "We came for %s. Hand him over or bleed.", "%s is one of ours. Nobody keeps him." }
 N.TITLES = {   -- счётчик, порог, прозвище (побеждает наибольшее отношение счёт/порог ≥ 1)
@@ -289,12 +268,6 @@ N.CHRON_EV = { town_captured = true, revolt = true, town_rejoined = true, warlor
                famine = true, chaos_incursion = true, settlement_founded = true, mine_exhausted = true, leader_killed = true, leader_captured = true,
                slave_raid = true, base_raid = true, base_campaign = true, base_raid_repelled = true, base_raid_unattended = true, base_raid_sacked = true, ally_joins = true,
                nemesis_title = true, nemesis_company = true, nemesis_warlord = true }
--- значимые дела рядом с игроком (только в chron_near_r или про игрока), не больше chron_type_day одного типа за игровой день, без повтора текста
-N.CHRON_NEAR = { raid = true, attack_repelled = true, caravan_lost = true, waylay = true, outlaw_racket = true, outlaw_manhunt = true, outlaw_dead = true,
-                 fate_death = true, fate_wounded = true, fate_defect = true, slaves_freed = true, predator_nest = true, predator_patrol = true,
-                 ruin_expedition = true, bounty_hunters = true, ally_help = true, ally_failed = true, outlaw_pc_wanted = true,
-                 nemesis_born = true, nemesis_dead = true, nemesis_withdrew = true, nemesis_contempt = true, nemesis_beat_again = true,
-                 nemesis_hunter_beaten = true, nemesis_hunter_dead = true }
 N.CHRON_PLAYER = { nemesis_title = true, nemesis_company = true, base_raid = true, base_campaign = true, base_raid_repelled = true, base_raid_unattended = true, base_raid_sacked = true, ally_joins = true }
 function N.chron_known(C, ev)   -- игрок мог узнать сразу: событие про него или рядом
   if N.CHRON_PLAYER[ev.type] or ev.by_player then return true end
@@ -309,20 +282,6 @@ function N.chron_known(C, ev)   -- игрок мог узнать сразу: с
   end
   return x ~= nil and (x - px) ^ 2 + (z - pz) ^ 2 < N.cfg().chron_near_r ^ 2
 end
-function N.chron_room(ev, cfg)   -- «ближний» тип: лимит за игровой день и без повтора текста (редкие крупные — как раньше)
-  if N.CHRON_EV[ev.type] then return true end
-  local d = math.floor(ev.day or 0)
-  N.chron_n = N.chron_n or {}
-  N.chron_txt = N.chron_txt or {}
-  local r = N.chron_n[ev.type]
-  if not r or r.d ~= d then r = { d = d, n = 0 }; N.chron_n[ev.type] = r end
-  if r.n >= cfg.chron_type_day or N.chron_txt[ev.text] then return false end
-  r.n = r.n + 1
-  N.chron_txt[ev.text] = true
-  N.chron_tn = (N.chron_tn or 0) + 1
-  if N.chron_tn > 200 then N.chron_txt, N.chron_tn = {}, 0 end
-  return true
-end
 function N.chronicle(C, S)
   local cfg = N.cfg()
   if not cfg.chronicle or N.chron_off then return end
@@ -334,8 +293,7 @@ function N.chronicle(C, S)
   if last > X.chron_id then
     for i = math.max(1, #E - 200), #E do
       local ev = E[i]
-      if ev.id and ev.id > X.chron_id and (N.CHRON_EV[ev.type] or N.CHRON_NEAR[ev.type]) and ev.text and ev.text ~= "" and N.chron_known(C, ev)
-         and N.chron_room(ev, cfg) then
+      if ev.id and ev.id > X.chron_id and N.CHRON_EV[ev.type] and ev.text and ev.text ~= "" and N.chron_known(C, ev) then
         N.chron_q[#N.chron_q + 1] = string.format("Day %d. %s", math.floor(ev.day or 0), ev.text)
         if #N.chron_q > cfg.chron_queue then table.remove(N.chron_q, 1) end
       end
@@ -523,54 +481,6 @@ function N.title(C)
   local okS, S = pcall(C.state)
   return okS and S and N.cfg().titles and N.state(S).title or nil
 end
--- БОГАТСТВО И СЛАВА ИГРОКА — только ванильные числа (общее правило для любого момента игры, без привязки к старту):
--- деньги (PlayerInterface/Platoon Ownerships:getMoney), цена вещей своих (InventoryItemBase:getValueAll), награда ядра
--- (Character.crimes:getTotalBounty), прозвище по делам (N.title), численность и средний навык (CharStats:getOverallSkillLevel_0_100).
--- poor = взять нечего и бояться некого. Деньги не прочитались — poor = false (поведение как раньше). Кэш worth_ttl_s.
-function N.worth(C)
-  local cfg = N.cfg()
-  local now = os.clock()
-  if N.wc and now >= N.wc.t and now - N.wc.t < cfg.worth_ttl_s then return N.wc end
-  local W = { t = now, gear = 0, bounty = 0, n = 0 }
-  local okm, m = pcall(function() return getPlayerInterface():getOwnerships():getMoney() end)
-  if okm and type(m) == "number" then W.money = m end
-  local sk, nsk = 0, 0
-  pcall(function()
-    for _, pc in pairs(getPlayerInterface():getAllPlayerCharacters()) do
-      if W.n >= 30 then break end
-      local okd, dead = pcall(function() return pc:isDead() end)
-      if not (okd and dead == true) then
-        W.n = W.n + 1
-        if W.money == nil then
-          local okp, pm = pcall(function() return pc:getPlatoon().me:getOwnerships():getMoney() end)
-          if okp and type(pm) == "number" then W.money = pm end
-        end
-        local okb, b = pcall(function() return pc.crimes:getTotalBounty() end)
-        if okb and type(b) == "number" and b > 0 then W.bounty = W.bounty + b end
-        local oks, v = pcall(function() return pc:getStats():getOverallSkillLevel_0_100() end)
-        if oks and type(v) == "number" then sk, nsk = sk + v, nsk + 1 end
-        pcall(function()
-          for _, it in ipairs(pc:getInventory():getAllItems()) do
-            local okv, iv = pcall(function() return it:getValueAll(false) end)
-            if okv and type(iv) == "number" and iv > 0 then W.gear = W.gear + iv end
-          end
-        end)
-      end
-    end
-  end)
-  W.skill = nsk > 0 and sk / nsk or nil
-  W.title = C and N.title(C) or nil
-  W.poor = W.money ~= nil and W.n >= 1 and W.money <= cfg.worth_money and W.gear <= cfg.worth_gear and W.bounty <= cfg.worth_bounty
-           and W.n <= cfg.worth_squad and not W.title and (W.skill == nil or W.skill <= cfg.worth_skill)
-  W.txt = string.format("money=%s gear=%d bounty=%d n=%d skill=%s title=%s poor=%s", tostring(W.money), math.floor(W.gear), math.floor(W.bounty), W.n,
-                        W.skill and string.format("%.0f", W.skill) or "?", tostring(W.title or "-"), tostring(W.poor))
-  N.wc = W
-  return W
-end
-function N.poor(C)   -- безопасно: ошибка чтения -> false (как раньше)
-  local ok, W = pcall(N.worth, C)
-  return ok and type(W) == "table" and W.poor == true
-end
 function N.emit(C, o, typ, text, extra)
   local ttl = typ ~= "nemesis_title" and N.title(C)
   if ttl then text = text:gsub("([Tt]he Nameless)", "%1 they call " .. ttl, 1) end
@@ -735,8 +645,8 @@ function N.greet(C, S)
     end
   end)
   local now = os.clock()
-  if not (pc and tsid) then N.greet_town, N.greet_visit = nil, nil; return end
-  if N.greet_town ~= tsid then N.greet_town, N.greet_visit = tsid, nil; N.greet_at = now + cfg.greet_delay_s; return end
+  if not (pc and tsid) then N.greet_town = nil; return end
+  if N.greet_town ~= tsid then N.greet_town = tsid; N.greet_at = now + cfg.greet_delay_s; return end
   if not N.greet_at or now < N.greet_at then return end
   if now - (N.talk_t or -1e9) < 30 then return end
   local X = N.state(S)
@@ -749,7 +659,7 @@ function N.greet(C, S)
   if not (okp and p) then return end
   local who = N.town_speaker(p.x, p.z, owner)
   if not who then N.greet_at = now + 20; return end   -- никого рядом — повтор через 20 с
-  N.greet_at = nil; X.greet[tsid] = day; N.talk_t = now; N.greet_visit = tsid   -- за этот визит город уже сказал (KMM_Nemesis.greet_said)
+  N.greet_at = nil; X.greet[tsid] = day; N.talk_t = now
   if tag == "legend" then X.legend = X.legend or {}; X.legend[tsid] = true end
   if tag == "deed" and dref then dref.said = day end   -- то же дело town_talk уже не повторит
   N.said[#N.said + 1] = { leader = who, line = line, t = now + 1, talk = true, greet = true }
@@ -1070,18 +980,13 @@ function N.resolve(M, O, D, C, S)
       end
     elseif now - (c.last or c.first) > cfg.linger_s and not (near and down_now) then   -- лежит рядом с игроком — ещё не решено
       N.cand[key] = nil
-      if c.hits >= cfg.min_hits or c.beat then
+      if c.hits >= cfg.min_hits then
         if c.down then N.count(S, "spared") end
         local r = O and N.find(O, c.n)
-        -- исход: уложил его игрок -> spared; стоял, а свой игрока лёг от его руки или руки его банды -> beat (обратная память);
-        -- свой игрока ложился от кого-то ещё -> без соперника (не «сбежал»); никто из своих не ложился -> fled
-        local deed = c.down and "spared" or (c.beat and "beat") or (not c.plost and "fled") or nil
-        if r and deed == "beat" then N.beat_again(C, r, c)
-        elseif r then N.again(M, O, D, C, S, r, c)   -- пережил встречу с игроком снова (как раньше)
-        elseif deed then
-          local p = (deed == "spared" and cfg.rival_p_spared or deed == "beat" and cfg.rival_p_beat or cfg.rival_p_fled) * (c.lead and cfg.leader_mult or 1)
-          if N.poor(C) then p = p * cfg.weak_rival_mult end   -- слабый нищий игрок: спираль соперников медленнее
-          if math.random() < p then N.make(M, O, D, C, S, c, deed) end
+        if r then N.again(M, O, D, C, S, r, c)
+        else
+          local p = (c.down and cfg.rival_p_spared or cfg.rival_p_fled) * (c.lead and cfg.leader_mult or 1)
+          if math.random() < p then N.make(M, O, D, C, S, c, c.down and "spared" or "fled") end
         end
       end
     end
@@ -1091,12 +996,7 @@ function N.make(M, O, D, C, S, c, deed)
   local cfg = N.cfg()
   local X = N.state(S)
   local day = N.day(C)
-  local maxr = cfg.max_rivals
-  if N.poor(C) then maxr = math.min(maxr, cfg.weak_max_rivals) end   -- слабый нищий игрок: не больше weak_max_rivals живых соперников
-  if #N.rivals(O) >= maxr or day - X.last_new < cfg.cooldown_days then
-    N.log(string.format("nemesis_skip: %s deed=%s rivals=%d/%d", tostring(c.n), tostring(deed), #N.rivals(O), maxr))
-    return nil
-  end
+  if #N.rivals(O) >= cfg.max_rivals or day - X.last_new < cfg.cooldown_days then return nil end
   local t, rg = N.where(D, c.x, c.z)
   if not rg then return nil end
   local gang = (D.gangs and D.gangs[c.fid]) and c.fid or nil
@@ -1121,88 +1021,11 @@ function N.make(M, O, D, C, S, c, deed)
     txt = string.format("%s was left for dead by the Nameless near %s. He got up. Now he asks about them in every bar.", o.n, place)
   elseif deed == "escaped" then
     txt = string.format("%s broke the chains the Nameless put on him near %s. He has not forgotten the collar.", o.n, place)
-  elseif deed == "beat" then
-    txt = string.format("%s beat the Nameless into the dirt near %s and walked off laughing. He tells it in every bar.", o.n, place)
   else
     txt = string.format("%s fled from the Nameless near %s and swore it was the last time. He is gathering a crew.", o.n, place)
   end
   N.emit(C, o, "nemesis_born", txt, { deed = deed, place = place, x = c.x, z = c.z })
   return o
-end
-function N.beat_again(C, r, c)   -- соперник снова уложил игрока: ещё строка в его легенде (без роста тира — он и так сильнее)
-  r.pg.won = (r.pg.won or 0) + 1
-  local _, _, D = N.outlaws()
-  local t, rg = N.where(D, c.x, c.z)
-  r.pg.wplace = (t and t.name) or rg or r.pg.wplace
-  N.emit(C, r, "nemesis_beat_again", string.format("%s beat the Nameless again near %s. He has lost count of how many times.", r.n, r.pg.wplace or "the road"),
-         { won = r.pg.won, x = c.x, z = c.z })
-end
--- ОБРАТНАЯ ПАМЯТЬ «кто тебя уложил»: свой игрока был на ногах и лёг -> победитель из ванильного Character.lastGuyWhoDefeatedMe (hand).
--- Победитель жив, не игрок и не дальше beat_win_r от уложенного (поле хранит последнего победителя, поэтому только переход «стоял -> лёг»).
--- Он и его банда (та же фракция, рядом) в кандидатах: c.beat; кандидата нет (игрок не бил его min_hits раз) — заводится. Любой лёгший свой
--- помечает всех кандидатов рядом c.plost: «сбежал от Безымянных» для них уже неправда.
-function N.beat_scan(C, S)
-  local cfg = N.cfg()
-  local now = os.clock()
-  local bt = N.beat_t or -1e9
-  if now >= bt and now - bt < cfg.beat_scan_s then return end
-  N.beat_t = now
-  if N.pcup_S ~= S then N.pcup_S, N.pcup = S, {} end
-  local up = N.pcup
-  local seen = {}
-  for _, pc in pairs(getPlayerInterface():getAllPlayerCharacters()) do
-    local okk, k = pcall(function() return pc:getHandle():toString() end)
-    if not (okk and type(k) == "string") then local okn, nm = pcall(function() return pc:getName() end); k = okn and nm or nil end
-    if k then
-      seen[k] = true
-      local okd, dn = pcall(function() return pc:isDead() or pc:isDown() or pc:isUnconcious() end)
-      if okd and not dn then up[k] = true
-      elseif okd and dn and up[k] then
-        up[k] = nil
-        local okp, px, pz = pcall(function() local p = pc:getPosition(); return p.x, p.z end)
-        if okp and px then N.player_lost(pc, px, pz, now) end
-      end
-    end
-  end
-  for k in pairs(up) do if not seen[k] then up[k] = nil end end
-end
-function N.player_lost(pc, px, pz, now)
-  local cfg = N.cfg()
-  local okw, w = pcall(function() local hd = pc.lastGuyWhoDefeatedMe; return hd and hd:getCharacter() end)
-  if not okw then w = nil end
-  local wn, wf, wx, wz
-  if w then
-    local okv, ok2 = pcall(function()
-      if w:isDead() or w:isPlayerCharacter() then return false end
-      local p = w:getPosition()
-      if not p or (p.x - px) ^ 2 + (p.z - pz) ^ 2 > cfg.beat_win_r ^ 2 then return false end
-      wx, wz = p.x, p.z
-      wn = w:getName()
-      local f = w:getFaction(); local gd = f and (f:getData() or f.data); wf = gd and gd.stringID
-      return wn ~= nil and wf ~= nil
-    end)
-    if not (okv and ok2) then wn, wf = nil, nil end
-  end
-  local pname = "?"; pcall(function() pname = tostring(pc:getName()) end)
-  for _, c in pairs(N.cand) do
-    if c.x and (c.x - px) ^ 2 + (c.z - pz) ^ 2 < cfg.near_r ^ 2 then
-      c.plost = true
-      if wf and c.fid == wf then c.beat = true; c.last = now end
-    end
-  end
-  if not wn then N.log(string.format("beaten: %s went down, winner unknown or gone - no rival from this", pname)); return end
-  local key = tostring(wf) .. "|" .. tostring(wn)
-  local c = N.cand[key]
-  if not c then
-    local nc = 0; for _ in pairs(N.cand) do nc = nc + 1 end
-    if nc >= 40 then return end
-    local okl, lead = pcall(function() local pl = w:getPlatoon(); return pl and pl:getSquadLeader() == w end)
-    local oks, sid = pcall(function() local gd = w:getGameData(); return gd and gd.stringID end)
-    c = { ch = w, n = wn, fid = wf, first = now, hits = 0, lead = okl and lead == true, x = wx, z = wz, pn = pname, sid = oks and sid or nil }
-    N.cand[key] = c
-  end
-  c.beat, c.plost, c.last = true, true, now
-  N.log(string.format("beaten: %s went down to %s (%s)%s", pname, wn, wf, c.lead and " leader" or ""))
 end
 function N.again(M, O, D, C, S, r, c)   -- снова уложен и снова оставлен жить: растёт
   r.pg.met = (r.pg.met or 1) + 1
@@ -1331,8 +1154,7 @@ function N.on_spawn(o, leader)
   local sev = (o.pg.told == met) and "EV_I_SEE_ENEMY_PLAYER" or nil   -- о новом деле — наша строка один раз, дальше ванильная реплика врага
   o.pg.told = met
   N.said[#N.said + 1] = { leader = leader, line = line, t = os.clock() + N.cfg().say_delay_s, ev = sev }
-  N.remember(leader, deed == "avenger" and "LT_KILLED_MY_FRIEND" or deed == "escaped" and "LT_MY_CAPTOR" or deed == "beat" and "LT_SQUAD_LOST_TO_ME_ONCE"
-             or "LT_DEFEATED_MY_SQUAD_ONCE")   -- родная память ядра (beat: «его отряд мне проиграл»)
+  N.remember(leader, deed == "avenger" and "LT_KILLED_MY_FRIEND" or deed == "escaped" and "LT_MY_CAPTOR" or "LT_DEFEATED_MY_SQUAD_ONCE")   -- родная память ядра
   if C then
     local S = C.state(); if S then local X = N.state(S); X.met = X.met + 1 end
     N.emit(C, o, "nemesis_return", string.format("%s has caught up with the Nameless.", o.n))
@@ -1391,7 +1213,6 @@ function N.appr_read(leader, cfg)   -- таблица оценки или nil, �
 end
 function N.appr_decide(A, cfg)
   if A.rbroken then return "withdraw" end   -- у самой банды дух сломлен
-  if A.poor and A.ratio < cfg.appr_attack and cfg.appr_contempt ~= false then return "contempt" end   -- слаб и взять нечего
   if A.ratio < cfg.appr_attack then return "attack" end
   if A.ratio >= cfg.appr_flee then return "withdraw" end
   return "parley"
@@ -1420,18 +1241,6 @@ function N.appr_act(C, S, e, A, dec, cfg)
   if dec == "attack" then
     if e.roam then N.appr_pkg(o, board_fn, "hunt") end   -- после угрозы пакет был «бродить» — снова охота
     if e.roam or A.broken then N.said[#N.said + 1] = { leader = leader, line = N.pick(N.SAY.appr_attack), t = now + 1, ev = "EV_LAUNCH_ATTACK" } end
-  elseif dec == "contempt" then   -- взять нечего: «бродить», реплика; регрупп (wd_day) вернёт охоту, следующая встреча — новая оценка
-    if not e.roam then N.appr_pkg(o, board_fn, "roam") end
-    N.said[#N.said + 1] = { leader = leader, line = N.pick(N.SAY.appr_contempt), t = now + 1 }
-    local today = N.day(C)
-    if o.pg then o.pg.wd_day = today end
-    if o.pg and o.pg.ctd and today - o.pg.ctd < cfg.appr_contempt_days then
-      N.appr_n.ct_dup = (N.appr_n.ct_dup or 0) + 1
-    else
-      if o.pg then o.pg.ctd = today; o.pg.ct = (o.pg.ct or 0) + 1 end
-      N.emit(C, o, "nemesis_contempt", string.format("%s found the Nameless with empty pockets and let them crawl away. He says he will come back when they are worth robbing.", o.n),
-             { app = A.app, own = A.own })
-    end
   elseif dec == "parley" then
     e.roam = N.appr_pkg(o, board_fn, "roam") or e.roam   -- остановить штурм: дальше решает ванильный ИИ, мы пересмотрим
     e.phase, e.tp = "parley", now + cfg.appr_parley_s
@@ -1513,18 +1322,14 @@ function N.appraise_step(C, S)
       elseif ready or e.phase == "parley" then
         local dec
         if A then
-          if cfg.appr_contempt ~= false and e.o.pg and e.o.pg.deed ~= "avenger" then   -- мститель пришёл за кровью, не за добычей
-            local okw, W = pcall(N.worth, C)
-            if okw and type(W) == "table" then A.poor, A.wtxt = W.poor == true, W.txt end
-          end
           dec = N.appr_decide(A, cfg)
           if e.phase == "parley" and dec == "parley" then   -- после угрозы середины нет: чем ближе к слабости, тем вероятнее штурм
             dec = math.random() < (cfg.appr_flee - A.ratio) / math.max(0.01, cfg.appr_flee - cfg.appr_attack) and "attack" or "withdraw"
           end
           if e.phase == "parley" and not A.near and A.seen == 0 then dec = "withdraw" end   -- разошлись
-          N.log(string.format("appraise: app=%.1f own=%.1f (x%d) ratio=%.2f seen=%d hidden=%d down=%d broken=%s rbroken=%s -> %s (%s%s)%s",
+          N.log(string.format("appraise: app=%.1f own=%.1f (x%d) ratio=%.2f seen=%d hidden=%d down=%d broken=%s rbroken=%s -> %s (%s%s)",
                 A.app, A.own, A.size, A.ratio, A.seen, A.hid, A.down, tostring(A.broken), tostring(A.rbroken), dec, tostring(e.o.n),
-                e.phase == "parley" and ", after parley" or "", A.wtxt and (" worth: " .. A.wtxt) or ""))
+                e.phase == "parley" and ", after parley" or ""))
         else
           dec = "attack"   -- не прочиталось после угрозы — как раньше: охота
           N.log(string.format("appraise: fallback %s after parley: %s - assault package as before", tostring(e.o.n), tostring(why)))
@@ -2011,10 +1816,6 @@ function N.tick()
   if #N.said > 0 then N.flush_said() end
   local M, O, D, C, S = N.outlaws()
   if not M then return end
-  if not N.beat_off and cfg.rival_p_beat ~= false then
-    local okb, eb = pcall(N.beat_scan, C, S)
-    if not okb then N.beat_off = true; N.log("beat memory disabled until restart: " .. tostring(eb)) end
-  end
   if next(N.cand) then N.resolve(M, O, D, C, S) end
   if N.appr and next(N.appr) and not N.appr_off then
     local oka, ea = pcall(N.appraise_step, C, S)
@@ -2092,11 +1893,6 @@ KMM_Nemesis = {
   ambient_off = function() return N.amb_off end,
   trait_of = function(nm) return N.trait_of(nm) end,
   greet_off = function() return N.greet_off end,
-  -- greet за ТЕКУЩИЙ визит в город tsid: said = житель уже сказал (реплика в очереди/сказана); pending = игрок в этом городе и greet ещё может
-  -- сказать (ждёт greet_delay_s или жителя рядом). Визит кончается, когда игрок вышел из города. Для KMM_Rumors: не говорить вторым подряд.
-  greet_said = function(tsid)   -- Nemesis выключен (ошибка/greet_off) — greet не скажет: false, false (иначе «ждём» навсегда глушит мелочь Rumors)
-    if N.off or N.greet_off then return false, false end
-    return N.greet_visit ~= nil and N.greet_visit == tsid, (N.greet_town == tsid and N.greet_at ~= nil and N.greet_visit == nil) end,
   chronicle_off = function() return N.chron_off end,
   on_trade = function(a, b) return N.on_trade(a, b) end,
   player_title = function() local C = rawget(_G, "KMM_Conductor"); return C and N.title(C) end,
@@ -2111,8 +1907,6 @@ KMM_Nemesis = {
   remember = function(leader, tagname) return N.remember(leader, tagname) end,
   disabled = function() return N.off and { nemesis = true } or {} end,
   appraisals = function() return N.appr_n or {} end,
-  worth = function() local ok, W = pcall(N.worth, rawget(_G, "KMM_Conductor")); return ok and W or nil end,   -- богатство/слава игрока (ванильные числа)
-  poor = function() return N.poor(rawget(_G, "KMM_Conductor")) end,   -- взять нечего и бояться некого (contempt, ворота Traces, запах Predators)
   appraise_off = function() return N.appr_off end,
   withdrew_recent = function(x, days) local ok, r = pcall(N.withdrew_recent, x, days); return ok and r == true end,
   _tick = function() N.last = -1000; N.tick() end,
