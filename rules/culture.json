@@ -1,0 +1,37 @@
+{
+ "_doc": "Паспорт культуры фракции (B4 И12, первый шаг 2026-11-15): явные переопределения архетипа/амбиции/отношений там, где вывод по fundamental type или по имени ломает смысл. Читают: tools/streams/behavior.py (archetype_of, plan_world_relations — матрица отношений), tools/streams/wardrobe.py (личные вещи по архетипу), tools/conductor/gen_conductor.py (архетип и амбиция модели дирижёра). Ключ — имя фракции В ДАННЫХ (до переименования fix.rename_auto: KMM_Fix грузится последним), display — имя, которое видит игрок. Поля: archetype — вместо behavior.json archetype_by_name/override_by_name/ftype; ambition — амбиция модели дирижёра; only_vs — матрица архетипов для этой фракции не применяется, пишутся только vs_archetype/vs_name; vs_archetype {архетип: значение} и vs_name {имя: значение} — как exceptions behavior (в обе стороны, при отсутствии отношения или противоположном знаке), но по всем участникам архетипа. Новых фракций не заводит.",
+ "factions": {
+  "失控": {
+   "display": "Rogue Constructs",
+   "archetype": "robot",
+   "ambition": "revenge",
+   "only_vs": true,
+   "vs_archetype": {"robot": 30, "trader": -80, "state": -80, "settler": -60, "religion": -80},
+   "why": "B4 Н3: охрана лаборатории роботов-убийц (KillerRobot), ftype CIVILIAN -> выводилась settler и дружила с Free Traders (+17). Сбежавшие конструкты: default -100 из мода остаётся, родня — скелеты/Old Machines (+30), торговцы и государства — враги; амбиция — месть создателям (лаборатория UC, -200 к United Cities из мода)"
+  },
+  "Space Necromancer - Sora Dynasty": {
+   "display": "Space Necromancer - Sora Dynasty",
+   "archetype": "robot",
+   "vs_archetype": {"robot": 20, "imperium": -100, "religion": -80, "state": -50, "trader": -50, "settler": -30},
+   "vs_name": {"Tech Hunters": -60},
+   "why": "B4 Н8/И6: некроны — древние машины, родня скелетов (не xeno): со скелетами и Old Machines не воюют (+20 вместо robot|robot 60), Империум и вера — смертельные враги как раньше у xeno, Tech Hunters — гробокопатели (-60)"
+  },
+  "Greenskins": {
+   "display": "Greenskins",
+   "archetype": "xeno",
+   "vs_name": {"Slave Traders": 30, "Slave Hunters": 20, "Shek Kingdom": -40},
+   "why": "B4 Н8/И7: у орков не было ни одного союзника. Торговые партнёры — работорговцы (покупают рабов-носильщиков); Shek — достойный враг (-40: вражда, не резня); остальное — матрица xeno"
+  },
+  "The Holy Nation": {
+   "display": "The Holy Nation",
+   "vs_archetype": {"imperium": -10},
+   "why": "B4 Н5: матрица religion|imperium +10 противоречила docs/core/ASTARTES.md (ордена -> HN -10, «не вражда»). Намерение владельца — ASTARTES.md: HN -> силовая броня -10 в обе стороны (явно, т.к. |-10| < min_delta матрица не пишет). Матрица religion|imperium выставлена -10 там же"
+  }
+ },
+ "twins": {
+  "enabled": true,
+  "skip_names": [],
+  "twin_canon_value": 100,
+  "_doc": "B4 Н4/И3: двойники фракций с одним именем из разных модов, которых fix.faction_merge не сливает (разные отношения или ftype). behavior выравнивает политику двойника по каноничному (ваниль > больше ссылок > реальная — как faction_merge): отношения двойника ко всем = отношения канона (явные + матрица), отношения всех к двойнику = их отношения к канону, default relation = как у канона, двойник<->канон = twin_canon_value. Членов и ссылки не трогает (их сливает fix.faction_merge, если после выравнивания отношения совпали и ftype тот же)."
+ }
+}

@@ -283,7 +283,15 @@
    "price_min": 0.8,
    "price_max": 1.45,
    "dead_scan_seconds": 4,
-   "_arrive_diet": "2026-11-13: города стартуют полупустыми (atlas townlife diet) -> приход чаще: arrive_max 6->8, arrive_days 3->4, пауза 240->180 c."
+   "_arrive_diet": "2026-11-13: города стартуют полупустыми (atlas townlife diet) -> приход чаще: arrive_max 6->8, arrive_days 3->4, пауза 240->180 c.",
+   "hostile_gap_seconds": 600,
+   "hostile_after_ko_seconds": 300,
+   "first_hour_poor_seconds": 5400,
+   "trace_names": true,
+   "heralds": true,
+   "herald_r": 700,
+   "herald_ttl_seconds": 900,
+   "herald_max": 6
   },
   "self": {
    "_doc": "самосохранение NPC (KMM_Self.lua)",
@@ -983,6 +991,78 @@
     }
    },
    "act_chunk": 10
+  },
+  "outlaws": {
+   "_doc": "KMM_Outlaws: перекрывает M.DEF ключ за ключом (нет ключа — значение из Lua). B1 — награда за голову (docs/core/people.md).",
+   "b1_price": {
+    "murder": 8000,
+    "terrorism": 5000,
+    "kidnapping": 4000,
+    "enslaving": 4000,
+    "escape_prison": 3500,
+    "assault_vip": 3000,
+    "slave_freeing": 2000,
+    "assault": 1500,
+    "stealing": 800,
+    "lockpicking": 700,
+    "looting": 600,
+    "uniform_theft": 600,
+    "trespassing": 300,
+    "smuggling": 0,
+    "fencing": 0,
+    "farm_eating": 0
+   },
+   "b1_add_max": 15000,
+   "b1_recid": 0.15,
+   "b1_recid_max": 1.6,
+   "b1_w_law": 1.6,
+   "b1_w_unique": 1.5,
+   "b1_w_trader": 1.3,
+   "b1_w_lawless": 0.25,
+   "b1_w_hungry": 0.25,
+   "b1_rate": 0.05,
+   "b1_rate_recid": 0.01,
+   "b1_rate_max": 0.1,
+   "b1_cap_mult": 3,
+   "b1_window": 12,
+   "b1_min_add": 50,
+   "b1_tiers": [
+    5000,
+    15000,
+    40000
+   ],
+   "b1_npc_rate": 0.015,
+   "b1_npc_recid": 0.002,
+   "b1_npc_max": 0.04,
+   "b1_npc_window": 6,
+   "b1_npc_cap": 2,
+   "b1_npc_tiers": [
+    10000,
+    25000,
+    50000
+   ],
+   "b1_hunt_at": 25000
+  },
+  "nemesis": {
+   "_doc": "KMM_Nemesis: перекрывает N.DEF ключ за ключом. worth_* — порог «взять нечего» (contempt Y5, ворота Traces, запах Predators).",
+   "rival_p_beat": 0.25,
+   "beat_win_r": 2500,
+   "weak_max_rivals": 1,
+   "weak_rival_mult": 0.5,
+   "appr_contempt": true,
+   "appr_contempt_days": 2,
+   "worth_money": 1000,
+   "worth_gear": 2500,
+   "worth_bounty": 0,
+   "worth_squad": 2,
+   "worth_skill": 25,
+   "worth_ttl_s": 10,
+   "chron_type_day": 2
+  },
+  "predators": {
+   "_doc": "KMM_Predators: новые числа (остальные — CFGP в Lua).",
+   "smell_aop_gap": 1800,
+   "smell_aop_poor_down": true
   }
  },
  "player_faction": "204-gamedata.base",

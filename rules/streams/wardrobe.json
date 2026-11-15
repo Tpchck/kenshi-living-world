@@ -495,6 +495,21 @@
   },
   "_doc": "CHARACTER inventory: ссылка (ITEM, количество 1, шанс %, 0). Без квестовых/божественного/Crafting Redux/KMM_Tech; мод-источник из белого списка",
   "_doc_2026_11_13": "Владелец: хлам у NPC встречается очень редко. Было share 0.7 / 1–4 вещи / 40 % (итог 42 % шаблонов с лутом) -> 0.95 / 2–5 / 60 %.",
+  "empty_pockets": {
+   "enabled": true,
+   "_doc": "B4 Н10/И9 (2026-11-15): голод видно по карманам. Шаблоны фракции faction_rx или с именем name_rx: общий лут только из kinds (без еды/роскоши/книг) до value_cap, items штук, без личных вещей (belongings); из своего инвентаря шаблона снимаются вещи strip_rx (еда, деньги). Деньги — economy.money_by_role.cap_by_name_rx (тот же name_rx).",
+   "faction_rx": "^Starving Bandits$",
+   "name_rx": "\\b(Hungry|Starving)\\b",
+   "kinds": {
+    "junk": 1.0
+   },
+   "value_cap": 50,
+   "items": [
+    0,
+    1
+   ],
+   "strip_rx": "\\bcats\\b|money|bread|meat|food|ration|dried|rice|wheat|fish|cheese|sausage|noodle|chewstick|sandwich|cake|dumpling|jerky"
+  },
   "belongings": {
    "_doc": "Е3 (docs/RESEARCH_BELONGINGS.md): быт в карманах по архетипу фракции (archetype_of из behavior.json; имя фракции by_name_rx важнее). Ref(ITEM, 1, шанс %, 0); до max вещей, заменяют хвост общего лута (итог не больше loot.items[1]). value_cap против продажи «личных вещей» за тысячи. Письма Dialogue.mod с value 0 и quest=False: мрачные находки без дохода. Нет у монстров, роботов, хаоса, xeno, imperium.",
    "enabled": true,

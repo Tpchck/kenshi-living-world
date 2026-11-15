@@ -267,7 +267,7 @@
    "savage|xeno": -20,
    "religion|religion": 30,
    "religion|robot": -80,
-   "religion|imperium": 10,
+   "religion|imperium": -10,
    "religion|chaos": -90,
    "religion|xeno": -80,
    "robot|robot": 60,
@@ -395,6 +395,7 @@
   ],
   "_doc_branches": "2026-11-13 LORE: ветви фракций (docs\\STORY.md «Ветви фракций») — родитель↔ветвь.",
   "_force_note": "2026-11-13: force — точное значение поверх явного того же знака. Fluorite↔HN без force: явные −100 из мода по лору (ересь) оставлены; Shinobi Thieves↔Police force −70 (было −1).",
+  "_doc_culture": "2026-11-15 B4 Н3/Н5/Н8: архетип и точечные отношения отдельных фракций — в rules/culture.json (выше override_by_name): Rogue Constructs (失控) robot без матрицы, некроны robot (родня скелетов; запись в xeno здесь перекрыта), орки — союзники-работорговцы, HN<->imperium -10 по docs/core/ASTARTES.md (religion|imperium было +10 — противоречие; теперь -10). Двойники фракций выравниваются по канону (culture.twins, behavior.align_twins).",
   "_doc_underworld": "2026-11-14 баг Mongrel: городской криминал, который в ванили живёт в городах рядом со стражей и лавками (Shinobi Thieves, Slave Traders +100 к Traders Guild/UC, Slave Hunters, Bar Thugs). Как «bandit» матрица дописывала им −60 ко всем модовым торговцам → драки в городах. Свой архетип: с торговцами, государствами, поселенцами — ничего не дописываем (ванильные явные отношения и default)."
  }
 }

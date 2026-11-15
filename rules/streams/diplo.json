@@ -1,0 +1,223 @@
+{
+ "_doc": "Поток DIPLO: дипломатия игрока через диалоги (tools/streams/diplo.py → build/KMM_Diplo/KMM_Diplo.mod + scripts/kmm_diplo_data.lua). Новые записи DIALOGUE/DIALOGUE_LINE/DIALOG_ACTION/ITEM/LUA_SCRIPT; у существующих CHARACTER меняется ТОЛЬКО категория ссылок «dialogue» (дополнительные PLAYER_TALK_TO_ME).",
+ "envoys": {
+  "_doc": "кого делаем посланником: лидеры из пар дирижёра → по имени (envoy/ambassador…) → уникальные OT_DIPLOMAT (5) → уникальные главари отрядов фракции классов boss_classes → неуникальные OT_DIPLOMAT; не больше max_per_faction на фракцию; персонажи без фракции в данных (её задаёт расстановка в мире) — только лидеры/по имени/уникальные OT_DIPLOMAT, до max_unknown_faction, фракцию Lua берёт из getFaction()",
+  "name_regex": "ambassador|envoy|diplomat|emissary|herald|chancellor|negotiat",
+  "diplomat_class": 5,
+  "boss_classes": [
+   2,
+   8
+  ],
+  "max_per_faction": 6,
+  "max_nonunique_per_faction": 2,
+  "max_unknown_faction": 120,
+  "min_strength": 30,
+  "exclude_factions": [
+   "Drifters",
+   "No Faction",
+   "Empire Peasants",
+   "Lone Berserker",
+   "Outlaw"
+  ],
+  "exclude_name_regex": "barman|bartender|barkeep|trader|seller|merchant|shopkeep|vendor|dealer|innkeeper|peddler|smuggler|caravan",
+  "exclude_trade_dialog": true,
+  "_doc2": "отбор исключает: (1) генерик-торговцев по имени exclude_name_regex; (2) тех, у кого в «dialogue package» (с inheritsFrom) или в своих «dialogue» есть разговор-обращение игрока (v0=1) с эффектом DA_TRADE — их родной разговор с торговлей перекрывать нельзя. Если у фракции после этого посланников нет — остаётся без них."
+ },
+ "template_item": [
+  "ITEM",
+  "Letter To Hash II",
+  "49477-Dialogue.mod"
+ ],
+ "money": {
+  "_doc": "суммы в данных (DA_TAKE_MONEY/DA_GIVE_MONEY и условие DC_PLAYERMONEY) — Lua лишь выбирает ярус",
+  "counter_small": 1500,
+  "counter_large": 5000,
+  "liege_tribute": 1500,
+  "vassal_tribute": 1500,
+  "demand_tribute": 2000
+ },
+ "lua": {
+  "_doc": "параметры оценки интереса фракции (KMM_Diplo.lua); всё в долях 0..1, кроме дней/секунд",
+  "accept": 0.55,
+  "counter": 0.32,
+  "counter_large_gap": 0.12,
+  "jitter": 0.04,
+  "refuse_cooldown_days": 10,
+  "pester_penalty": 0.12,
+  "player_power_per_char": 4,
+  "rich_player_cats": 20000,
+  "cats_per_wealth": 100,
+  "max_towns_submit": 2,
+  "tribute_period_days": 30,
+  "tribute_grace_days": 20,
+  "token_ttl_seconds": 90,
+  "letter_scan_seconds": 3,
+  "envoy_radius": 1500,
+  "start_delay_seconds": 5,
+  "give_seal": true,
+  "rel_on_refuse_demand": -10,
+  "rel_on_accept_demand": -5,
+  "trust_on_accept_demand": -10,
+  "rel_on_paid_counter": 5,
+  "rel_on_tribute_paid": 3,
+  "trust_on_tribute_paid": 5,
+  "rel_on_tribute_missed": -10,
+  "trust_on_tribute_missed": -20,
+  "trust_on_renounce": -20,
+  "debug_log": "C:/KenshiModMap/logs/debug.log",
+  "world_conditions": true,
+  "world_refresh_seconds": 4,
+  "hungry_food": 0.5,
+  "plenty_food": 1.6,
+  "unrest_level": 0.5,
+  "emptied_pop": 0.6,
+  "hostile_rel": -40,
+  "cond_fail_max": 1,
+  "duel": true,
+  "duel_scan_r": 6000,
+  "duel_scan_max": 4,
+  "duel_coward_gap": 15,
+  "duel_strong_diff": 8,
+  "duel_timeout_s": 240,
+  "duel_leash": 6000,
+  "duel_loot_s": 45,
+  "duel_help_r": 800,
+  "duel_ask_ttl_s": 60,
+  "duel_cd_days": 3,
+  "duel_spare_s": 60,
+  "_doc_duel": "X3: duel_scan_r — радиус поиска rival-отрядов Q1 у игрока; duel_coward_gap — лидер слабее вызвавшего больше чем на столько очков общего навыка отказывается; duel_strong_diff — победа над сильнее на столько очков = «сильный» в слухе; duel_timeout_s/duel_leash — поединок без исхода снимается; duel_loot_s — сколько секунд победитель-NPC ещё враждебен (ванильное ограбление) до снятия вражды; duel_help_r — другие персонажи игрока ближе этого к лидеру = победа «не один на один»; duel_cd_days — один вызов лидеру в столько игровых дней; duel_spare_s — сколько секунд после поединка событие player_raid против фракции лидера не рвёт договоры."
+ },
+ "world": {
+  "_doc": "S4: условия живого мира в обычных ванильных диалогах. Одно зарезервированное условие: DC_FACTION_VARIABLE (6) со stringvar «KMM_WORLD», CE_EQUALS, значение base+код (в ванили такой переменной фракции нет → без Lua реплика скрыта). Lua (kmm_diplo.lua) раз в world_refresh_seconds кладёт флаги в таблицу, перехват Dialogue::_checkCondition отвечает O(1). Коды 1–10 — мир (город, где стоит отряд игрока; прозвище; соперники), 11–24 — разговор посланника (замена жетонов-предметов: при живом перехвате Lua жетоны не выдаёт, иначе — прежняя схема).",
+  "condition": 6,
+  "stringvar": "KMM_WORLD",
+  "base": 9000,
+  "codes": {
+   "town_hungry": 1,
+   "town_plenty": 2,
+   "town_siege": 3,
+   "town_unrest": 4,
+   "town_emptied": 5,
+   "owner_hostile": 6,
+   "owner_captured": 7,
+   "player_title": 8,
+   "rival_alive": 9,
+   "rival_here": 10,
+   "has_pact": 11,
+   "liege_due": 12,
+   "vassal_due": 13,
+   "dec_accept": 21,
+   "dec_refuse": 22,
+   "dec_counter_s": 23,
+   "dec_counter_l": 24,
+   "duel_open": 31,
+   "duel_accept": 32,
+   "duel_refuse": 33
+  },
+  "_doc_packages": "ванильные DIALOGUE_PACKAGE, в «dialogs» которых добавляются наши реплики-монологи на EV_I_SEE_NEUTRAL_SQUAD (3); имя сверяется, не найден/не совпал — пропуск (в отчёте). Пакеты не наследуют друг друга.",
+  "packages": {
+   "trade": {
+    "2794-gamedata.base": "shopkeep",
+    "42968-Dialogue.mod": "Holy Nation Shopkeep",
+    "56189-rebirth.mod": "shopkeep base with no TALK_TO_ME",
+    "43328-rebirth.mod": "hive shopkeeper",
+    "43175-Dialogue.mod": "Shek shopkeep",
+    "95843-Dialogue.mod": "Shopkeep robotics",
+    "55800-Dialogue.mod": "Skeleton Town barman",
+    "44624-Dialogue.mod": "Swamper shopkeep"
+   },
+   "guard": {
+    "9831-Dialogue.mod": "Empire City Guard ",
+    "9660-Dialogue.mod": "Empire Gate Guard",
+    "15760-Dialogue.mod": "Holy Nation Paladin",
+    "42081-rebirth.mod": "Indie faction guard",
+    "5210-gamedata.base": "police",
+    "41685-Dialogue.mod": "Shek Kingdom Hundred Guardian",
+    "14354-Dialogue (4).mod": "Shop Guard"
+   }
+  },
+  "event": 3,
+  "chance": {
+   "trade": 45,
+   "guard": 30
+  },
+  "repetition_limit": 2,
+  "bounty_cats": {
+   "trade": 2000,
+   "rival": 5000
+  },
+  "rival_events": [
+   66,
+   3
+  ],
+  "_doc_duel": "X3 (пакет 6): вызов на поединок. Коды 31–33: duel_open (нет активного поединка) — условие самого разговора; duel_accept / duel_refuse — ответ лидера на вызов (ставит Lua по разнице навыков и кулдауну). Разговор добавляется в рантайме лидерам отрядов-конкурентов: Dialogue:addConversation(DIALOGUE, duel_events), EV_PLAYER_TALK_TO_ME = 1.",
+  "duel_events": [
+   1
+  ]
+ },
+ "duel": {
+  "_doc": "X3: реплика вызова у лидеров отрядов-конкурентов (KMM_Outlaws: главари и соперники Nemesis; KMM_Fates: герои; rival-отряды Q1 по шаблонам rivals.json, если рядом с игроком, не торговцы и не в городе). Принятие — эффекты ванильных реплик-нападений: DA_FLAG_TEMP_ENEMY (21) + DA_ATTACK_CHASE_FOREVER (6), как в ванильном «Beat him down. Strip his stuff.». Исход и снятие временной вражды со всего отряда лидера (clearTempEnemyStatus + reThinkCurrentAIAction) — kmm_diplo.lua; в городе лидер отказывается; рост навыка — ванильная кривая XP за разницу навыков (CONSTANTS, KMM_Fix xp_curve), своей прокачки нет.",
+  "rival_factions": [
+   "51707-rebirth.mod",
+   "1233-gamedata.base",
+   "14508-gamedata.base",
+   "95512-rebirth.mod"
+  ],
+  "_doc_rival_factions": "запасной фильтр Q1-отрядов, если rivals.json дирижёра недоступен (основной — шаблоны rivals.json prospectors). Mercenary Guild (1214) исключена: её отряды — найм в барах (ревью batch6 H3); торговцы и отряды в городе вызова не получают никогда"
+ },
+ "astartes_orders": {
+  "_doc": "A1 (2026-11-15, docs/core/ASTARTES.md): лорный разговор с орденами космодесанта (фракции и отряды — поток relics, astartes_chapters). Один DIALOGUE на орден, условие my faction = орден, доп. «dialogue» у всех членов отрядов ордена; цепочка: hook → q_who/who → q_goal/goal → q_foe/foe → q_bye/bye (и q_bye сразу после hook). Тексты — варианты text0..N (движок берёт случайный).",
+  "enabled": true,
+  "chance": 100,
+  "q_who": "Who are you?",
+  "q_goal": "What do you seek in this wasteland?",
+  "q_foe": "And those who stand against you?",
+  "q_bye": "I'll be on my way.",
+  "orders": [
+   {
+    "faction": "Ultramarines (Adeptus Astartes)",
+    "hook": [
+     "Halt, citizen. You stand before a Battle-Brother of the Ultramarines.",
+     "Keep your hands where I can see them. The Ultramarines watch this shore."
+    ],
+    "who": "Sons of Guilliman. What remains of an Ultramarines strike force, cast down onto this dying world. We keep to the Codex even here, under the acid rains of Cheaters Run.",
+    "goal": "Chapter Master Aurelian Varro has ordered us to hold this coast and rebuild our strength. Every relic we recover and every ruin we cleanse brings us closer to leaving this world.",
+    "foe": "The Night Lords flay the living in their laboratory to the north, and their heresy will burn. Whoever trades with them will share their fate. The cities of the plains we leave in peace. For now.",
+    "bye": "Go with the Emperor, citizen. And stay out of the rain."
+   },
+   {
+    "faction": "Space Wolves (Adeptus Astartes)",
+    "hook": [
+     "Hah! A pup has wandered into the Wolf's den. Speak before I lose patience.",
+     "You smell of fear and ash, stranger. The Space Wolves have hunted these lands a long time."
+    ],
+    "who": "Sons of Russ, the Space Wolves. Wolf Lord Ragnvald Frostfang leads this Great Company. We came down through the black rain, and it did not break us.",
+    "goal": "We hunt. The dark lands are full of prey worth killing, and every kill makes the pack stronger. The Wolf Lord holds Sonorous Dark and the Ashlands, and no tomb-thing wakes while we keep watch.",
+    "foe": "The metal dead sleep in their tomb not far from here. When they wake, we will be waiting. The skinners too, and their heads make fine trophies. Your little city kings are not our quarry. Not yet.",
+    "bye": "Run along, pup. Watch the sky. The rain here eats flesh."
+   },
+   {
+    "faction": "Dark Angels (Adeptus Astartes)",
+    "hook": [
+     "Stand still. The Dark Angels do not suffer strangers lightly.",
+     "You walk through the poison and do not ask why we are here. Wise."
+    ],
+    "who": "The Dark Angels, First Legion, sons of the Lion. The Deathwing walks these gas-choked wastes under Master Zadkiel. You need know no more than that.",
+    "goal": "We are searching. Something fell to this world before us, a debt older than your cities. Until it is found we hold the Black Desert and the Deadlands, and we grow in strength.",
+    "foe": "Heretics, traitors, anyone who wears corrupted armour. All of them are marked. If you see marines in iron and chains, tell no one but us. The bone-folk of the deserts may keep their towers, as long as they keep out of our way.",
+    "bye": "Go. And forget that you saw the Deathwing."
+   },
+   {
+    "faction": "Black Templars (Adeptus Astartes)",
+    "hook": [
+     "Kneel or stand aside! The Black Templars march on crusade.",
+     "Another wanderer under the burning sky. Have you come to take the vow?"
+    ],
+    "who": "The Black Templars, sons of Dorn through Sigismund. High Marshal Gerold Vane leads this crusade, and the Emperor's Champion walks at his side.",
+    "goal": "The crusade never ends. We hold Venge, where the sky itself burns, and from here we strike every den of the witch, the heretic and the alien. Each victory brings more to our banner.",
+    "foe": "The Oni in their towers, the thrall-masters, the traitor marines of the Dark Gods. Suffer not the unclean to live. The Holy Lord's people pray, and we let them pray. For now.",
+    "bye": "Abhor the witch. Destroy the witch. Now go."
+   }
+  ]
+ }
+}
