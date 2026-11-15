@@ -86,7 +86,7 @@ check(logged("remember: LT_FREED_ME failed for Boss: not a character"), "failure
 -- 6) неизвестный тег и cfg выключатель
 CALLS = {}
 NN.remember(lead, "LT_BOGUS"); check(#CALLS == 0 and logged("remember: unknown tag LT_BOGUS"), "unknown tag")
-NN.cfg().native_memory = false; NN.remember(lead, "LT_FREED_ME"); check(#CALLS == 0, "native_memory=false: nothing"); NN.cfg().native_memory = nil
+local PN = KMM_Conductor.cfg().params; PN.nemesis = PN.nemesis or {}; PN.nemesis.native_memory = false; NN.remember(lead, "LT_FREED_ME"); check(#CALLS == 0, "native_memory=false: nothing"); PN.nemesis.native_memory = nil
 -- 7) потолок на число персонажей
 PCS = {}; for i = 1, 40 do PCS[i] = pc("P" .. i) end
 CALLS = {}; NN.remember(lead, "LT_MY_LIFESAVER"); check(#CALLS == NN.REMEMBER_MAX, "cap on player chars: " .. #CALLS)

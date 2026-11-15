@@ -5,6 +5,7 @@ python -I -X utf8 build/KMM_Conductor/_dev/test_self.py -> OK / FAIL, код 1 �
 import ctypes
 import sys
 import tempfile
+sys.path.insert(0, r"C:\KenshiModMap\tools\test"); import log_sandbox; log_sandbox.install()  # noqa: E402,E702  KMM_Self пишет в debug.log при загрузке, до cfg -> песочница логов
 
 DLL = r"C:\Program Files (x86)\Steam\steamapps\workshop\content\233860\3817000612\lua51.dll"
 SELF = r"C:\KenshiModMap\build\KMM_Conductor\scripts\init\KMM_Self.lua"

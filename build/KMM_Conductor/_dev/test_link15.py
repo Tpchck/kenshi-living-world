@@ -114,7 +114,7 @@ check(#SPAWNS == s0 + 2, "пара не спавнится повторно")
 C.state().stats.waylay = 0
 force_waylay()
 check(C.ambush_pending() == 1 and (C.state().stats.waylay or 0) >= 1, "пауза 60 с: второй waylay абстрактный")
-CLOCK = CLOCK + 300   -- PACE: враждебная пауза hostile_gap_seconds 240 с
+CLOCK = CLOCK + 700   -- PACE: враждебная пауза hostile_gap_seconds (600 с)
 check(force_waylay() ~= nil and C.ambush_pending() == 2, "после паузы: вторая засада отложена")
 ticks(3)
 check(KMM_Traces.stats().by_kind.vambush == 2 and #SPAWNS == s0 + 4, "вторая пара спавнится")

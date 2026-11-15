@@ -85,6 +85,22 @@ C.emit({ type = "deed", kind = "killed", tone = "harm", a = "fA", b = "fE", n = 
 check(#ZS_CALLS == 2 and (Pr.sm.st.far or 0) >= 1, "attacked/далеко -> нет запаха")
 local lg = rd("TMPDIR/predators.log")
 check(lg:find("smell: corpse deed:killed", 1, true) and lg:find("smell: blood attack_on_player", 1, true), "маркеры smell: в логе")
+-- 4b. B2: кровь от нападения на игрока — не ловушка: пауза smell_aop_gap на все фракции, нищий лежащий не приманивает
+local n4 = #ZS_CALLS
+C.emit({ type = "attack_on_player", a = "fH", b = pf, text = "t" })
+check(#ZS_CALLS == n4 and (Pr.sm.st.aop_skip or 0) == 1, "второе нападение в паузе: без запаха")
+CLOCK = CLOCK + 1801
+local NM0 = rawget(_G, "KMM_Nemesis")
+KMM_Nemesis = { poor = function() return true end }
+ch.isDown = function() return true end
+C.emit({ type = "attack_on_player", a = "fI", b = pf, text = "t" })
+check(#ZS_CALLS == n4 and (Pr.sm.st.aop_skip or 0) == 2 and rd("TMPDIR/predators.log"):find("poor and down", 1, true), "нищий лежит: без запаха")
+KMM_Nemesis = { poor = function() return false end }
+C.emit({ type = "attack_on_player", a = "fI", b = pf, text = "t" })
+check(#ZS_CALLS == n4 + 1, "не нищий (лежит, но есть что взять): запах как раньше")
+ch.isDown = function() return false end
+KMM_Nemesis = NM0
+for k in pairs(Pr.sm.src) do if Pr.sm.src[k].why == "attack_on_player" and k:find("fI", 1, true) then Pr.sm.src[k] = nil; table.remove(ZS_CALLS) end end
 -- 5. снятие источников через smell_ttl игровых дней
 DAYV = DAYV + 0.6; pump(1)
 local nn = 0; for _, c in ipairs(ZS_CALLS) do if c.t == 0 then nn = nn + 1 end end
