@@ -1052,3 +1052,6 @@ if Events and Events.on then
     return T.tick()
   end))
 end
+
+-- PUBLISH (2026-11-16): KenshiLua runs each init script in its own sandbox; a plain global stays inside it.
+if KMM_Tempo ~= nil then rawset(_G, "KMM_Tempo", KMM_Tempo) end
