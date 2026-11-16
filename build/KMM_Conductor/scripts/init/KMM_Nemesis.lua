@@ -326,7 +326,7 @@ function N.chron_room(ev, cfg)   -- «ближний» тип: лимит за �
 end
 function N.chronicle(C, S)
   local cfg = N.cfg()
-  if not cfg.chronicle or N.chron_off then return end
+  if not cfg.chronicle or N.hlive(N, "chron_off", "KMM_Nemesis.chronicle") then return end
   local X = N.state(S)
   local E = S.events or {}
   local last = E[#E] and E[#E].id or 0
@@ -368,7 +368,7 @@ function N.chronicle(C, S)
   local oka, ea = pcall(function() ms:addMessage(cfg.chron_owner, line, (okc and c2) or 2) end)
   N.chron_t = now
   -- B8: маркер вызова движка (успех — один раз за сессию, ошибка — всегда) для session_report
-  if not oka then N.chron_off = true; N.log("chronicle disabled until restart: addMessage FAILED: " .. tostring(ea)); return end
+  if not oka then N.hbad(N, "chron_off", "KMM_Nemesis.chronicle", "chronicle", "addMessage FAILED: " .. tostring(ea)); return end
   if not N.chron_ok_logged then N.chron_ok_logged = true; N.log("chronicle: addMessage ok (ManagementScreen message log)") end
   if lid then   -- KMM_Nemesis.chronicled(id): это событие уже во вкладке сообщений (Rumors не пишет его второй раз)
     N.chron_sent = N.chron_sent or {}; N.chron_sn = (N.chron_sn or 0) + 1
@@ -429,7 +429,31 @@ function N.log(msg)
   if ok and f then f:write(os.date("%Y-%m-%d %H:%M:%S"), " ", tostring(msg), "\n"); f:close() end
   pcall(function() if KenshiLua and KenshiLua.log then KenshiLua.log(TAG .. tostring(msg)) end end)
 end
-function N.fail(where, err) N.off = true; N.log("disabled until restart in " .. where .. ": " .. tostring(err)) end
+-- HEALTH: отказы идут в реестр KMM_Gov (ключи KMM_Nemesis.module|beat|scars|rescue|talk|chronicle|greet|ambient|company|regroup|deeds|appraise|hook_<имя>):
+-- пауза 60/300/1800 с и повтор вместо «до перезапуска»; без Gov - прежнее поведение. Флаг N.<x>_off остаётся на время паузы.
+N.HPK, N.HTR = {}, {}
+function N.hgov() local g = rawget(_G, "KMM_Gov"); if type(g) == "table" and type(g.h_fail) == "function" then return g end end
+function N.hdown(t, f, key, err)   -- t[f] = true; пауза реестра -> секунды, иначе nil
+  t[f] = true; N.HPK[key], N.HTR[key] = nil, nil
+  local g, p = N.hgov(), nil
+  if g then local ok, r = pcall(g.h_fail, key, err); if ok and type(r) == "number" then p = r end end
+  if p then N.HPK[key] = true end
+  return p
+end
+function N.hlive(t, f, key)   -- true = выключено сейчас; пауза истекла -> флаг снят, одна попытка
+  if not t[f] then return false end
+  if N.HPK[key] then
+    local g = N.hgov()
+    local ok, up = pcall(g and g.h_up or function() return true end, key)
+    if (not ok) or up ~= false then t[f] = nil; N.HPK[key] = nil; N.HTR[key] = true; return false end
+  end
+  return true
+end
+function N.hdone(key) if N.HTR[key] then N.HTR[key] = nil; local g = N.hgov(); if g then pcall(g.h_ok, key) end end end
+function N.hmsg(what, p, err) return what .. (p and (" failed, retry in " .. p .. " s: ") or " disabled until restart: ") .. tostring(err) end
+function N.hbad(t, f, key, what, err) N.log(N.hmsg(what, N.hdown(t, f, key, err), err)) end
+function N.dn() return N.hlive(N, "off", "KMM_Nemesis.module") end
+function N.fail(where, err) local p = N.hdown(N, "off", "KMM_Nemesis.module", err); N.log(p and ("failed in " .. where .. ", retry in " .. p .. " s: " .. tostring(err)) or ("disabled until restart in " .. where .. ": " .. tostring(err))) end
 -- Конфиг: params.nemesis поверх N.DEF без копирования (~150 ключей на вызов было бы дорого каждый кадр). Прокси на ту же таблицу params:
 -- чтение ключа — params, иначе N.DEF; запись в прокси уходит в params. Правка params.nemesis.X видна сразу; новая таблица params — новый прокси.
 N.CFG_MT = {}
@@ -760,7 +784,7 @@ function N.on_trade(a, b)
 end
 function N.greet(C, S)
   local cfg = N.cfg()
-  if not cfg.greet or N.greet_off then return end
+  if not cfg.greet or N.hlive(N, "greet_off", "KMM_Nemesis.greet") then return end
   local pc, tsid
   pcall(function()
     for _, c in pairs(getPlayerInterface():getAllPlayerCharacters()) do
@@ -790,7 +814,7 @@ function N.greet(C, S)
 end
 function N.town_talk(C, S)
   local cfg = N.cfg()
-  if not cfg.town_talk or N.talk_off then return end
+  if not cfg.town_talk or N.hlive(N, "talk_off", "KMM_Nemesis.talk") then return end
   local now = os.clock()
   if now - (N.talk_t or -1e9) < cfg.talk_gap_s then return end
   local X = N.state(S)
@@ -943,7 +967,7 @@ function N.scars(C, S, D)   -- опрос своих: упал/встал; шр�
 end
 function N.ambient(C, S)
   local cfg = N.cfg()
-  if not cfg.ambient or N.amb_off then return end
+  if not cfg.ambient or N.hlive(N, "amb_off", "KMM_Nemesis.ambient") then return end
   local now = os.clock()
   if now - (N.amb_t or -1e9) < cfg.amb_gap_s or now - (N.banter_t or -1e9) < cfg.amb_after_banter_s then return end
   N.amb_t = now - cfg.amb_gap_s + 30   -- повтор проверки через 30 с, если сказать нечего
@@ -986,7 +1010,7 @@ end
 
 -- учёт ударов игрока --------------------------------------------------------------------------------------------------------
 function N.on_player_hit(victim, attacker)
-  if N.off then return end
+  if N.dn() then return end
   local ok, err = pcall(function()
     local okn, nm = pcall(function() return victim:getName() end)
     local okf, fid = pcall(function() local f = victim:getFaction(); local gd = f and (f:getData() or f.data); return gd and gd.stringID end)
@@ -1010,7 +1034,7 @@ function N.on_player_hit(victim, attacker)
     c.hits = c.hits + 1
     c.last = now
   end)
-  if not ok then N.fail("on_player_hit", err) end
+  if not ok then N.fail("on_player_hit", err) else N.hdone("KMM_Nemesis.module") end
 end
 
 -- именные охотники за головой ------------------------------------------------------------------------------------------------
@@ -1021,14 +1045,14 @@ function N.hunter_key(S, name)
   return nil
 end
 function N.hunt_bonus(hfid)   -- зовёт KMM_Traces перед выбором тира охоты
-  if N.off or not N.cfg().hunters then return 0 end
+  if N.dn() or not N.cfg().hunters then return 0 end
   local C = rawget(_G, "KMM_Conductor")
   local S = C and C.state()
   local h = S and N.hunters(S)[hfid]
   return h and math.min(N.cfg().hunter_max_bonus, h.wins or 0) or 0
 end
 function N.on_hunt(pl, hfid, client, amount)   -- зовёт KMM_Traces: отряд охотников заспавнен
-  if N.off or not N.cfg().hunters then return end
+  if N.dn() or not N.cfg().hunters then return end
   local C = rawget(_G, "KMM_Conductor")
   local S = C and C.state()
   if not S then return end
@@ -1367,7 +1391,7 @@ end
 
 -- встреча: реплика главаря (зовёт KMM_Outlaws.vis после спавна) ----------------------------------------------------------------
 function N.on_spawn(o, leader)
-  if N.off or not (o and o.pg and leader) then return end
+  if N.dn() or not (o and o.pg and leader) then return end
   local C = rawget(_G, "KMM_Conductor")
   local deed = o.pg.deed
   local pool = (o.pg.met or 1) >= 2 and N.SAY.again or N.SAY[deed] or N.SAY.spared
@@ -1382,7 +1406,7 @@ function N.on_spawn(o, leader)
     local S = C.state(); if S then local X = N.state(S); X.met = X.met + 1 end
     N.emit(C, o, "nemesis_return", string.format("%s has caught up with the Nameless.", o.n))
   end
-  if N.cfg().appraise ~= false and not N.appr_off and o.i and C then   -- Y5: оценка, когда подойдёт (в такте)
+  if N.cfg().appraise ~= false and not N.hlive(N, "appr_off", "KMM_Nemesis.appraise") and o.i and C then   -- Y5: оценка, когда подойдёт (в такте)
     local okS, S = pcall(C.state)
     if not okS then S = nil end
     if N.appr_S ~= S or not N.appr then N.appr_S = S; N.appr = {} end
@@ -1513,12 +1537,17 @@ function N.withdrew_recent(x, days)
 end
 -- Оценка выключилась (ошибка, нет проверки указателя): кому уже поставили «бродить», ставится метка регруппа, и охота
 -- возвращается сразу (N.regroup_now), а не через appr_regroup_days, - постоянный соперник не останется бродить навсегда.
-function N.appr_stop(C, why)
+function N.appr_stop(C, why, err)   -- err: ошибка шага (пауза и повтор); без err - нет API, навсегда
   for _, e in pairs(N.appr or {}) do
     if e.roam and e.o and e.o.pg then e.o.pg.wd_day = e.o.pg.wd_day or N.day(C) end
   end
   N.appr, N.appr_off, N.regroup_now = {}, true, true
-  N.log(why)
+  N.HPK["KMM_Nemesis.appraise"], N.HTR["KMM_Nemesis.appraise"] = nil, nil
+  if err ~= nil then N.log(N.hmsg("appraise", N.hdown(N, "appr_off", "KMM_Nemesis.appraise", err), err))
+  else
+    local g = N.hgov(); if g and type(g.h_off) == "function" then pcall(g.h_off, "KMM_Nemesis.appraise", why, "noapi") end
+    N.log(why)
+  end
 end
 -- Главарь ещё в живом наборе движка: getCharacterUpdateList и has — хеш по указателю без разыменования (ContainersReference ✓код;
 -- тот же приём, что у снимка KMM_Gov: удалённый движком персонаж роняет игру, pcall не спасает). nil — проверить нечем.
@@ -1688,7 +1717,7 @@ function N.debt(ch, deed)
   return dbt
 end
 function N.on_first_aid(stats, patient, dt)
-  if N.off then return end
+  if N.dn() then return end
   local okm, medic = pcall(function() return stats.me end)
   if not (okm and medic) or not N.is_player(medic) or N.is_player(patient) then return end
   local okn, nm = pcall(function() return patient:getName() end)
@@ -1703,12 +1732,12 @@ function N.on_first_aid(stats, patient, dt)
   else N.heal[nm] = h end
 end
 function N.on_lockpick(stats, lvl, ok)
-  if N.off or not ok then return end
+  if N.dn() or not ok then return end
   local okm, me = pcall(function() return stats.me end)
   if okm and me and N.is_player(me) then N.lock_t = os.clock() end
 end
 function N.on_chained(ch, on)
-  if N.off or N.is_player(ch) then return end
+  if N.dn() or N.is_player(ch) then return end
   local C = rawget(_G, "KMM_Conductor")
   local okc, sc = pcall(function() return C and C.self_chaining and C.self_chaining() end)
   if okc and sc then return end   -- заковал сам дирижёр (материализация слуха), не игрок и не мир рядом
@@ -1819,7 +1848,7 @@ function N.chained_leader(ch)   -- лидер города закован (иг�
   if okl and lev then N.log("leader_fell: " .. tostring(lev.text)); if near then N.banter("leader_fell"); N.deed_add(C, "leader_fell", lev.leader_name, p.x, p.z); pcall(function() N.count(C.state(), "leaders") end) end end
 end
 function N.on_player_attacked(attacker_fid)   -- зовёт дирижёр: на игрока напали — должник может прийти
-  if N.off then return end
+  if N.dn() then return end
   local cfg = N.cfg()
   local C = rawget(_G, "KMM_Conductor")
   local T = rawget(_G, "KMM_Traces")
@@ -1973,7 +2002,7 @@ function N.deed_by_player(C, S, ev, cfg)   -- игрок сделал фракц
   end
 end
 function N.on_deed(ev)
-  if N.off or N.deeds_off or type(ev) ~= "table" then return end
+  if N.dn() or N.hlive(N, "deeds_off", "KMM_Nemesis.deeds") or type(ev) ~= "table" then return end
   local cfg = N.cfg()
   if not cfg.deeds then return end
   local ok, err = pcall(function()
@@ -1983,7 +2012,7 @@ function N.on_deed(ev)
     if ev.to_player and ev.tone == "help" and ev.a then N.deed_aid(C, S, ev, cfg)
     elseif ev.by_player and ev.b then N.deed_by_player(C, S, ev, cfg) end
   end)
-  if not ok then N.deeds_off = true; N.log("deeds disabled until restart: " .. tostring(err)) end
+  if not ok then N.hbad(N, "deeds_off", "KMM_Nemesis.deeds", "deeds", err) else N.hdone("KMM_Nemesis.deeds") end
 end
 function N.sub_deeds()   -- подписка на шину дирижёра (из тика, один раз)
   local C = rawget(_G, "KMM_Conductor")
@@ -2033,9 +2062,9 @@ function N.hooks()   -- новые колбэки ядра (не _NV_): реги
   N.hook_off = N.hook_off or {}
   local function guarded(name, fn)   -- сбой нового колбэка выключает только его (немезис, охотники, лидеры по ударам живут дальше)
     return function(...)
-      if N.off or N.hook_off[name] then return end
+      if N.dn() or N.hlive(N.hook_off, name, "KMM_Nemesis.hook_" .. name) then return end
       local ok, err = pcall(fn, ...)
-      if not ok then N.hook_off[name] = true; N.log("hook " .. name .. " disabled until restart: " .. tostring(err)) end
+      if not ok then N.hbad(N.hook_off, name, "KMM_Nemesis.hook_" .. name, "hook " .. name, err) else N.hdone("KMM_Nemesis.hook_" .. name) end
     end
   end
   pcall(function() Events.on("CharStats::xpFirstAid", guarded("first_aid", function(st, pt, dt) N.on_first_aid(st, pt, dt) end)) end)
@@ -2047,48 +2076,53 @@ end
 
 -- тик ------------------------------------------------------------------------------------------------------------------------
 function N.tick()
-  if N.off then return end
+  if N.dn() then return end
   local cfg = N.cfg()
   if cfg.enabled == false or os.clock() - N.last < cfg.tick_s then return end
   N.last = os.clock()
+  do   -- другой сейв в той же сессии: указатели прошлого мира (N.said.leader, N.cand.ch) не трогаем
+    local okc, Cc = pcall(function() return rawget(_G, "KMM_Conductor") end)
+    local okS, Sc = pcall(function() return okc and Cc and Cc.state and Cc.state() end)
+    if okS and Sc and N.live_S ~= Sc then N.said, N.cand, N.live_S = {}, {}, Sc end
+  end
   if not N.hooked then N.hooks() end
   if not N.deeds_sub then N.sub_deeds() end
   if #N.said > 0 then N.flush_said() end
   local M, O, D, C, S = N.outlaws()
   if not M then return end
-  if not N.beat_off and cfg.rival_p_beat ~= false then
+  if not N.hlive(N, "beat_off", "KMM_Nemesis.beat") and cfg.rival_p_beat ~= false then
     local okb, eb = pcall(N.beat_scan, C, S)
-    if not okb then N.beat_off = true; N.log("beat memory disabled until restart: " .. tostring(eb)) end
+    if not okb then N.hbad(N, "beat_off", "KMM_Nemesis.beat", "beat memory", eb) else N.hdone("KMM_Nemesis.beat") end
   end
   if next(N.cand) then N.resolve(M, O, D, C, S) end
-  if N.appr and next(N.appr) and not N.appr_off then
+  if N.appr and next(N.appr) and not N.hlive(N, "appr_off", "KMM_Nemesis.appraise") then
     local oka, ea = pcall(N.appraise_step, C, S)
-    if not oka then N.appr_stop(C, "appraise disabled until restart: " .. tostring(ea)) end
+    if not oka then N.appr_stop(C, nil, ea) else N.hdone("KMM_Nemesis.appraise") end
   end
-  if N.regroup_now and not N.regroup_off then N.regroup_now = nil; N.regroup_safe(M, O, math.floor(N.day(C))) end
-  if not N.scars_off then
+  if N.regroup_now and not N.hlive(N, "regroup_off", "KMM_Nemesis.regroup") then N.regroup_now = nil; N.regroup_safe(M, O, math.floor(N.day(C))) end
+  if not N.hlive(N, "scars_off", "KMM_Nemesis.scars") then
     local oks, es = pcall(N.scars, C, S, D)
-    if not oks then N.scars_off = true; N.log("scars disabled until restart: " .. tostring(es)) end
+    if not oks then N.hbad(N, "scars_off", "KMM_Nemesis.scars", "scars", es) else N.hdone("KMM_Nemesis.scars") end
   end
-  if not N.rescue_off then
+  if not N.hlive(N, "rescue_off", "KMM_Nemesis.rescue") then
     local okr, er = pcall(N.rescue_step, C, S)
-    if not okr then N.rescue_off = true; N.log("rescue disabled until restart: " .. tostring(er)) end
+    if not okr then N.hbad(N, "rescue_off", "KMM_Nemesis.rescue", "rescue", er) else N.hdone("KMM_Nemesis.rescue") end
   end
-  if not N.talk_off then
+  if not N.hlive(N, "talk_off", "KMM_Nemesis.talk") then
     local okt, et = pcall(N.town_talk, C, S)
-    if not okt then N.talk_off = true; N.log("town_talk disabled until restart: " .. tostring(et)) end
+    if not okt then N.hbad(N, "talk_off", "KMM_Nemesis.talk", "town_talk", et) else N.hdone("KMM_Nemesis.talk") end
   end
-  if not N.chron_off then
+  if not N.hlive(N, "chron_off", "KMM_Nemesis.chronicle") then
     local okh, eh = pcall(N.chronicle, C, S)
-    if not okh then N.chron_off = true; N.log("chronicle disabled until restart: " .. tostring(eh)) end
+    if not okh then N.hbad(N, "chron_off", "KMM_Nemesis.chronicle", "chronicle", eh) else N.hdone("KMM_Nemesis.chronicle") end
   end
-  if not N.greet_off then
+  if not N.hlive(N, "greet_off", "KMM_Nemesis.greet") then
     local okg, eg = pcall(N.greet, C, S)
-    if not okg then N.greet_off = true; N.log("greet disabled until restart: " .. tostring(eg)) end
+    if not okg then N.hbad(N, "greet_off", "KMM_Nemesis.greet", "greet", eg) else N.hdone("KMM_Nemesis.greet") end
   end
-  if not N.amb_off then
+  if not N.hlive(N, "amb_off", "KMM_Nemesis.ambient") then
     local oka, ea = pcall(N.ambient, C, S)
-    if not oka then N.amb_off = true; N.log("ambient disabled until restart: " .. tostring(ea)) end
+    if not oka then N.hbad(N, "amb_off", "KMM_Nemesis.ambient", "ambient", ea) else N.hdone("KMM_Nemesis.ambient") end
   end
   local X = N.state(S)
   local day = math.floor(N.day(C))
@@ -2097,10 +2131,10 @@ function N.tick()
   if day > X.day then
     for d = X.day + 1, math.min(day, X.day + 3) do
       N.day_step(M, O, D, C, S, d); N.debts_day(C, S, d); N.owe_day(S, d)
-      if not N.regroup_off then N.regroup_safe(M, O, d) end   -- и при выключенной оценке: пакет «бродить» не остаётся навсегда
-      if not N.co_off then
+      if not N.hlive(N, "regroup_off", "KMM_Nemesis.regroup") then N.regroup_safe(M, O, d) end   -- и при выключенной оценке: пакет «бродить» не остаётся навсегда
+      if not N.hlive(N, "co_off", "KMM_Nemesis.company") then
         local okc, ec = pcall(N.co_day, M, O, D, C, S, d)
-        if not okc then N.co_off = true; N.log("company disabled until restart: " .. tostring(ec)) end
+        if not okc then N.hbad(N, "co_off", "KMM_Nemesis.company", "company", ec) else N.hdone("KMM_Nemesis.company") end
       end
     end
     X.day = day
@@ -2108,7 +2142,7 @@ function N.tick()
 end
 function N.regroup_safe(M, O, d, force)   -- регрупп под своим флагом: ошибка выключает только его
   local ok, e = pcall(N.regroup_day, M, O, d, force)
-  if not ok then N.regroup_off = true; N.log("regroup disabled until restart: " .. tostring(e)) end
+  if not ok then N.hbad(N, "regroup_off", "KMM_Nemesis.regroup", "regroup", e) else N.hdone("KMM_Nemesis.regroup") end
 end
 function N.guarded()
   local ok, err = pcall(function()
@@ -2116,7 +2150,7 @@ function N.guarded()
     if G and G.run then return G.run("nemesis", N.tick) end
     return N.tick()
   end)
-  if not ok then N.fail("tick", err) end
+  if not ok then N.fail("tick", err) else N.hdone("KMM_Nemesis.module") end
 end
 
 KMM_Nemesis = {

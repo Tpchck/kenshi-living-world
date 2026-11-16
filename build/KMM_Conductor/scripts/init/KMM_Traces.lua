@@ -19,11 +19,34 @@ local function dlog(msg)
   if ok and f then f:write(os.date("%Y-%m-%d %H:%M:%S"), " [KMM_Traces] ", tostring(msg), "\n"); f:close() end
   log(msg)
 end
+-- HEALTH: отказы идут в реестр KMM_Gov (ключи KMM_Traces.<механика>): пауза 60/300/1800 с и повтор; без Gov - до перезапуска.
+local function HG() local g = rawget(_G, "KMM_Gov"); if type(g) == "table" and type(g.h_fail) == "function" then return g end end
+local DISABLED_P, RETRY = {}, {}
+local function h_off(k, why, kind) local g = HG(); if g and type(g.h_off) == "function" then pcall(g.h_off, k, why, kind) end end
+local function is_down(nm)
+  if not DISABLED[nm] then return false end
+  local key = DISABLED_P[nm]
+  local g = HG()
+  if key and g then
+    local ok, up = pcall(g.h_up, key)
+    if (not ok) or up ~= false then DISABLED[nm], DISABLED_P[nm], RETRY[nm] = nil, nil, true; return false end
+  end
+  return true
+end
+local function go_down(nm, err)
+  DISABLED[nm], DISABLED_P[nm], RETRY[nm] = true, nil, nil
+  local g, p = HG(), nil
+  if g then local ok, r = pcall(g.h_fail, "KMM_Traces." .. nm, err); if ok and type(r) == "number" then p = r end end
+  if p then DISABLED_P[nm] = "KMM_Traces." .. nm end
+  dlog(nm .. (p and (" failed, retry in " .. p .. " s: ") or " disabled until restart: ") .. tostring(err))
+end
+local function go_ok(nm) if RETRY[nm] then RETRY[nm] = nil; local g = HG(); if g then pcall(g.h_ok, "KMM_Traces." .. nm) end end end
 local function guarded(nm, fn)
   return function(...)
-    if DISABLED[nm] then return end
+    if is_down(nm) then return end
     local ok, err, r2, r3 = pcall(fn, ...)
-    if not ok then DISABLED[nm] = true; dlog(nm .. " disabled until restart: " .. tostring(err)); return end
+    if not ok then go_down(nm, err); return end
+    go_ok(nm)
     return err, r2, r3
   end
 end
@@ -307,6 +330,7 @@ local function probe_call(x, fn)
         local o = io.open(offp, "w"); if o then o:write("disabled: previous session crashed in ", x); o:close() end
         os.remove(lock)
         dlog("native method " .. x .. " DISABLED forever: previous session crashed during the call (state/probe_" .. x .. ".off)")
+        h_off("KMM_Traces.native_" .. x, "previous session crashed in " .. x, "crash")
       end
     end)
   end
@@ -362,7 +386,7 @@ PACE.PRIO = { critical = 100, story = 30, hostile = 15, ambient = 10 }
 function PACE.tag(job) return job.tag or job.why or job.kind or "?" end
 function PACE.class(job) return PACE.CLASS[PACE.tag(job)] or PACE.CLASS[job.kind or ""] or "ambient" end
 PACE.HOSTILE_TAG = { outlaw = true, nemesis = true, bounty = true, bounty_hunt = true, rescue = true }
-function PACE.hostile(job) local c = PACE.class(job); return c == "hostile" or job.target == "player" or PACE.HOSTILE_TAG[PACE.tag(job)] == true end
+function PACE.hostile(job) if PACE.tag(job) == "ally_dispatch" then return false end; local c = PACE.class(job); return c == "hostile" or job.target == "player" or PACE.HOSTILE_TAG[PACE.tag(job)] == true end
 function PACE.stale(tag)   -- игровых дней с прошлого спавна тега (не было — 3)
   local d = (C.state() and C.state().last_day) or 0
   local t = PACE.seen[tag]
@@ -1412,10 +1436,10 @@ local function visible_push(ev)
 end
 local g_vpush = guarded("visible_subscribe", visible_push)
 local function visible_sub()
-  if vsub or DISABLED.visible_subscribe_init then return end
+  if vsub or is_down("visible_subscribe_init") then return end
   if not C.subscribe then return end
   local ok, id = pcall(C.subscribe, "*", function(ev) g_vpush(ev) end)
-  if ok then vsub = id else DISABLED.visible_subscribe_init = true; dlog("visible_subscribe_init disabled until restart: " .. tostring(id)) end
+  if ok then vsub = id; go_ok("visible_subscribe_init") else go_down("visible_subscribe_init", id) end
 end
 
 local function ruin_near(px, pz)

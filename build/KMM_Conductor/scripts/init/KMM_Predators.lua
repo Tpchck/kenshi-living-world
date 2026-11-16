@@ -1065,3 +1065,6 @@ if not RETIRED and rawget(_G, "Events") and Events.on and not STARTED then
   Events.on("GameWorld::charsUpdate", guarded("predators", function(...) tick() end))
 end
 KMM_Predators = M
+
+-- PUBLISH (2026-11-16): KenshiLua runs each init script in its own sandbox; a plain global stays inside it.
+if KMM_Predators ~= nil then rawset(_G, "KMM_Predators", KMM_Predators) end

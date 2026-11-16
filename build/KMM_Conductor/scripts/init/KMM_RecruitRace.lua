@@ -888,3 +888,6 @@ function M._reset() M.off, M.rt, M.S, M.R, M.PROBE, M.tname, M.t0, M.last, M.hoo
 
 if Events and Events.on then pcall(function() Events.on("GameWorld::charsUpdate", guarded("tick", M.run)) end) end
 KMM_RecruitRace = M
+
+-- PUBLISH (2026-11-16): KenshiLua runs each init script in its own sandbox; a plain global stays inside it.
+if KMM_RecruitRace ~= nil then rawset(_G, "KMM_RecruitRace", KMM_RecruitRace) end

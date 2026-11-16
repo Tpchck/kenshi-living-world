@@ -413,3 +413,6 @@ KMM_Deeds = {
   _D = D,
 }
 if Events and Events.on then pcall(function() Events.on("GameWorld::charsUpdate", guarded("tick", function() D.gov_tick() end)) end) end
+
+-- PUBLISH (2026-11-16): KenshiLua runs each init script in its own sandbox; a plain global stays inside it.
+if KMM_Deeds ~= nil then rawset(_G, "KMM_Deeds", KMM_Deeds) end

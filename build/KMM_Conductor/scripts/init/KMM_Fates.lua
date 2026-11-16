@@ -585,7 +585,8 @@ function M.vis(C, F, W, cfg, T)
                           end
                         end }
           local okq, acc = pcall(T.request, job)
-          if okq and acc then M.pend = { t = os.clock(), id = id } end
+          if okq and acc then M.pend = { t = os.clock(), id = id }
+          else h.sp = hrs - cfg.cd_h + 1 end   -- refused by the shared spawn budget: retry in an hour, keep the meeting
         end
         return   -- одна заявка за тик
       end
