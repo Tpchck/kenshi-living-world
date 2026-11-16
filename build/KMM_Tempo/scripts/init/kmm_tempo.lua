@@ -735,7 +735,13 @@ local function till_one(r, day)
   if math.abs(new - cur) < CFG.till_min_delta then return end
   if own.setMoney then own:setMoney(new) else own:addMoney(new - cur) end
   local back = own:getMoney()
-  if back ~= new then TL.fatal = "money write not applied: " .. tostring(back) .. " vs " .. tostring(new); error(TL.fatal) end
+  if back ~= new then   -- HEALTH: вердикт noeffect только после till_noeff_n промахов подряд у разных торговцев и ни одной удачной записи
+    TL.nap = (TL.nap or 0) + 1
+    local msg = "money write not applied: " .. tostring(back) .. " vs " .. tostring(new)
+    if not TL.wok and TL.nap >= (CFG.till_noeff_n or 3) then TL.fatal = msg .. " (" .. TL.nap .. " traders, none applied)" end
+    error(msg)
+  end
+  TL.wok, TL.nap = true, 0
   local S = TL.stats
   if new > cur then S.raised = S.raised + 1; S.up = S.up + (new - cur) else S.lowered = S.lowered + 1; S.down = S.down + (cur - new) end
   if new < CFG.till_poor * R.base and TL.poor[tsid] ~= day then
