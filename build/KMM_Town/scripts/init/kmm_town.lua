@@ -57,10 +57,14 @@ local DEFAULTS = {
   famine_changes_per_cycle = 2,   -- плавность: построек, меняющих состояние за цикл
   famine_hold_hours = 6,          -- игровые часы, раньше которых остановленная постройка не запускается снова (без мигания)
   u3_log_max = 200,               -- строк U3 в stock.log за сессию
+  -- ORE4: шахтёры города у рудных узлов (шаблоны KMM_Ore.ore_kind) черпают жилу своего города в модели дирижёра
+  -- (KMM_Conductor.town_mined: R падает, вынутое идёт фракции в счёт нужды); единиц руды мира на работо-час, как у игрока (player_to_world)
+  mine_enabled = true, mine_rate = 0.25, mine_max_hours = 2, mine_tasks = { 87, 152, 189 },
 }
 
 local cfg, DATA          -- nil до первого тика
 local WORK = {}          -- множество taskType работы
+local MINE = {}          -- ORE4: taskType настоящей добычи (без «изображать работу»)
 local DISABLED = {}
 local RT = {
   t_poll = 0, t_cycle = -1e9, ready = false, polls = 0, seen_clock = nil, seen_day = nil,
@@ -138,6 +142,8 @@ local function load_cfg()
   if not DATA then error("kmm_town_data.lua not found") end
   WORK = {}
   for _, n in pairs(DATA.work_tasks or {}) do WORK[n] = true end
+  MINE = {}
+  for _, n in ipairs(cfg.mine_tasks or {}) do MINE[n] = true end
 end
 
 ---------------------------------------------------------------------------------------------- внешние API (необязательны)
@@ -285,8 +291,14 @@ local function classify(ch, out)
       local b = h and h:isValid() and h:getBuilding()
       local gd = b and b:getGameData()
       m = gd and DATA.machines[gd.stringID]
+      if not m and gd and MINE[key] and cfg.mine_enabled then   -- ORE4: шахтёр города у рудного узла (носильщиком не берём)
+        local O = rawget(_G, "KMM_Ore")
+        local okk, res = pcall(function() return O and O.ore_kind and O.ore_kind(gd.stringID) end)
+        if okk and res then out.miners[k] = true end
+      end
     end
     if m then out.workers[#out.workers + 1] = { hd = hd, h = h, m = m, k = k }
+    elseif out.miners[k] then
     elseif not (ch:isInCombatMode(true, true)) then out.idle[#out.idle + 1] = { hd = hd, k = k } end
   end
 end
@@ -295,7 +307,7 @@ end
 -- TRADE: по снимку скан идёт порциями (scan_begin/scan_step); без снимка - прежний целый проход (scan_full)
 local function scan_full(tsid, anchor)
   local R2 = cfg.near_radius ^ 2
-  local out = { workers = {}, idle = {}, shop = {}, caravan = {}, by_key = {} }
+  local out = { workers = {}, idle = {}, shop = {}, caravan = {}, by_key = {}, miners = {} }
   local n = 0
   local set = getGameWorld():getCharacterUpdateList()
   for ch in pairs(set) do
@@ -312,7 +324,7 @@ local function scan_begin(tsid, anchor)
   if not snap then return { done = true, out = scan_full(tsid, anchor) } end
   local ax, az = xz(anchor:getPosition())
   return { snap = snap, i = 0, n = 0, tsid = tsid, ax = ax, az = az, R2 = cfg.near_radius ^ 2,
-           out = { workers = {}, idle = {}, shop = {}, caravan = {}, by_key = {} } }
+           out = { workers = {}, idle = {}, shop = {}, caravan = {}, by_key = {}, miners = {} } }
 end
 local function scan_step(c)   -- обработать до scan_chunk подходящих персонажей; true - список кончился или набрано max_scan_chars
   if c.done then return true end
@@ -395,6 +407,26 @@ local function craft(tsid, sc, day)
     end
   end
   return made
+end
+
+-- ORE4) шахтёры у рудных узлов → жила города (KMM_Conductor.town_mined); часы - игровые с прошлого цикла, потолок mine_max_hours
+local function mine(tsid, sc, day)
+  if not cfg.mine_enabled then return 0 end
+  local n = 0
+  for _ in pairs(sc.miners or {}) do n = n + 1 end
+  RT.mine_day = RT.mine_day or {}
+  local last = RT.mine_day[tsid]
+  RT.mine_day[tsid] = day
+  RT.stats.miners = n
+  if n == 0 or not last or day <= last then return 0 end
+  local c = conductor()
+  if not (c and type(c.town_mined) == "function") or off("conductor_link") then return 0 end
+  local ok, got = pcall(c.town_mined, tsid, n * math.min(cfg.mine_max_hours, (day - last) * 24) * cfg.mine_rate)
+  if not ok then link_fail("conductor_link", got); return 0 end
+  h_ok("conductor_link")
+  got = tonumber(got) or 0
+  RT.stats.mined = (RT.stats.mined or 0) + got
+  return got
 end
 
 -- 2) ящик → носильщик
@@ -744,6 +776,7 @@ local g_find = guarded("find_town", find_town)
 famine_find = g_find
 local g_sbegin, g_sstep = guarded("scan", scan_begin), guarded("scan", scan_step)
 local g_craft, g_haul, g_deliver = guarded("craft", craft), guarded("haul", haul), guarded("deliver", deliver)
+local g_mine = guarded("mine", mine)
 
 ---------------------------------------------------------------------------------------------- тик
 local function reset_ready() RT.ready, RT.polls, RT.seen_clock, RT.seen_day = false, 0, nil, nil end
@@ -752,6 +785,7 @@ local function leave_town(walked)   -- walked: игрок ушёл из горо
     if walked and not off("famine") then pcall(U3.restore_all, "leave") else RT.fh = {} end
   end
   RT.town, RT.crate, RT.jobs, RT.stage, RT.sc = nil, {}, {}, nil, nil
+  RT.mine_day = {}
 end
 
 -- TRADE: цикл цепочки идёт стадиями по одному вызову тика (find+scan порциями -> mood -> deliver -> craft -> haul -> итог),
@@ -767,9 +801,11 @@ end
 local function cycle_summary()
   local st, b = RT.stats, RT.base or {}
   local dc, dh, dd, dv = st.crafted - (b.crafted or 0), st.hauled - (b.hauled or 0), st.delivered - (b.delivered or 0), st.to_caravan - (b.to_caravan or 0)
-  RT.base = { crafted = st.crafted, hauled = st.hauled, delivered = st.delivered, to_caravan = st.to_caravan }
-  if dc + dh + dd + dv > 0 then
-    tlog(string.format("%s cycle: crafted=%d hauled=%d delivered=%d to_caravan=%d (crate=%d)", DATA.towns[RT.town] or tostring(RT.town), dc, dh, dd, dv, #RT.crate))
+  local dm = (st.mined or 0) - (b.mined or 0)   -- ORE4: руда, вынутая шахтёрами города из его жилы
+  RT.base = { crafted = st.crafted, hauled = st.hauled, delivered = st.delivered, to_caravan = st.to_caravan, mined = st.mined or 0 }
+  if dc + dh + dd + dv > 0 or dm > 0.05 then
+    tlog(string.format("%s cycle: crafted=%d hauled=%d delivered=%d to_caravan=%d (crate=%d)%s", DATA.towns[RT.town] or tostring(RT.town), dc, dh, dd, dv, #RT.crate,
+      dm > 0.05 and string.format(" ore=%.1f miners=%d", dm, st.miners or 0) or ""))
   end
 end
 local STAGES = {
@@ -785,6 +821,7 @@ local STAGES = {
       end
     end
   end,
+  function(day) g_mine(RT.town, RT.sc.out, day) end,   -- ORE4: шахтёры города → жила города
   function(day) g_deliver(RT.town, RT.sc.out) end,
   function(day) g_craft(RT.town, RT.sc.out, day) end,
   function(day) g_haul(RT.town, RT.sc.out) end,
