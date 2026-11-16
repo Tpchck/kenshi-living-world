@@ -1066,8 +1066,8 @@ function KC.try_dispatch_impl()
   if not ok then KC.S.pending_dispatch = d; return end   -- лимиты Traces: повтор позже, не ошибка
   KC.S.dispatch_today = KC.S.dispatch_today + 1
   if ok then KC.S.stats.dispatch = KC.S.stats.dispatch + 1 end
-  KC.emit({ type = "ally_dispatch", a = d.ally, b = KC.CFG.player_faction, status = ok and "applied" or "failed",
-         text = string.format("%s sent fighters toward your people (%s).", KC.name(d.ally), d.why) })
+  pcall(KC.emit, { type = "ally_dispatch", a = d.ally, b = KC.CFG.player_faction, status = ok and "applied" or "failed",   -- squad already sent: a chronicle error must not resend it
+         text = string.format("%s sent fighters toward your people (%s).", tostring(KC.name(d.ally)), tostring(d.why)) })
 end
 
 KC.last_scan = 0

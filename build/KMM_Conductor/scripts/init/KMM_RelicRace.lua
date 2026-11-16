@@ -676,3 +676,6 @@ end
 local function guarded(nm, fn) return function(...) local ok, e = pcall(fn, ...); if not ok then log(nm .. " " .. why_p(down(M, "off", "KMM_RelicRace.module", e)) .. ": " .. tostring(e)) end end end
 if Events and Events.on then Events.on("GameWorld::charsUpdate", guarded("tick", function() M.run() end)) end
 KMM_RelicRace = M
+
+-- PUBLISH (2026-11-16): KenshiLua runs each init script in its own sandbox; a plain global stays inside it.
+if KMM_RelicRace ~= nil then rawset(_G, "KMM_RelicRace", KMM_RelicRace) end

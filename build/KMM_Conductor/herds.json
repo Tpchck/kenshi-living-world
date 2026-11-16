@@ -1,0 +1,1641 @@
+{
+ "_doc": "KMM_Herds data (tools/conductor/gen_herds.py). Не править руками, кроме params.",
+ "params": {
+  "_doc": "KMM_Herds: params правятся руками; species/herds/hunters генерируются gen_herds.py",
+  "cycle_days": 30,
+  "stay": 0.4,
+  "pred_delay": 4,
+  "hunt_delay": 9,
+  "near_r": 45000,
+  "max_live": 3,
+  "live_days": 1.0,
+  "cooldown_days": 3.0,
+  "global_cd_days": 0.5,
+  "tick_sec": 25,
+  "aim_town": true,
+  "herd_size": [
+   8,
+   14
+  ],
+  "pred_size": [
+   4,
+   8
+  ],
+  "hunter_size": 4,
+  "glut": {
+   "herd": {
+    "food": 0.08,
+    "lux": 0.03
+   },
+   "hunt": {
+    "food": 0.2,
+    "lux": 0.1
+   },
+   "cap": 1.6,
+   "range": 35000
+  },
+  "max_events_day": 3,
+  "seed": 20261113
+ },
+ "species": {
+  "garru": {
+   "label": "Garru",
+   "role": "herd",
+   "fid": "40544-rebirth.mod",
+   "squads": [
+    {
+     "sid": "45-Symbiosis.mod",
+     "name": "wild pack beast mega herd",
+     "min": 10,
+     "max": 23
+    },
+    {
+     "sid": "50247-rebirth.mod",
+     "name": "wild pack beast herd",
+     "min": 4,
+     "max": 15
+    },
+    {
+     "sid": "75-Animal Variations.mod",
+     "name": "great beast super herd",
+     "min": 3,
+     "max": 8
+    },
+    {
+     "sid": "42202-rebirth.mod",
+     "name": "wild pack beast family",
+     "min": 1,
+     "max": 3
+    },
+    {
+     "sid": "74-Animal Variations.mod",
+     "name": "great beast herd",
+     "min": 2,
+     "max": 3
+    },
+    {
+     "sid": "73-Animal Variations.mod",
+     "name": "great beast solo",
+     "min": 1,
+     "max": 1
+    }
+   ],
+   "anchors": [
+    "1074-gamedata.base",
+    "1076-gamedata.base",
+    "1078-gamedata.base",
+    "1082-gamedata.base",
+    "1364-gamedata.base",
+    "14-Holy Villages.mod",
+    "15-Holy Villages.mod",
+    "1532820-rebirth.mod",
+    "16-Holy Villages.mod",
+    "2601-gamedata.base",
+    "42305-Newwworld.mod",
+    "52-Holy Villages.mod",
+    "54-Holy Villages.mod",
+    "55-Holy Villages.mod",
+    "55650-rebirth.mod",
+    "55656-rebirth.mod",
+    "95755-__december17.mod",
+    "961-gamedata.base",
+    "96148-Dialogue.mod",
+    "962-gamedata.base"
+   ],
+   "regions": [
+    "Bast",
+    "Berserker Country",
+    "Bonefields",
+    "Border Zone",
+    "Cannibal Plains",
+    "Flats Lagoon",
+    "Forbidden Isle",
+    "Greenbeach",
+    "Grey Desert",
+    "Greyshelf",
+    "Heng",
+    "High Bonefields",
+    "Leviathan Coast",
+    "Northern Coast",
+    "Okran's Gulf",
+    "Okran's Valley",
+    "Purple Sands",
+    "Shem",
+    "Shun",
+    "Sinkuun",
+    "Skimsands",
+    "Skinner's Roam",
+    "South Wetlands",
+    "Spider Plains",
+    "Stenn Desert",
+    "Stobe's Gamble",
+    "Stobe's Garden",
+    "Stormgap Coast",
+    "The Crags",
+    "The Eye",
+    "The Great Desert",
+    "The Hook",
+    "The Outlands",
+    "The Pits",
+    "The Pits East",
+    "The Unwanted Zone",
+    "Vain"
+   ],
+   "habitat": [
+    "Arach",
+    "Arm of Okran",
+    "Ashlands",
+    "Bast",
+    "Berserker Country",
+    "Bonefields",
+    "Border Zone",
+    "Burning Forest",
+    "Cannibal Plains",
+    "Crabby Islands",
+    "Darkfinger",
+    "Deadlands",
+    "Dreg",
+    "Fishman Island",
+    "Flats Lagoon",
+    "Floodlands",
+    "Fog Islands",
+    "Forbidden Isle",
+    "Greenbeach",
+    "Grey Desert",
+    "Greyshelf",
+    "Gut",
+    "Heng",
+    "Hidden Forest",
+    "High Bonefields",
+    "Howler Maze",
+    "Iron Valleys",
+    "Leviathan Coast",
+    "Northern Coast",
+    "Okran's Gulf",
+    "Okran's Pride",
+    "Okran's Valley",
+    "Purple Sands",
+    "Rebirth",
+    "Royal Valley",
+    "Shem",
+    "Shun",
+    "Sinkuun",
+    "Skimsands",
+    "Skinner's Roam",
+    "Sniper Valley",
+    "Sonorous Dark",
+    "South Wetlands",
+    "Spider Plains",
+    "Spine Canyon",
+    "Stenn Desert",
+    "Stobe's Gamble",
+    "Stobe's Garden",
+    "Stormgap Coast",
+    "The Black Desert",
+    "The Crags",
+    "The Crater",
+    "The Eye",
+    "The Great Desert",
+    "The Grid",
+    "The Hook",
+    "The Iron Trail",
+    "The Outlands",
+    "The Pits",
+    "The Pits East",
+    "The Shrieking Forest",
+    "The Swamp",
+    "The Unwanted Zone",
+    "Vain",
+    "Venge",
+    "Watcher's Rim",
+    "Wend"
+   ]
+  },
+  "goat": {
+   "label": "goats",
+   "role": "herd",
+   "fid": "10-Symbiosis.mod",
+   "squads": [
+    {
+     "sid": "26-Symbiosis.mod",
+     "name": "wild goats ravenous horde",
+     "min": 9,
+     "max": 25
+    },
+    {
+     "sid": "42263-rebirth.mod",
+     "name": "wild goats",
+     "min": 6,
+     "max": 12
+    }
+   ],
+   "anchors": [
+    "1532820-rebirth.mod",
+    "18024-Newwworld.mod",
+    "42305-Newwworld.mod",
+    "44884-rebirth.mod",
+    "49368-rebirth.mod",
+    "49766-rebirth.mod",
+    "962-gamedata.base",
+    "96498-Dialogue.mod"
+   ],
+   "regions": [
+    "Arm of Okran",
+    "Bast",
+    "Berserker Country",
+    "Bonefields",
+    "Border Zone",
+    "Cannibal Plains",
+    "Darkfinger",
+    "Dreg",
+    "Flats Lagoon",
+    "Forbidden Isle",
+    "Greenbeach",
+    "Grey Desert",
+    "Greyshelf",
+    "Heng",
+    "Hidden Forest",
+    "High Bonefields",
+    "Northern Coast",
+    "Okran's Gulf",
+    "Okran's Pride",
+    "Okran's Valley",
+    "Rebirth",
+    "Royal Valley",
+    "Shem",
+    "Shun",
+    "Sinkuun",
+    "Skimsands",
+    "Skinner's Roam",
+    "Sniper Valley",
+    "Spider Plains",
+    "Spine Canyon",
+    "Stenn Desert",
+    "Stobe's Gamble",
+    "Stobe's Garden",
+    "Stormgap Coast",
+    "The Crags",
+    "The Eye",
+    "The Great Desert",
+    "The Hook",
+    "The Outlands",
+    "The Pits",
+    "The Pits East",
+    "The Shrieking Forest",
+    "The Swamp",
+    "The Unwanted Zone",
+    "Watcher's Rim",
+    "Wend"
+   ],
+   "habitat": [
+    "Arach",
+    "Arm of Okran",
+    "Ashlands",
+    "Bast",
+    "Berserker Country",
+    "Bonefields",
+    "Border Zone",
+    "Burning Forest",
+    "Cannibal Plains",
+    "Cheaters Run",
+    "Crabby Islands",
+    "Darkfinger",
+    "Deadlands",
+    "Dreg",
+    "Fishman Island",
+    "Flats Lagoon",
+    "Floodlands",
+    "Fog Islands",
+    "Forbidden Isle",
+    "Greenbeach",
+    "Grey Desert",
+    "Greyshelf",
+    "Gut",
+    "Heng",
+    "Hidden Forest",
+    "High Bonefields",
+    "Howler Maze",
+    "Iron Valleys",
+    "Leviathan Coast",
+    "Northern Coast",
+    "Okran's Gulf",
+    "Okran's Pride",
+    "Okran's Valley",
+    "Purple Sands",
+    "Rebirth",
+    "Royal Valley",
+    "Shem",
+    "Shun",
+    "Sinkuun",
+    "Skimsands",
+    "Skinner's Roam",
+    "Sniper Valley",
+    "Sonorous Dark",
+    "South Wetlands",
+    "Spider Plains",
+    "Spine Canyon",
+    "Stenn Desert",
+    "Stobe's Gamble",
+    "Stobe's Garden",
+    "Stormgap Coast",
+    "The Black Desert",
+    "The Crags",
+    "The Crater",
+    "The Eye",
+    "The Great Desert",
+    "The Grid",
+    "The Hook",
+    "The Iron Trail",
+    "The Outlands",
+    "The Pits",
+    "The Pits East",
+    "The Shrieking Forest",
+    "The Swamp",
+    "The Unwanted Zone",
+    "Vain",
+    "Venge",
+    "Watcher's Rim",
+    "Wend"
+   ]
+  },
+  "bull": {
+   "label": "wild bulls",
+   "role": "herd",
+   "fid": "46-Symbiosis.mod",
+   "squads": [
+    {
+     "sid": "34-Symbiosis.mod",
+     "name": "Bulls Mega Herd",
+     "min": 12,
+     "max": 25
+    },
+    {
+     "sid": "18875-rebirth.mod",
+     "name": "Bulls Herd",
+     "min": 8,
+     "max": 16
+    },
+    {
+     "sid": "4005-gamedata.base",
+     "name": "Bulls",
+     "min": 3,
+     "max": 6
+    }
+   ],
+   "anchors": [
+    "1082-gamedata.base",
+    "14-Holy Villages.mod",
+    "15-Holy Villages.mod",
+    "16-Holy Villages.mod",
+    "18024-Newwworld.mod",
+    "18919-Newwworld.mod",
+    "49365-rebirth.mod",
+    "50994-rebirth.mod",
+    "52-Holy Villages.mod",
+    "52160-Newwworld.mod",
+    "54-Holy Villages.mod",
+    "55-Holy Villages.mod",
+    "96499-Dialogue.mod"
+   ],
+   "regions": [
+    "Bast",
+    "Berserker Country",
+    "Bonefields",
+    "Border Zone",
+    "Burning Forest",
+    "Cannibal Plains",
+    "Darkfinger",
+    "Dreg",
+    "Flats Lagoon",
+    "Greyshelf",
+    "Heng",
+    "Hidden Forest",
+    "High Bonefields",
+    "Leviathan Coast",
+    "Northern Coast",
+    "Okran's Gulf",
+    "Okran's Pride",
+    "Okran's Valley",
+    "Rebirth",
+    "Shem",
+    "Shun",
+    "Skimsands",
+    "Skinner's Roam",
+    "South Wetlands",
+    "Spider Plains",
+    "Stenn Desert",
+    "Stormgap Coast",
+    "The Great Desert",
+    "The Hook",
+    "The Shrieking Forest",
+    "The Swamp",
+    "Vain",
+    "Venge"
+   ],
+   "habitat": [
+    "Arach",
+    "Arm of Okran",
+    "Bast",
+    "Berserker Country",
+    "Bonefields",
+    "Border Zone",
+    "Burning Forest",
+    "Cannibal Plains",
+    "Crabby Islands",
+    "Darkfinger",
+    "Deadlands",
+    "Dreg",
+    "Fishman Island",
+    "Flats Lagoon",
+    "Floodlands",
+    "Fog Islands",
+    "Forbidden Isle",
+    "Grey Desert",
+    "Greyshelf",
+    "Gut",
+    "Heng",
+    "Hidden Forest",
+    "High Bonefields",
+    "Howler Maze",
+    "Iron Valleys",
+    "Leviathan Coast",
+    "Northern Coast",
+    "Okran's Gulf",
+    "Okran's Pride",
+    "Okran's Valley",
+    "Purple Sands",
+    "Rebirth",
+    "Royal Valley",
+    "Shem",
+    "Shun",
+    "Sinkuun",
+    "Skimsands",
+    "Skinner's Roam",
+    "Sonorous Dark",
+    "South Wetlands",
+    "Spider Plains",
+    "Spine Canyon",
+    "Stenn Desert",
+    "Stobe's Gamble",
+    "Stormgap Coast",
+    "The Black Desert",
+    "The Crater",
+    "The Eye",
+    "The Great Desert",
+    "The Grid",
+    "The Hook",
+    "The Iron Trail",
+    "The Outlands",
+    "The Shrieking Forest",
+    "The Swamp",
+    "The Unwanted Zone",
+    "Vain",
+    "Venge",
+    "Watcher's Rim",
+    "Wend"
+   ]
+  },
+  "turtle": {
+   "label": "swamp turtles",
+   "role": "herd",
+   "fid": "3943-gamedata.base",
+   "squads": [
+    {
+     "sid": "51641-rebirth.mod",
+     "name": "swamp turtle herd",
+     "min": 5,
+     "max": 12
+    },
+    {
+     "sid": "18005-rebirth.mod",
+     "name": "swamp turtle squad",
+     "min": 1,
+     "max": 3
+    }
+   ],
+   "anchors": [],
+   "regions": [
+    "Burning Forest",
+    "Flats Lagoon",
+    "Shem",
+    "South Wetlands",
+    "The Hook",
+    "The Swamp",
+    "The Unwanted Zone"
+   ],
+   "habitat": [
+    "Bonefields",
+    "Border Zone",
+    "Burning Forest",
+    "Deadlands",
+    "Flats Lagoon",
+    "Greyshelf",
+    "High Bonefields",
+    "Shem",
+    "Shun",
+    "Skinner's Roam",
+    "South Wetlands",
+    "Spider Plains",
+    "Stobe's Gamble",
+    "Stobe's Garden",
+    "Stormgap Coast",
+    "The Crater",
+    "The Grid",
+    "The Hook",
+    "The Outlands",
+    "The Swamp",
+    "The Unwanted Zone",
+    "Venge"
+   ]
+  },
+  "leviathan": {
+   "label": "leviathans",
+   "role": "herd",
+   "fid": "3943-gamedata.base",
+   "squads": [
+    {
+     "sid": "128-Symbiosis.mod",
+     "name": "Leviathan Family with River Raptors",
+     "min": 1,
+     "max": 2
+    },
+    {
+     "sid": "48782-rebirth.mod",
+     "name": "Leviathan Family",
+     "min": 1,
+     "max": 2
+    }
+   ],
+   "anchors": [],
+   "regions": [
+    "Bonefields",
+    "Dreg",
+    "Forbidden Isle",
+    "Greenbeach",
+    "Heng",
+    "Hidden Forest",
+    "Leviathan Coast",
+    "Northern Coast",
+    "Okran's Valley",
+    "Purple Sands",
+    "Sinkuun",
+    "Sniper Valley",
+    "Stobe's Gamble",
+    "Stormgap Coast"
+   ],
+   "habitat": [
+    "Arm of Okran",
+    "Bast",
+    "Berserker Country",
+    "Bonefields",
+    "Burning Forest",
+    "Cannibal Plains",
+    "Crabby Islands",
+    "Darkfinger",
+    "Dreg",
+    "Fishman Island",
+    "Flats Lagoon",
+    "Floodlands",
+    "Fog Islands",
+    "Forbidden Isle",
+    "Greenbeach",
+    "Greyshelf",
+    "Gut",
+    "Heng",
+    "Hidden Forest",
+    "High Bonefields",
+    "Howler Maze",
+    "Leviathan Coast",
+    "Northern Coast",
+    "Okran's Gulf",
+    "Okran's Pride",
+    "Okran's Valley",
+    "Purple Sands",
+    "Royal Valley",
+    "Shem",
+    "Sinkuun",
+    "Skimsands",
+    "Sniper Valley",
+    "Sonorous Dark",
+    "South Wetlands",
+    "Stobe's Gamble",
+    "Stobe's Garden",
+    "Stormgap Coast",
+    "The Crags",
+    "The Eye",
+    "The Great Desert",
+    "The Hook",
+    "The Iron Trail",
+    "The Outlands",
+    "The Pits",
+    "The Pits East",
+    "The Shrieking Forest",
+    "The Unwanted Zone",
+    "Vain",
+    "Venge",
+    "Wend"
+   ]
+  },
+  "horse": {
+   "label": "wild horses",
+   "role": "herd",
+   "fid": "40544-rebirth.mod",
+   "squads": [
+    {
+     "sid": "1535108-TIHYD_Zoo.mod",
+     "name": "Wild Horses Herd",
+     "min": 4,
+     "max": 8
+    },
+    {
+     "sid": "1535110-TIHYD_Zoo.mod",
+     "name": "Wild Horses",
+     "min": 1,
+     "max": 3
+    }
+   ],
+   "anchors": [],
+   "regions": [
+    "Cannibal Plains",
+    "Greyshelf",
+    "Skinner's Roam"
+   ],
+   "habitat": [
+    "Arm of Okran",
+    "Bonefields",
+    "Border Zone",
+    "Cannibal Plains",
+    "Deadlands",
+    "Flats Lagoon",
+    "Floodlands",
+    "Greyshelf",
+    "Hidden Forest",
+    "Iron Valleys",
+    "Leviathan Coast",
+    "Northern Coast",
+    "Okran's Pride",
+    "Purple Sands",
+    "Royal Valley",
+    "Shem",
+    "Skinner's Roam",
+    "Sonorous Dark",
+    "Stobe's Gamble",
+    "The Iron Trail"
+   ]
+  },
+  "bonedog": {
+   "label": "bonedogs",
+   "role": "pred",
+   "fid": "56128-rebirth.mod",
+   "squads": [
+    {
+     "sid": "1535139-TIHYD_Zoo.mod",
+     "name": "Bloodhound Swarm",
+     "min": 5,
+     "max": 10
+    },
+    {
+     "sid": "1535135-TIHYD_Zoo.mod",
+     "name": "Bloodhound pack patrol day",
+     "min": 1,
+     "max": 7
+    },
+    {
+     "sid": "810-Live Streets.mod",
+     "name": "Stray Dogs",
+     "min": 5,
+     "max": 7
+    },
+    {
+     "sid": "96237-rebirth.mod",
+     "name": "Wolf pack patrol day",
+     "min": 2,
+     "max": 6
+    },
+    {
+     "sid": "4009-gamedata.base",
+     "name": "Wolf Pack nocturnal",
+     "min": 2,
+     "max": 5
+    },
+    {
+     "sid": "1535137-TIHYD_Zoo.mod",
+     "name": "Bloodhound Pack nocturnal",
+     "min": 1,
+     "max": 3
+    },
+    {
+     "sid": "1535138-TIHYD_Zoo.mod",
+     "name": "Bloodhound Pack Den",
+     "min": 1,
+     "max": 3
+    },
+    {
+     "sid": "4021-gamedata.base",
+     "name": "Wolf Pack Den",
+     "min": 2,
+     "max": 3
+    },
+    {
+     "sid": "269-Symbiosis.mod",
+     "name": "Lost Puppy",
+     "min": 1,
+     "max": 1
+    }
+   ],
+   "anchors": [
+    "1074-gamedata.base",
+    "1076-gamedata.base",
+    "1078-gamedata.base",
+    "1079-gamedata.base",
+    "1082-gamedata.base",
+    "12628-Newwworld.mod",
+    "1364-gamedata.base",
+    "1536648-Bounties Galore.mod",
+    "18021-Newwworld.mod",
+    "18022-Newwworld.mod",
+    "18919-Newwworld.mod",
+    "18925-Newwworld.mod",
+    "2601-gamedata.base",
+    "2608-gamedata.base",
+    "33-gamedata.quack",
+    "49386-rebirth.mod",
+    "51402-rebirth.mod",
+    "55651-rebirth.mod",
+    "55656-rebirth.mod",
+    "962-gamedata.base",
+    "963-gamedata.base",
+    "96519-Dialogue.mod"
+   ],
+   "regions": [
+    "Berserker Country",
+    "Border Zone",
+    "Darkfinger",
+    "Dreg",
+    "Fog Islands",
+    "Hidden Forest",
+    "Northern Coast",
+    "Okran's Gulf",
+    "Okran's Pride",
+    "Okran's Valley",
+    "Purple Sands",
+    "Skinner's Roam",
+    "South Wetlands",
+    "Spider Plains",
+    "Stenn Desert",
+    "Stobe's Gamble",
+    "The Eye",
+    "The Hook"
+   ],
+   "habitat": [
+    "Arach",
+    "Arm of Okran",
+    "Bast",
+    "Berserker Country",
+    "Bonefields",
+    "Border Zone",
+    "Cannibal Plains",
+    "Darkfinger",
+    "Deadlands",
+    "Dreg",
+    "Flats Lagoon",
+    "Floodlands",
+    "Fog Islands",
+    "Grey Desert",
+    "Greyshelf",
+    "Gut",
+    "Heng",
+    "Hidden Forest",
+    "High Bonefields",
+    "Iron Valleys",
+    "Northern Coast",
+    "Okran's Gulf",
+    "Okran's Pride",
+    "Okran's Valley",
+    "Purple Sands",
+    "Rebirth",
+    "Shem",
+    "Shun",
+    "Sinkuun",
+    "Skimsands",
+    "Skinner's Roam",
+    "Sniper Valley",
+    "Sonorous Dark",
+    "South Wetlands",
+    "Spider Plains",
+    "Stenn Desert",
+    "Stobe's Gamble",
+    "Stobe's Garden",
+    "Stormgap Coast",
+    "The Black Desert",
+    "The Crags",
+    "The Crater",
+    "The Eye",
+    "The Grid",
+    "The Hook",
+    "The Iron Trail",
+    "The Shrieking Forest",
+    "The Swamp",
+    "The Unwanted Zone",
+    "Vain",
+    "Venge",
+    "Watcher's Rim",
+    "Wend"
+   ]
+  },
+  "jackal": {
+   "label": "bone jackals",
+   "role": "pred",
+   "fid": "5007935-Edit Dogs.mod",
+   "squads": [
+    {
+     "sid": "5007838-Edit Dogs.mod",
+     "name": "hoser Bone Jackal Pack nocturnal",
+     "min": 3,
+     "max": 5
+    },
+    {
+     "sid": "5007860-Edit Dogs.mod",
+     "name": "Bone Jackal Den",
+     "min": 1,
+     "max": 3
+    },
+    {
+     "sid": "45-Symbiosis - More Dogs.mod",
+     "name": "Lost Puppy (Bone Jackal)",
+     "min": 1,
+     "max": 1
+    }
+   ],
+   "anchors": [],
+   "regions": [
+    "Forbidden Isle",
+    "Stobe's Garden",
+    "Stormgap Coast",
+    "The Crags",
+    "The Eye",
+    "The Outlands"
+   ],
+   "habitat": [
+    "Crabby Islands",
+    "Forbidden Isle",
+    "Greenbeach",
+    "Grey Desert",
+    "Gut",
+    "Heng",
+    "Skimsands",
+    "Sniper Valley",
+    "Stobe's Gamble",
+    "Stobe's Garden",
+    "Stormgap Coast",
+    "The Black Desert",
+    "The Crags",
+    "The Eye",
+    "The Outlands",
+    "The Pits",
+    "The Pits East",
+    "The Unwanted Zone",
+    "Venge"
+   ]
+  },
+  "savhound": {
+   "label": "savannah hounds",
+   "role": "pred",
+   "fid": "5007939-Edit Dogs.mod",
+   "squads": [
+    {
+     "sid": "5007854-Edit Dogs.mod",
+     "name": "hoser Savannah Hound Pack diurnal",
+     "min": 6,
+     "max": 12
+    },
+    {
+     "sid": "5007859-Edit Dogs.mod",
+     "name": "Savannah Hound Den",
+     "min": 2,
+     "max": 6
+    },
+    {
+     "sid": "51-Symbiosis - More Dogs.mod",
+     "name": "Lost Puppy (Savannah Hound)",
+     "min": 1,
+     "max": 1
+    }
+   ],
+   "anchors": [],
+   "regions": [
+    "Border Zone",
+    "Okran's Gulf",
+    "Shun",
+    "Skinner's Roam",
+    "Spider Plains",
+    "Stenn Desert",
+    "The Hook"
+   ],
+   "habitat": [
+    "Arach",
+    "Arm of Okran",
+    "Bonefields",
+    "Border Zone",
+    "Deadlands",
+    "Dreg",
+    "Floodlands",
+    "Fog Islands",
+    "Iron Valleys",
+    "Okran's Gulf",
+    "Okran's Pride",
+    "Rebirth",
+    "Shem",
+    "Shun",
+    "Skinner's Roam",
+    "South Wetlands",
+    "Spider Plains",
+    "Stenn Desert",
+    "The Crater",
+    "The Grid",
+    "The Hook",
+    "The Swamp",
+    "Vain",
+    "Watcher's Rim"
+   ]
+  },
+  "beak": {
+   "label": "beak things",
+   "role": "pred",
+   "fid": "51812-rebirth.mod",
+   "squads": [
+    {
+     "sid": "66294-rebirth.mod",
+     "name": "beak swarm",
+     "min": 6,
+     "max": 14
+    },
+    {
+     "sid": "95535-rebirth.mod",
+     "name": "beak squad med",
+     "min": 2,
+     "max": 6
+    },
+    {
+     "sid": "4012-gamedata.base",
+     "name": "Beak Squad Small",
+     "min": 1,
+     "max": 3
+    },
+    {
+     "sid": "66295-rebirth.mod",
+     "name": "beak elder",
+     "min": 1,
+     "max": 1
+    }
+   ],
+   "anchors": [],
+   "regions": [
+    "Arm of Okran",
+    "Bonefields",
+    "Burning Forest",
+    "Cannibal Plains",
+    "Flats Lagoon",
+    "Greenbeach",
+    "Greyshelf",
+    "Gut",
+    "High Bonefields",
+    "Leviathan Coast",
+    "Purple Sands",
+    "Royal Valley",
+    "Shem",
+    "South Wetlands",
+    "Stormgap Coast",
+    "The Crater",
+    "The Hook",
+    "The Outlands",
+    "The Swamp",
+    "The Unwanted Zone"
+   ],
+   "habitat": [
+    "Arm of Okran",
+    "Bast",
+    "Berserker Country",
+    "Bonefields",
+    "Border Zone",
+    "Burning Forest",
+    "Cannibal Plains",
+    "Cheaters Run",
+    "Crabby Islands",
+    "Deadlands",
+    "Fishman Island",
+    "Flats Lagoon",
+    "Floodlands",
+    "Forbidden Isle",
+    "Greenbeach",
+    "Greyshelf",
+    "Gut",
+    "Heng",
+    "Hidden Forest",
+    "High Bonefields",
+    "Howler Maze",
+    "Leviathan Coast",
+    "Northern Coast",
+    "Okran's Pride",
+    "Okran's Valley",
+    "Purple Sands",
+    "Royal Valley",
+    "Shem",
+    "Shun",
+    "Skimsands",
+    "Skinner's Roam",
+    "Sonorous Dark",
+    "South Wetlands",
+    "Spider Plains",
+    "Stobe's Gamble",
+    "Stobe's Garden",
+    "Stormgap Coast",
+    "The Crater",
+    "The Eye",
+    "The Grid",
+    "The Hook",
+    "The Iron Trail",
+    "The Outlands",
+    "The Pits East",
+    "The Shrieking Forest",
+    "The Swamp",
+    "The Unwanted Zone",
+    "Venge",
+    "Wend"
+   ]
+  },
+  "skinspider": {
+   "label": "skin spiders",
+   "role": "pred",
+   "fid": "51331-rebirth.mod",
+   "squads": [
+    {
+     "sid": "51361-rebirth.mod",
+     "name": "spider swarm",
+     "min": 20,
+     "max": 30
+    },
+    {
+     "sid": "5007427-Radiant Animal Sub Species.mod",
+     "name": "spider small swarm",
+     "min": 10,
+     "max": 17
+    },
+    {
+     "sid": "38-Symbiosis.mod",
+     "name": "spider nest",
+     "min": 5,
+     "max": 15
+    },
+    {
+     "sid": "115-Symbiosis.mod",
+     "name": "spider juvi gang",
+     "min": 5,
+     "max": 13
+    },
+    {
+     "sid": "110-Symbiosis.mod",
+     "name": "spider squad nest guards",
+     "min": 5,
+     "max": 10
+    },
+    {
+     "sid": "43878-rebirth.mod",
+     "name": "spider squad",
+     "min": 1,
+     "max": 10
+    },
+    {
+     "sid": "51325-rebirth.mod",
+     "name": "spider squad small 1-3 (juvis)",
+     "min": 1,
+     "max": 3
+    },
+    {
+     "sid": "114-Symbiosis.mod",
+     "name": "spider duo",
+     "min": 1,
+     "max": 2
+    }
+   ],
+   "anchors": [],
+   "regions": [
+    "Arach",
+    "Bonefields",
+    "Burning Forest",
+    "Flats Lagoon",
+    "Greyshelf",
+    "High Bonefields",
+    "Royal Valley",
+    "Shun",
+    "South Wetlands",
+    "Spider Plains",
+    "Stenn Desert",
+    "The Crater",
+    "The Grid",
+    "The Hook",
+    "Watcher's Rim"
+   ],
+   "habitat": [
+    "Arach",
+    "Bonefields",
+    "Border Zone",
+    "Burning Forest",
+    "Cheaters Run",
+    "Fishman Island",
+    "Flats Lagoon",
+    "Greyshelf",
+    "High Bonefields",
+    "Royal Valley",
+    "Shem",
+    "Shun",
+    "Sonorous Dark",
+    "South Wetlands",
+    "Spider Plains",
+    "Stenn Desert",
+    "Stobe's Gamble",
+    "The Crater",
+    "The Grid",
+    "The Hook",
+    "The Swamp",
+    "Vain",
+    "Venge",
+    "Watcher's Rim"
+   ]
+  },
+  "bloodspider": {
+   "label": "blood spiders",
+   "role": "pred",
+   "fid": "44-Symbiosis.mod",
+   "squads": [
+    {
+     "sid": "109-Symbiosis.mod",
+     "name": "spider squad mini nest babies",
+     "min": 14,
+     "max": 30
+    },
+    {
+     "sid": "55638-rebirth.mod",
+     "name": "spider squad mini baby swarm",
+     "min": 14,
+     "max": 30
+    },
+    {
+     "sid": "40-Symbiosis.mod",
+     "name": "spider squad mini nest",
+     "min": 5,
+     "max": 15
+    },
+    {
+     "sid": "50320-rebirth.mod",
+     "name": "library canyon spiders",
+     "min": 6,
+     "max": 15
+    },
+    {
+     "sid": "50624-rebirth.mod",
+     "name": "spider squad mini swamp",
+     "min": 1,
+     "max": 10
+    },
+    {
+     "sid": "55679-rebirth.mod",
+     "name": "small blood spiders",
+     "min": 1,
+     "max": 3
+    }
+   ],
+   "anchors": [],
+   "regions": [
+    "Arach",
+    "Berserker Country",
+    "Burning Forest",
+    "Purple Sands",
+    "Shem",
+    "Shun",
+    "South Wetlands",
+    "Spider Plains",
+    "The Crater",
+    "The Grid",
+    "The Hook",
+    "The Swamp",
+    "Venge",
+    "Watcher's Rim"
+   ],
+   "habitat": [
+    "Arach",
+    "Berserker Country",
+    "Bonefields",
+    "Border Zone",
+    "Burning Forest",
+    "Cannibal Plains",
+    "Deadlands",
+    "Flats Lagoon",
+    "Floodlands",
+    "Grey Desert",
+    "High Bonefields",
+    "Purple Sands",
+    "Shem",
+    "Shun",
+    "Skinner's Roam",
+    "South Wetlands",
+    "Spider Plains",
+    "Stenn Desert",
+    "Stobe's Gamble",
+    "Stormgap Coast",
+    "The Crater",
+    "The Eye",
+    "The Grid",
+    "The Hook",
+    "The Iron Trail",
+    "The Shrieking Forest",
+    "The Swamp",
+    "The Unwanted Zone",
+    "Vain",
+    "Venge",
+    "Watcher's Rim"
+   ]
+  }
+ },
+ "herds": [
+  {
+   "id": "h1",
+   "species": "garru",
+   "pred": "bonedog",
+   "off": 27.6,
+   "anchored": true,
+   "habitat": "biome",
+   "route": [
+    {
+     "sid": "161-Tombs and Memorialization.mod",
+     "name": "Cuckold Grave",
+     "x": -94471,
+     "z": 102918
+    },
+    {
+     "sid": "51402-rebirth.mod",
+     "name": "Drifter's Last",
+     "x": -79935,
+     "z": 114830
+    },
+    {
+     "sid": "51423-rebirth.mod",
+     "name": "Library Ruins",
+     "x": -94354,
+     "z": 122138
+    },
+    {
+     "sid": "1221-gamedata.base",
+     "name": "Abandoned Town",
+     "x": -102551,
+     "z": 138827
+    }
+   ]
+  },
+  {
+   "id": "h2",
+   "species": "garru",
+   "pred": "bonedog",
+   "off": 4.0,
+   "anchored": true,
+   "habitat": "biome",
+   "route": [
+    {
+     "sid": "10-Towns Expansion.mod",
+     "name": "Skyscrap",
+     "x": -48856,
+     "z": 6421
+    },
+    {
+     "sid": "18925-Newwworld.mod",
+     "name": "Stack",
+     "x": -56047,
+     "z": -13188
+    },
+    {
+     "sid": "10-Holy Mines.mod",
+     "name": "Sinners Gulch",
+     "x": -40268,
+     "z": -12674
+    },
+    {
+     "sid": "1532788-Lore Friendly Recruitment - The Adventurer's Guild.mod",
+     "name": "Ishijuku",
+     "x": -43501,
+     "z": 4754
+    }
+   ]
+  },
+  {
+   "id": "h3",
+   "species": "garru",
+   "pred": "bonedog",
+   "off": 3.3,
+   "anchored": true,
+   "habitat": "biome",
+   "route": [
+    {
+     "sid": "11-Resort Island.mod",
+     "name": "Resort Island",
+     "x": -49225,
+     "z": 73440
+    },
+    {
+     "sid": "1364-gamedata.base",
+     "name": "Clownsteady",
+     "x": -61298,
+     "z": 91650
+    },
+    {
+     "sid": "1533495-__world reactions Slavers.mod",
+     "name": "Slave Farm South",
+     "x": -53379,
+     "z": 109777
+    },
+    {
+     "sid": "1080-gamedata.base",
+     "name": "Slave Markets",
+     "x": -30522,
+     "z": 83964
+    }
+   ]
+  },
+  {
+   "id": "h4",
+   "species": "goat",
+   "pred": "bonedog",
+   "off": 0.4,
+   "anchored": true,
+   "habitat": "biome",
+   "route": [
+    {
+     "sid": "49387-rebirth.mod",
+     "name": "Ghost Village",
+     "x": -35685,
+     "z": -105219
+    },
+    {
+     "sid": "49368-rebirth.mod",
+     "name": "Flotsam Village",
+     "x": -38508,
+     "z": -84584
+    },
+    {
+     "sid": "49766-rebirth.mod",
+     "name": "Scout Post",
+     "x": -42595,
+     "z": -99433
+    },
+    {
+     "sid": "50243-rebirth.mod",
+     "name": "Old Village",
+     "x": -61574,
+     "z": -103558
+    }
+   ]
+  },
+  {
+   "id": "h5",
+   "species": "goat",
+   "pred": "bonedog",
+   "off": 15.1,
+   "anchored": true,
+   "habitat": "biome",
+   "route": [
+    {
+     "sid": "62795-rebirth.mod",
+     "name": "Lost Armour Store",
+     "x": 73295,
+     "z": 35849
+    },
+    {
+     "sid": "58703-rebirth.mod",
+     "name": "Crumbling Labs",
+     "x": 59099,
+     "z": 48387
+    },
+    {
+     "sid": "1532823-rebirth.mod",
+     "name": "Secret Drug Farm",
+     "x": 38857,
+     "z": 41831
+    },
+    {
+     "sid": "1532821-rebirth.mod",
+     "name": "Free Settlement",
+     "x": 56864,
+     "z": 34771
+    }
+   ]
+  },
+  {
+   "id": "h6",
+   "species": "goat",
+   "pred": "bonedog",
+   "off": 25.4,
+   "anchored": true,
+   "habitat": "biome",
+   "route": [
+    {
+     "sid": "56066-Newwworld.mod",
+     "name": "Guard Outpost",
+     "x": 3483,
+     "z": -87449
+    },
+    {
+     "sid": "55663-rebirth.mod",
+     "name": "Holy Farm",
+     "x": -12522,
+     "z": -90185
+    },
+    {
+     "sid": "201-Towns Expansion.mod",
+     "name": "World's Ruin",
+     "x": -27128,
+     "z": -83219
+    },
+    {
+     "sid": "1535444-Aminals.mod",
+     "name": "Winged Beak Ogre Lair",
+     "x": -40092,
+     "z": -92686
+    }
+   ]
+  },
+  {
+   "id": "h7",
+   "species": "bull",
+   "pred": "savhound",
+   "off": 8.5,
+   "anchored": true,
+   "habitat": "biome",
+   "route": [
+    {
+     "sid": "63140-rebirth.mod",
+     "name": "The Old Prison",
+     "x": 9689,
+     "z": 86015
+    },
+    {
+     "sid": "963-gamedata.base",
+     "name": "Mourn",
+     "x": 12507,
+     "z": 65253
+    },
+    {
+     "sid": "33-gamedata.quack",
+     "name": "Catun",
+     "x": -6933,
+     "z": 81717
+    },
+    {
+     "sid": "1535809-Bounties Galore.mod",
+     "name": "Wendigo's Hut",
+     "x": -19495,
+     "z": 101170
+    }
+   ]
+  },
+  {
+   "id": "h8",
+   "species": "bull",
+   "pred": "savhound",
+   "off": 22.5,
+   "anchored": true,
+   "habitat": "biome",
+   "route": [
+    {
+     "sid": "18919-Newwworld.mod",
+     "name": "The Hub",
+     "x": -50979,
+     "z": 2932
+    },
+    {
+     "sid": "44853-rebirth.mod",
+     "name": "Dust King Tower",
+     "x": -36144,
+     "z": -677
+    },
+    {
+     "sid": "13-Holy Mines.mod",
+     "name": "Torn",
+     "x": -25863,
+     "z": -14337
+    },
+    {
+     "sid": "24-Holy Mines.mod",
+     "name": "Ruined Mine ",
+     "x": -16449,
+     "z": -28328
+    }
+   ]
+  },
+  {
+   "id": "h9",
+   "species": "turtle",
+   "pred": "beak",
+   "off": 15.7,
+   "anchored": true,
+   "habitat": "biome",
+   "route": [
+    {
+     "sid": "51383-rebirth.mod",
+     "name": "Swamped Lab",
+     "x": -57373,
+     "z": 57792
+    },
+    {
+     "sid": "51646-rebirth.mod",
+     "name": "Wetlands Hideout",
+     "x": -41374,
+     "z": 71775
+    },
+    {
+     "sid": "51482-rebirth.mod",
+     "name": "Swamp Hideout",
+     "x": -59568,
+     "z": 63933
+    },
+    {
+     "sid": "55397-rebirth.mod",
+     "name": "Lost Library Outpost",
+     "x": -55921,
+     "z": 44215
+    }
+   ]
+  },
+  {
+   "id": "h10",
+   "species": "leviathan",
+   "pred": "bloodspider",
+   "off": 12.5,
+   "anchored": true,
+   "habitat": "biome",
+   "route": [
+    {
+     "sid": "964-gamedata.base",
+     "name": "Eyesocket",
+     "x": 51538,
+     "z": -10402
+    },
+    {
+     "sid": "1073-gamedata.base",
+     "name": "Slave Farm",
+     "x": 61290,
+     "z": -31012
+    },
+    {
+     "sid": "1533492-__world reactions Slavers.mod",
+     "name": "South Stone Camp",
+     "x": 64742,
+     "z": -49500
+    },
+    {
+     "sid": "178-KillerRobot.mod",
+     "name": "失控的武士实验室",
+     "x": 85272,
+     "z": -53283
+    }
+   ]
+  },
+  {
+   "id": "h11",
+   "species": "horse",
+   "pred": "savhound",
+   "off": 0.8,
+   "anchored": true,
+   "habitat": "biome",
+   "route": [
+    {
+     "sid": "1535490-Bounties Galore.mod",
+     "name": "Adidan's Tower",
+     "x": -16235,
+     "z": -24448
+    },
+    {
+     "sid": "1535115-Grievewraiths.mod",
+     "name": "Infested Ruin",
+     "x": -17503,
+     "z": -8676
+    },
+    {
+     "sid": "2757600-GreatDirewolf.mod",
+     "name": "The White Wolf's Respite",
+     "x": -23367,
+     "z": -26948
+    },
+    {
+     "sid": "11-Holy Mines.mod",
+     "name": "Salvation",
+     "x": -19652,
+     "z": -3125
+    }
+   ]
+  }
+ ],
+ "hunters": [
+  "42097-rebirth.mod",
+  "51707-rebirth.mod",
+  "16855-gamedata.base"
+ ]
+}

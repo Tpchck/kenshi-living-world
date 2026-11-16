@@ -190,7 +190,7 @@ local LAZY = {   -- скаляры: кэш в записи до пересбор
   tsid = function(r) local t = r.pl and r.pl.squadTemplate; return t and t.stringID end,
   down = function(r) return (r.dead or r.ch:isDown() or r.ch:isUnconcious()) and true or false end,
   unique = function(r) return r.ch:isUnique() and true or false end,
-  h = function(r) return tostring(r.ch:getHandle()) end,
+  h = function(r) local h = r.ch:getHandle(); local ok, s = pcall(function() return h:toString() end); if ok and type(s) == "string" then return s end; return tostring(h) end,   -- hand:toString(): tostring(hand) — новый адрес на каждый вызов
   combat = function(r) return r.ch:isInCombatMode(true, true) and true or false end,
 }
 local PLAZY = {   -- указатели: на кадр (в кадре сборки — из сборки)

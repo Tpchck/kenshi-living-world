@@ -366,3 +366,6 @@ KMM_Herds = {
   reset = function() H.D, H.towns, H.disabled, H.last, H.pend = nil, nil, false, -1e9, {} end,
   pend = function() return H.pend end,
 }
+
+-- PUBLISH (2026-11-16): KenshiLua runs each init script in its own sandbox; a plain global stays inside it.
+if KMM_Herds ~= nil then rawset(_G, "KMM_Herds", KMM_Herds) end

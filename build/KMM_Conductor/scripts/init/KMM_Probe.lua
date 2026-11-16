@@ -623,3 +623,6 @@ if rawget(_G, "Events") and Events.on then
   Events.on("GameWorld::charsUpdate", guarded("tick", function() P.tick() end))
   Events.on("PlayerInterface::loadFromSerialise", guarded("load", function() P.on_load() end))
 end
+
+-- PUBLISH (2026-11-16): KenshiLua runs each init script in its own sandbox; a plain global stays inside it.
+if KMM_Probe ~= nil then rawset(_G, "KMM_Probe", KMM_Probe) end

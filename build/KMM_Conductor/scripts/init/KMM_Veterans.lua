@@ -28,10 +28,38 @@ local function log(msg)
   end)
 end
 local function C() return rawget(_G, "KMM_Conductor") end
+-- HEALTH (2026-11-15): отказы идут в реестр ядра KMM_Gov (ключи KMM_Veterans.<механика>): пауза 1/5/30 мин и повтор вместо «до перезапуска».
+-- Навсегда — только нет API в движке (noapi) или крэш-сторож (crash). Без Gov — прежнее поведение (до перезапуска).
+local function HG() local g = rawget(_G, "KMM_Gov"); if type(g) == "table" and type(g.h_fail) == "function" then return g end end
+local function h_up(k) local g = HG(); if not g then return true end; local ok, r = pcall(g.h_up, k); return (not ok) or r ~= false end
+local function h_ok(k) local g = HG(); if g then pcall(g.h_ok, k) end end
+local function h_off(k, why, kind) local g = HG(); if g and type(g.h_off) == "function" then pcall(g.h_off, k, why, kind) end end
+-- отказ: t[f] = true; пауза реестра -> t[f .. "_p"] = ключ, вернёт секунды; без Gov -> nil (до перезапуска)
+local function down(t, f, key, err)
+  t[f] = true
+  local g, p = HG(), nil
+  if g then local ok, r = pcall(g.h_fail, key, err); if ok then p = r end end
+  if type(p) == "number" then t[f .. "_p"] = key; return p end
+  t[f .. "_p"] = nil
+  return nil
+end
+-- true = выключено сейчас; пауза истекла -> флаг снят (одна попытка)
+local function live(t, f)
+  if not t[f] then return false end
+  local key = t[f .. "_p"]
+  if key and h_up(key) then t[f], t[f .. "_p"] = false, nil; return false end
+  return true
+end
+local function forever(t, f, key, why, kind) t[f], t[f .. "_p"] = true, nil; h_off(key, why, kind) end
+local function why_p(p) return p and ("failed, retry in " .. p .. " s") or "disabled until restart" end
+local ST = { off = false }   -- HEALTH: OFF = ST.off (пауза реестра или навсегда без Gov)
+local function is_off() OFF = live(ST, "off"); return OFF end
+local function mod_fail(nm, e) local p = down(ST, "off", "KMM_Veterans.module", e); OFF = true; log(nm .. " " .. why_p(p) .. ": " .. tostring(e)) end
 local function guard(nm, fn, ...)
-  if OFF then return nil end
+  if is_off() then return nil end
   local ok, a, b = pcall(fn, ...)
-  if not ok then OFF = true; log(nm .. " disabled until restart: " .. tostring(a)); return nil end
+  if not ok then mod_fail(nm, a); return nil end
+  h_ok("KMM_Veterans.module")
   return a, b
 end
 
@@ -45,7 +73,7 @@ function M.slot()
   return x
 end
 function M.state() return M.slot() end
-function M.disabled() return OFF end
+function M.disabled() return is_off() end
 
 local function tinfo(sid)
   for _, t in ipairs(C().towns()) do if t.sid == sid then return t end end
@@ -74,7 +102,7 @@ function M.add(sid, kind, day)
 end
 
 local function on_event(ev)
-  if OFF or not CF.enabled or not (ev and ev.type) then return end
+  if is_off() or not CF.enabled or not (ev and ev.type) then return end
   local c = C(); if not c then return end
   local p = CF.chance[ev.type]
   if not p or not ev.town_sid or math.random() > p then return end
@@ -132,7 +160,7 @@ function M.daily(day)
 end
 
 local function tick()
-  if OFF or not CF.enabled then return end
+  if is_off() or not CF.enabled then return end
   local c = C()
   if not (c and c.state and c.state() and c.subscribe) then return end
   if not SUB then
@@ -148,7 +176,7 @@ M._tick = function() guard("tick", tick) end
 
 if rawget(_G, "Events") and Events.on and not M._hooked then
   M._hooked = true
-  local function guarded(fn) return function(...) local ok, e = pcall(fn, ...); if not ok then OFF = true; log("handler disabled until restart: " .. tostring(e)) end end end
+  local function guarded(fn) return function(...) local ok, e = pcall(fn, ...); if not ok then mod_fail("handler", e) end end end
   Events.on("GameWorld::charsUpdate", guarded(function()
     local now = os.clock()
     if now - LASTCLK < CF.tick_gap then return end

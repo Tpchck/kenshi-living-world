@@ -2297,3 +2297,6 @@ KMM_Traces = {
   loot_state = function() return LT, gstat end,
   _equip = function(ch, inv, now, h) return try_equip(ch, inv, now or os.clock(), h or "h") end,
 }
+
+-- PUBLISH (2026-11-16): KenshiLua runs each init script in its own sandbox; a plain global stays inside it.
+if KMM_Traces ~= nil then rawset(_G, "KMM_Traces", KMM_Traces) end

@@ -1598,3 +1598,6 @@ KMM_Outlaws = {
   _M = M,
 }
 if Events and Events.on then pcall(Events.on, "GameWorld::charsUpdate", M.guarded) end
+
+-- PUBLISH (2026-11-16): KenshiLua runs each init script in its own sandbox; a plain global stays inside it.
+if KMM_Outlaws ~= nil then rawset(_G, "KMM_Outlaws", KMM_Outlaws) end

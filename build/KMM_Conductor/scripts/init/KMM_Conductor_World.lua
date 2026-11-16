@@ -121,6 +121,10 @@ function KC.ore_step()
       end
       local sm = (f.scrap or 0) * (O.smelt_share or 0.5)   -- переплавка
       f.scrap = (f.scrap or 0) - sm; supply = supply + sm
+      for t in pairs(f.towns) do   -- ORE4: руда, которую видимые шахтёры города (KMM_Town) уже вынули из жилы, идёт в счёт нужды
+        local n = KC.S.ore[t]
+        if n and (n.npc_acc or 0) > 0 then supply = supply + n.npc_acc; n.npc_acc = nil; drawn[t] = true end
+      end
       local need = demand - supply
       if need > 0 then   -- поверхностные жилы: добыча по нужде, выход ∝ (R/R0)^k
         local cap, csum = {}, 0
@@ -209,7 +213,7 @@ end
 -- ORE3: владелец жилы считает руду, которую игрок берёт на его земле (ванильный рычаг — отношения фракций, их видит RELSYNC):
 -- каждые claim.share*R0 добытого игроком (не чаще claim.cooldown_days на жилу) отношение владельца к игроку падает на
 -- claim.rel*(1+стресс по металлу, до 2), не ниже claim.rel_floor. Договор владельца с игроком — право копать: без претензии.
-function KC.ore_claim(t, n, amount)
+function KC.ore_claim(t, n, amount, x, z)
   local C = (KC.P.ore or {}).claim or {}
   if C.enabled == false then return end
   local pf = KC.CFG.player_faction
@@ -226,6 +230,55 @@ function KC.ore_claim(t, n, amount)
   KC.S.stats.ore_claims = (KC.S.stats.ore_claims or 0) + 1
   KC.emit({ type = "ore_claim", a = fid, b = pf, town_sid = t, town_name = KC.TOWN_NAME[t] or t, rel = KC.rel(fid, pf),
          text = string.format("%s counts the iron the Nameless dig near %s and wants its share.", KC.name(fid), KC.TOWN_NAME[t] or t) })
+  -- ORE4: долго копаешь на чужой земле (отношение <= tax.rel) - владелец шлёт ванильного сборщика налога (TaxMan/Tribute из
+  -- campaigns.json) к ближайшему поселению игрока; лимиты кампаний и tax.cooldown_days в Sync (CA.tax_try)
+  local TX = (KC.P.ore or {}).tax or {}
+  if TX.enabled ~= false and x and z and KC.rel(fid, pf) <= (TX.rel or -15) and KC.L2 and KC.L2.camp and KC.L2.camp.tax_try then
+    local ok, r, why = pcall(KC.L2.camp.tax_try, fid, t, x, z)
+    if not ok then KC.dlog("ore tax error: " .. tostring(r)) end
+  end
+end
+-- ORE4: рудное хозяйство игрока для читателей (рейды Econ, база Traces, worth Nemesis): сводка KMM_Ore S.base.ore с затуханием
+-- по времени (recent_days KMM_Ore = 10): брошенный рудник перестаёт быть приманкой сам. nil - руды нет.
+-- value - прибавка к ценности базы (B.value), cats - к цене вещей игрока (Nemesis worth), в тех же единицах, что их формулы.
+function KC.BASE_ORE()
+  local B = KC.S and KC.S.base
+  local O = B and B.ore
+  if type(O) ~= "table" or not O.day then return nil end
+  local W = (KC.P.ore or {}).worth or {}
+  local day = KC.game_day and KC.game_day() or nil
+  day = math.max(tonumber(day) or 0, KC.DAY or 0, KC.S.last_day or 0)
+  local k = math.exp(-math.max(0, day - O.day) / (W.recent_days or 10))
+  local recent = (O.recent or 0) * k
+  local auto = (day - O.day <= (W.auto_days or 10)) and (O.auto or 0) or 0
+  if recent < 0.5 and auto == 0 then return nil end
+  return { recent = recent, auto = auto, x = O.x, z = O.z, active = O.active or 0,
+           value = recent / (W.value_div or 4) + (W.value_auto or 10) * auto,
+           cats = (recent / (W.value_div or 4) + (W.value_auto or 10) * auto) * (W.cats_mult or 25) }
+end
+-- ORE4: мотив рейда «ore» (Econ raid_base): фракция голодает по металлу, рудник игрока работает и в досягаемости.
+-- -> { w = вес, x, z } | nil. Вес = raid.weight * min(2, recent / raid.recent_norm).
+function KC.ore_motive(fid, f, fx, fz)
+  local RO = (KC.P.ore or {}).raid or {}
+  if RO.enabled == false or not (f and fx and fz) then return nil end
+  if (f.stress or 0) <= ((KC.P.player_base or {}).need_stress or 1.2) then return nil end
+  local O = KC.BASE_ORE()
+  if not (O and O.x and O.z and O.recent >= (RO.min_recent or 6)) then return nil end
+  if math.sqrt((fx - O.x) ^ 2 + (fz - O.z) ^ 2) > KC.P.bus.radius * 1.5 then return nil end
+  return { w = (RO.weight or 1) * math.min(2, O.recent / (RO.recent_norm or 24)), x = O.x, z = O.z }
+end
+-- ORE4: шахтёры загруженного города (KMM_Town видит их у рудных узлов) черпают жилу своего города: R падает сразу,
+-- вынутое копится в npc_acc и в ближайшем ore_step идёт фракции-владельцу в счёт нужды (абстрактная добыча меньше на столько же).
+function KC.TOWN_MINED(tsid, amount)
+  amount = tonumber(amount) or 0
+  local n = tsid and KC.S.ore and KC.S.ore[tsid]
+  if amount <= 0 or not n then return 0 end
+  local take = math.min(n.R, amount * ((KC.P.ore or {}).town_drain_mult or 1))
+  if take <= 0 then return 0 end
+  n.R = n.R - take
+  n.npc_acc = (n.npc_acc or 0) + take
+  KC.S.stats.town_mined = (KC.S.stats.town_mined or 0) + take
+  return take
 end
 -- добыча игрока истощает ближайшую жилу мира (вызывает KMM_Ore порциями); владелец жилы реагирует (ore_claim)
 function KC.PLAYER_MINED(amount, x, z)
@@ -239,7 +292,7 @@ function KC.PLAYER_MINED(amount, x, z)
     local n = KC.S.ore[best]
     n.R = math.max(0, n.R - amount * ((KC.P.ore or {}).player_drain_mult or 1))
     n.pm, n.pm_day = (n.pm or 0) + amount, KC.DAY
-    local ok, err = pcall(KC.ore_claim, best, n, amount)
+    local ok, err = pcall(KC.ore_claim, best, n, amount, x, z)
     if not ok then KC.dlog("ore_claim error: " .. tostring(err)) end
   end
   KC.S.stats.player_mined = (KC.S.stats.player_mined or 0) + amount

@@ -1,0 +1,5106 @@
+{
+ "_doc": "Генератор outlaws.json для KMM_Outlaws.lua: «живые» разыскиваемые (2026-11-14).",
+ "version": 1,
+ "seed": 20261114,
+ "regions": {
+  "Arm of Okran": {
+   "adj": [
+    "Bast",
+    "Hidden Forest",
+    "Northern Coast",
+    "Okran's Pride",
+    "Okran's Valley",
+    "Skimsands",
+    "Skinner's Roam",
+    "Wend"
+   ],
+   "gangs": [
+    "42022-rebirth.mod",
+    "49377-rebirth.mod",
+    "1305-gamedata.base",
+    "200-gamedata.base",
+    "16860-gamedata.base",
+    "518-gamedata.base"
+   ],
+   "towns": [
+    {
+     "sid": "201-Towns Expansion.mod",
+     "name": "World's Ruin",
+     "fid": "1233-gamedata.base",
+     "x": -27128,
+     "z": -83219
+    },
+    {
+     "sid": "49386-rebirth.mod",
+     "name": "World's End",
+     "fid": "1233-gamedata.base",
+     "x": -24741,
+     "z": -86186
+    },
+    {
+     "sid": "49942-rebirth.mod",
+     "name": "Okran's Fist",
+     "fid": "1083-gamedata.base",
+     "x": -9817,
+     "z": -77095
+    },
+    {
+     "sid": "5007539-Rusty Raiders FACTION.mod",
+     "name": "Cloud House",
+     "fid": "66292-rebirth.mod",
+     "x": -11573,
+     "z": -52438
+    }
+   ],
+   "spots": [
+    [
+     -29376,
+     -75456
+    ],
+    [
+     -28224,
+     -81216
+    ],
+    [
+     -15552,
+     -52416
+    ],
+    [
+     -9792,
+     -73152
+    ],
+    [
+     -28224,
+     -80064
+    ],
+    [
+     -30528,
+     -60480
+    ],
+    [
+     -16704,
+     -55872
+    ],
+    [
+     -5184,
+     -78912
+    ],
+    [
+     -31680,
+     -90432
+    ],
+    [
+     -10944,
+     -58176
+    ],
+    [
+     -9792,
+     -59328
+    ],
+    [
+     -16704,
+     -69696
+    ]
+   ],
+   "area": 406
+  },
+  "Ashlands": {
+   "adj": [
+    "Sonorous Dark",
+    "The Pits"
+   ],
+   "gangs": [],
+   "towns": [
+    {
+     "sid": "1532834-rebirth.mod",
+     "name": "Ashland Dome I",
+     "fid": "49356-rebirth.mod",
+     "x": 94355,
+     "z": 94196
+    },
+    {
+     "sid": "1533506-rebirth.mod",
+     "name": "Ashland Dome II",
+     "fid": "49356-rebirth.mod",
+     "x": 91792,
+     "z": 107090
+    },
+    {
+     "sid": "1533507-rebirth.mod",
+     "name": "Ashland Dome IV",
+     "fid": "49356-rebirth.mod",
+     "x": 107402,
+     "z": 113037
+    },
+    {
+     "sid": "194-Endgame Building.mod",
+     "name": "Ashland Dome VI",
+     "fid": "49356-rebirth.mod",
+     "x": 86083,
+     "z": 123933
+    },
+    {
+     "sid": "94-Endgame Building.mod",
+     "name": "Ashland Dome V",
+     "fid": "49356-rebirth.mod",
+     "x": 114089,
+     "z": 95674
+    }
+   ],
+   "spots": [
+    [
+     108864,
+     110016
+    ],
+    [
+     99648,
+     126144
+    ],
+    [
+     103104,
+     115776
+    ],
+    [
+     98496,
+     116928
+    ],
+    [
+     97344,
+     124992
+    ],
+    [
+     104256,
+     116928
+    ],
+    [
+     110016,
+     118080
+    ],
+    [
+     92736,
+     107712
+    ],
+    [
+     89280,
+     107712
+    ],
+    [
+     99648,
+     100800
+    ],
+    [
+     85824,
+     130752
+    ],
+    [
+     111168,
+     118080
+    ]
+   ],
+   "area": 1057
+  },
+  "Bast": {
+   "adj": [
+    "Arm of Okran",
+    "Northern Coast",
+    "Okran's Valley",
+    "Sinkuun",
+    "Skimsands",
+    "The Great Desert"
+   ],
+   "gangs": [
+    "518-gamedata.base",
+    "1305-gamedata.base",
+    "42022-rebirth.mod",
+    "49377-rebirth.mod",
+    "1532482-__May 18 2.mod",
+    "42257-rebirth.mod"
+   ],
+   "towns": [
+    {
+     "sid": "1535133-Guild of Surgeons.mod",
+     "name": "The Apothecary",
+     "fid": "1532969-Guild of Surgeons.mod",
+     "x": 25231,
+     "z": -90055
+    },
+    {
+     "sid": "55653-rebirth.mod",
+     "name": "Drin",
+     "fid": "defaultEmpireFactionSID",
+     "x": 25027,
+     "z": -98034
+    },
+    {
+     "sid": "55654-rebirth.mod",
+     "name": "Endin",
+     "fid": "defaultEmpireFactionSID",
+     "x": 5895,
+     "z": -99867
+    },
+    {
+     "sid": "55655-rebirth.mod",
+     "name": "Bast",
+     "fid": "defaultEmpireFactionSID",
+     "x": 12475,
+     "z": -87293
+    },
+    {
+     "sid": "56065-Newwworld.mod",
+     "name": "Hamlet",
+     "fid": "defaultEmpireFactionSID",
+     "x": 8745,
+     "z": -95673
+    }
+   ],
+   "spots": [
+    [
+     576,
+     -88128
+    ],
+    [
+     25920,
+     -91584
+    ],
+    [
+     22464,
+     -90432
+    ],
+    [
+     10944,
+     -84672
+    ],
+    [
+     4032,
+     -93888
+    ],
+    [
+     -4032,
+     -95040
+    ],
+    [
+     17856,
+     -95040
+    ],
+    [
+     24768,
+     -85824
+    ],
+    [
+     10944,
+     -83520
+    ],
+    [
+     20160,
+     -92736
+    ],
+    [
+     7488,
+     -86976
+    ],
+    [
+     8640,
+     -80064
+    ]
+   ],
+   "area": 551
+  },
+  "Berserker Country": {
+   "adj": [
+    "Purple Sands",
+    "The Shrieking Forest"
+   ],
+   "gangs": [
+    "518-gamedata.base",
+    "42257-rebirth.mod",
+    "1892-TEXT TEXTURE.mod"
+   ],
+   "towns": [],
+   "spots": [
+    [
+     -97344,
+     -90432
+    ],
+    [
+     -92736,
+     -80064
+    ],
+    [
+     -98496,
+     -84672
+    ],
+    [
+     -104256,
+     -92736
+    ],
+    [
+     -96192,
+     -95040
+    ],
+    [
+     -98496,
+     -78912
+    ],
+    [
+     -95040,
+     -96192
+    ],
+    [
+     -103104,
+     -84672
+    ],
+    [
+     -97344,
+     -95040
+    ],
+    [
+     -92736,
+     -76608
+    ],
+    [
+     -105408,
+     -83520
+    ],
+    [
+     -95040,
+     -83520
+    ]
+   ],
+   "area": 190
+  },
+  "Bonefields": {
+   "adj": [
+    "Burning Forest",
+    "Flats Lagoon",
+    "Greyshelf",
+    "High Bonefields",
+    "Royal Valley",
+    "Shem",
+    "South Wetlands",
+    "The Hook"
+   ],
+   "gangs": [
+    "200-gamedata.base",
+    "56595-Dialogue.mod",
+    "14491-rebirth.mod",
+    "96261-rebirth.mod",
+    "63028-Dialogue.mod",
+    "1305-gamedata.base"
+   ],
+   "towns": [
+    {
+     "sid": "1535134-Guild of Surgeons.mod",
+     "name": "Redmans Tower",
+     "fid": "1532969-Guild of Surgeons.mod",
+     "x": 17954,
+     "z": 75405
+    },
+    {
+     "sid": "33-gamedata.quack",
+     "name": "Catun",
+     "fid": "defaultEmpireFactionSID",
+     "x": -6933,
+     "z": 81717
+    },
+    {
+     "sid": "963-gamedata.base",
+     "name": "Mourn",
+     "fid": "1233-gamedata.base",
+     "x": 12507,
+     "z": 65253
+    }
+   ],
+   "spots": [
+    [
+     6336,
+     81216
+    ],
+    [
+     -1728,
+     81216
+    ],
+    [
+     6336,
+     58176
+    ],
+    [
+     -1728,
+     86976
+    ],
+    [
+     4032,
+     103104
+    ],
+    [
+     24768,
+     73152
+    ],
+    [
+     -8640,
+     99648
+    ],
+    [
+     13248,
+     68544
+    ],
+    [
+     -4032,
+     104256
+    ],
+    [
+     16704,
+     82368
+    ],
+    [
+     -8640,
+     92736
+    ],
+    [
+     5184,
+     58176
+    ]
+   ],
+   "area": 1384
+  },
+  "Border Zone": {
+   "adj": [
+    "Okran's Gulf",
+    "Okran's Pride",
+    "Shem",
+    "Skinner's Roam",
+    "Spider Plains",
+    "Stenn Desert",
+    "The Swamp",
+    "Vain"
+   ],
+   "gangs": [
+    "200-gamedata.base",
+    "1305-gamedata.base",
+    "5003620-Bandit Variety.mod",
+    "1536625-Bounties Galore.mod",
+    "56595-Dialogue.mod",
+    "42022-rebirth.mod"
+   ],
+   "towns": [
+    {
+     "sid": "10-Towns Expansion.mod",
+     "name": "Skyscrap",
+     "fid": "18-Towns Expansion.mod",
+     "x": -48856,
+     "z": 6421
+    },
+    {
+     "sid": "1079-gamedata.base",
+     "name": "Squin",
+     "fid": "11624-Dialogue (10).mod",
+     "x": -62461,
+     "z": 16347
+    },
+    {
+     "sid": "1532788-Lore Friendly Recruitment - The Adventurer's Guild.mod",
+     "name": "Ishijuku",
+     "fid": "1532719-Lore Friendly Recruitment - The Adventurer's Guild.mod",
+     "x": -43501,
+     "z": 4754
+    },
+    {
+     "sid": "18919-Newwworld.mod",
+     "name": "The Hub",
+     "fid": "42022-rebirth.mod",
+     "x": -50979,
+     "z": 2932
+    },
+    {
+     "sid": "42271-Newwworld.mod",
+     "name": "Tiny Settlement",
+     "fid": "1083-gamedata.base",
+     "x": -24331,
+     "z": 6875
+    },
+    {
+     "sid": "44424-rebirth.mod",
+     "name": "Rebel Base",
+     "fid": "40551-rebirth.mod",
+     "x": -50821,
+     "z": -1483
+    },
+    {
+     "sid": "44852-rebirth.mod",
+     "name": "Ruined Holy Outpost",
+     "fid": "1083-gamedata.base",
+     "x": -39775,
+     "z": 7754
+    },
+    {
+     "sid": "44884-rebirth.mod",
+     "name": "Tower Of Ninjas",
+     "fid": "18007-rebirth.mod",
+     "x": -27225,
+     "z": -5953
+    }
+   ],
+   "spots": [
+    [
+     -24768,
+     -7488
+    ],
+    [
+     -51264,
+     -4032
+    ],
+    [
+     -31680,
+     7488
+    ],
+    [
+     -48960,
+     14400
+    ],
+    [
+     -50112,
+     13248
+    ],
+    [
+     -43200,
+     -1728
+    ],
+    [
+     -27072,
+     -4032
+    ],
+    [
+     -40896,
+     14400
+    ],
+    [
+     -39744,
+     10944
+    ],
+    [
+     -45504,
+     14400
+    ],
+    [
+     -60480,
+     10944
+    ],
+    [
+     -40896,
+     -2880
+    ]
+   ],
+   "area": 1090
+  },
+  "Burning Forest": {
+   "adj": [
+    "Bonefields",
+    "High Bonefields",
+    "Shem",
+    "The Swamp"
+   ],
+   "gangs": [
+    "5442-gamedata.base",
+    "5131014-Dark Hive.mod"
+   ],
+   "towns": [],
+   "spots": [
+    [
+     -15552,
+     52416
+    ],
+    [
+     -17856,
+     61632
+    ],
+    [
+     -20160,
+     40896
+    ],
+    [
+     -14400,
+     60480
+    ],
+    [
+     -23616,
+     39744
+    ],
+    [
+     -24768,
+     39744
+    ],
+    [
+     -8640,
+     51264
+    ],
+    [
+     -22464,
+     57024
+    ],
+    [
+     -15552,
+     48960
+    ],
+    [
+     -10944,
+     59328
+    ],
+    [
+     -6336,
+     50112
+    ],
+    [
+     -6336,
+     44352
+    ]
+   ],
+   "area": 462
+  },
+  "Cannibal Plains": {
+   "adj": [
+    "Floodlands",
+    "Hidden Forest",
+    "Leviathan Coast",
+    "Northern Coast",
+    "Purple Sands",
+    "The Iron Trail"
+   ],
+   "gangs": [
+    "518-gamedata.base",
+    "42022-rebirth.mod",
+    "42257-rebirth.mod",
+    "49377-rebirth.mod",
+    "1892-TEXT TEXTURE.mod"
+   ],
+   "towns": [
+    {
+     "sid": "368-Workshop Severin Instagram.mod",
+     "name": "Butcher's Lair",
+     "fid": "518-gamedata.base",
+     "x": -57998,
+     "z": -119090
+    },
+    {
+     "sid": "49766-rebirth.mod",
+     "name": "Scout Post",
+     "fid": "49377-rebirth.mod",
+     "x": -42595,
+     "z": -99433
+    },
+    {
+     "sid": "50522-rebirth.mod",
+     "name": "Cannibal Capital",
+     "fid": "5000114-Bandit Variety.mod",
+     "x": -61997,
+     "z": -110807
+    }
+   ],
+   "spots": [
+    [
+     -57024,
+     -107712
+    ],
+    [
+     -66240,
+     -120384
+    ],
+    [
+     -52416,
+     -99648
+    ],
+    [
+     -52416,
+     -105408
+    ],
+    [
+     -53568,
+     -110016
+    ],
+    [
+     -63936,
+     -105408
+    ],
+    [
+     -46656,
+     -119232
+    ],
+    [
+     -54720,
+     -106560
+    ],
+    [
+     -48960,
+     -97344
+    ],
+    [
+     -58176,
+     -110016
+    ],
+    [
+     -52416,
+     -127296
+    ],
+    [
+     -55872,
+     -105408
+    ]
+   ],
+   "area": 776
+  },
+  "Darkfinger": {
+   "adj": [
+    "Northern Coast",
+    "Sinkuun"
+   ],
+   "gangs": [
+    "518-gamedata.base",
+    "1305-gamedata.base",
+    "1892-TEXT TEXTURE.mod"
+   ],
+   "towns": [
+    {
+     "sid": "1535495-Bounties Galore.mod",
+     "name": "Shaman's Hideout",
+     "fid": "518-gamedata.base",
+     "x": -14505,
+     "z": -135193
+    }
+   ],
+   "spots": [
+    [
+     -17856,
+     -124992
+    ],
+    [
+     2880,
+     -115776
+    ],
+    [
+     -7488,
+     -114624
+    ],
+    [
+     -19008,
+     -129600
+    ],
+    [
+     -12096,
+     -115776
+    ],
+    [
+     -9792,
+     -121536
+    ],
+    [
+     1728,
+     -122688
+    ],
+    [
+     -13248,
+     -131904
+    ],
+    [
+     4032,
+     -127296
+    ],
+    [
+     -15552,
+     -116928
+    ],
+    [
+     -16704,
+     -123840
+    ],
+    [
+     -6336,
+     -127296
+    ]
+   ],
+   "area": 520
+  },
+  "Deadlands": {
+   "adj": [
+    "Grey Desert",
+    "Iron Valleys",
+    "Shem",
+    "Skinner's Roam",
+    "The Black Desert",
+    "Venge"
+   ],
+   "gangs": [
+    "66292-rebirth.mod",
+    "5007316-Rusty Raiders FACTION.mod"
+   ],
+   "towns": [
+    {
+     "sid": "52210-Newwworld.mod",
+     "name": "Black Desert City",
+     "fid": "42088-rebirth.mod",
+     "x": 8698,
+     "z": -13295
+    },
+    {
+     "sid": "56153-rebirth.mod",
+     "name": "Scraphouse",
+     "fid": "42088-rebirth.mod",
+     "x": 11190,
+     "z": -13888
+    },
+    {
+     "sid": "64919-rebirth.mod",
+     "name": "Reprogramming Workshop",
+     "fid": "48671-rebirth.mod",
+     "x": 13530,
+     "z": -20556
+    }
+   ],
+   "spots": [
+    [
+     8640,
+     -12096
+    ],
+    [
+     6336,
+     -27072
+    ],
+    [
+     6336,
+     -9792
+    ],
+    [
+     14400,
+     -15552
+    ],
+    [
+     17856,
+     -22464
+    ],
+    [
+     2880,
+     -5184
+    ],
+    [
+     1728,
+     -17856
+    ],
+    [
+     8640,
+     -16704
+    ],
+    [
+     10944,
+     576
+    ],
+    [
+     8640,
+     -1728
+    ],
+    [
+     9792,
+     -13248
+    ],
+    [
+     2880,
+     -2880
+    ]
+   ],
+   "area": 533
+  },
+  "Dreg": {
+   "adj": [
+    "Fog Islands",
+    "Okran's Gulf",
+    "The Shrieking Forest",
+    "Vain"
+   ],
+   "gangs": [
+    "1536625-Bounties Galore.mod",
+    "42022-rebirth.mod",
+    "1305-gamedata.base",
+    "518-gamedata.base",
+    "200-gamedata.base"
+   ],
+   "towns": [
+    {
+     "sid": "1532820-rebirth.mod",
+     "name": "Settled Nomad Village",
+     "fid": "42097-rebirth.mod",
+     "x": -112610,
+     "z": -47698
+    },
+    {
+     "sid": "40631-Newwworld.mod",
+     "name": "Hive Village",
+     "fid": "18000-gamedata.base",
+     "x": -79719,
+     "z": -4413
+    },
+    {
+     "sid": "46401-Newwworld.mod",
+     "name": "Gatherer Village",
+     "fid": "513-gamedata.base",
+     "x": -115304,
+     "z": -40205
+    },
+    {
+     "sid": "5131934-Dark Hive.mod",
+     "name": "Noatun",
+     "fid": "5131935-Dark Hive.mod",
+     "x": -119698,
+     "z": -41280
+    }
+   ],
+   "spots": [
+    [
+     -114624,
+     -48960
+    ],
+    [
+     -100800,
+     -43200
+    ],
+    [
+     -108864,
+     -42048
+    ],
+    [
+     -107712,
+     -45504
+    ],
+    [
+     -104256,
+     -50112
+    ],
+    [
+     -90432,
+     -15552
+    ],
+    [
+     -90432,
+     -13248
+    ],
+    [
+     -78912,
+     -20160
+    ],
+    [
+     -90432,
+     -23616
+    ],
+    [
+     -89280,
+     -55872
+    ],
+    [
+     -99648,
+     -43200
+    ],
+    [
+     -96192,
+     -36288
+    ]
+   ],
+   "area": 907
+  },
+  "Flats Lagoon": {
+   "adj": [
+    "Bonefields",
+    "Greyshelf",
+    "Shem",
+    "Stobe's Gamble",
+    "Venge"
+   ],
+   "gangs": [
+    "1536625-Bounties Galore.mod",
+    "96261-rebirth.mod",
+    "14491-rebirth.mod",
+    "40551-rebirth.mod",
+    "5003905-Bandit Variety.mod"
+   ],
+   "towns": [
+    {
+     "sid": "1033-TEXT TEXTURE.mod",
+     "name": "Astartes outpost",
+     "fid": "1034-TEXT TEXTURE.mod",
+     "x": 20746,
+     "z": 53047
+    },
+    {
+     "sid": "1082-gamedata.base",
+     "name": "Flats Lagoon",
+     "fid": "1233-gamedata.base",
+     "x": 18962,
+     "z": 47373
+    }
+   ],
+   "spots": [
+    [
+     8640,
+     46656
+    ],
+    [
+     14400,
+     59328
+    ],
+    [
+     23616,
+     38592
+    ],
+    [
+     33984,
+     53568
+    ],
+    [
+     10944,
+     60480
+    ],
+    [
+     22464,
+     32832
+    ],
+    [
+     27072,
+     50112
+    ],
+    [
+     21312,
+     37440
+    ],
+    [
+     16704,
+     61632
+    ],
+    [
+     19008,
+     61632
+    ],
+    [
+     39744,
+     59328
+    ],
+    [
+     15552,
+     55872
+    ]
+   ],
+   "area": 452
+  },
+  "Floodlands": {
+   "adj": [
+    "Cannibal Plains",
+    "Hidden Forest",
+    "Okran's Gulf",
+    "Purple Sands",
+    "Rebirth",
+    "The Shrieking Forest",
+    "Wend"
+   ],
+   "gangs": [
+    "42022-rebirth.mod",
+    "5007316-Rusty Raiders FACTION.mod"
+   ],
+   "towns": [
+    {
+     "sid": "1536940-Bounties Galore.mod",
+     "name": "Reapers Due",
+     "fid": "42085-rebirth.mod",
+     "x": -50745,
+     "z": -79539
+    },
+    {
+     "sid": "49369-rebirth.mod",
+     "name": "Suspicious Lab",
+     "fid": "5000115-Bandit Variety.mod",
+     "x": -54304,
+     "z": -93238
+    }
+   ],
+   "spots": [
+    [
+     -55872,
+     -72000
+    ],
+    [
+     -62784,
+     -75456
+    ],
+    [
+     -63936,
+     -83520
+    ],
+    [
+     -54720,
+     -72000
+    ],
+    [
+     -51264,
+     -65088
+    ],
+    [
+     -51264,
+     -93888
+    ],
+    [
+     -53568,
+     -73152
+    ],
+    [
+     -48960,
+     -90432
+    ],
+    [
+     -52416,
+     -86976
+    ],
+    [
+     -65088,
+     -83520
+    ],
+    [
+     -47808,
+     -78912
+    ],
+    [
+     -73152,
+     -69696
+    ]
+   ],
+   "area": 616
+  },
+  "Fog Islands": {
+   "adj": [
+    "Dreg",
+    "Okran's Gulf",
+    "The Shrieking Forest"
+   ],
+   "gangs": [
+    "42022-rebirth.mod",
+    "5131014-Dark Hive.mod",
+    "1892-TEXT TEXTURE.mod"
+   ],
+   "towns": [
+    {
+     "sid": "1536953-Bounties Galore.mod",
+     "name": "The Fog Kings Throne",
+     "fid": "18893-rebirth.mod",
+     "x": -80018,
+     "z": -47523
+    },
+    {
+     "sid": "18022-Newwworld.mod",
+     "name": "Mongrel",
+     "fid": "18891-rebirth.mod",
+     "x": -82559,
+     "z": -37630
+    }
+   ],
+   "spots": [
+    [
+     -88128,
+     -27072
+    ],
+    [
+     -75456,
+     -43200
+    ],
+    [
+     -78912,
+     -22464
+    ],
+    [
+     -83520,
+     -42048
+    ],
+    [
+     -86976,
+     -44352
+    ],
+    [
+     -77760,
+     -37440
+    ],
+    [
+     -85824,
+     -38592
+    ],
+    [
+     -65088,
+     -42048
+    ],
+    [
+     -91584,
+     -36288
+    ],
+    [
+     -74304,
+     -36288
+    ],
+    [
+     -85824,
+     -55872
+    ],
+    [
+     -72000,
+     -31680
+    ]
+   ],
+   "area": 594
+  },
+  "Greenbeach": {
+   "adj": [
+    "Stobe's Garden",
+    "The Outlands",
+    "The Pits East"
+   ],
+   "gangs": [
+    "62805-rebirth.mod",
+    "62792-rebirth.mod"
+   ],
+   "towns": [],
+   "spots": [
+    [
+     129600,
+     21312
+    ],
+    [
+     136512,
+     38592
+    ],
+    [
+     138816,
+     4032
+    ],
+    [
+     129600,
+     28224
+    ],
+    [
+     116928,
+     20160
+    ],
+    [
+     135360,
+     44352
+    ],
+    [
+     126144,
+     43200
+    ],
+    [
+     137664,
+     4032
+    ],
+    [
+     135360,
+     25920
+    ],
+    [
+     130752,
+     40896
+    ],
+    [
+     116928,
+     21312
+    ],
+    [
+     124992,
+     44352
+    ]
+   ],
+   "area": 657
+  },
+  "Grey Desert": {
+   "adj": [
+    "Deadlands",
+    "The Black Desert",
+    "The Eye",
+    "Venge"
+   ],
+   "gangs": [
+    "66292-rebirth.mod",
+    "5007316-Rusty Raiders FACTION.mod",
+    "16860-gamedata.base",
+    "1532482-__May 18 2.mod",
+    "5131014-Dark Hive.mod",
+    "1305-gamedata.base"
+   ],
+   "towns": [],
+   "spots": [
+    [
+     27072,
+     -7488
+    ],
+    [
+     30528,
+     -15552
+    ],
+    [
+     24768,
+     -5184
+    ],
+    [
+     25920,
+     -20160
+    ],
+    [
+     21312,
+     -14400
+    ],
+    [
+     29376,
+     -15552
+    ],
+    [
+     33984,
+     -12096
+    ],
+    [
+     23616,
+     -2880
+    ],
+    [
+     25920,
+     -16704
+    ],
+    [
+     23616,
+     -1728
+    ],
+    [
+     33984,
+     -15552
+    ],
+    [
+     21312,
+     -1728
+    ]
+   ],
+   "area": 236
+  },
+  "Greyshelf": {
+   "adj": [
+    "Bonefields",
+    "Flats Lagoon",
+    "Royal Valley",
+    "Sonorous Dark",
+    "Stobe's Gamble"
+   ],
+   "gangs": [],
+   "towns": [
+    {
+     "sid": "62767-rebirth.mod",
+     "name": "Southern Hive Village",
+     "fid": "56777-Dialogue.mod",
+     "x": 43857,
+     "z": 74412
+    },
+    {
+     "sid": "62782-rebirth.mod",
+     "name": "Hiver-Claimed Armoury",
+     "fid": "56777-Dialogue.mod",
+     "x": 56031,
+     "z": 95078
+    }
+   ],
+   "spots": [
+    [
+     46656,
+     76608
+    ],
+    [
+     43200,
+     74304
+    ],
+    [
+     44352,
+     90432
+    ],
+    [
+     43200,
+     77760
+    ],
+    [
+     40896,
+     68544
+    ],
+    [
+     43200,
+     90432
+    ],
+    [
+     35136,
+     77760
+    ],
+    [
+     30528,
+     65088
+    ],
+    [
+     43200,
+     89280
+    ],
+    [
+     44352,
+     81216
+    ],
+    [
+     31680,
+     68544
+    ],
+    [
+     39744,
+     83520
+    ]
+   ],
+   "area": 777
+  },
+  "Heng": {
+   "adj": [
+    "Howler Maze",
+    "Skimsands",
+    "The Eye",
+    "The Great Desert"
+   ],
+   "gangs": [
+    "1085-gamedata.base",
+    "14491-rebirth.mod",
+    "1532482-__May 18 2.mod",
+    "62805-rebirth.mod",
+    "5131014-Dark Hive.mod",
+    "1305-gamedata.base"
+   ],
+   "towns": [
+    {
+     "sid": "1073-gamedata.base",
+     "name": "Slave Farm",
+     "fid": "1084-gamedata.base",
+     "x": 61290,
+     "z": -31012
+    },
+    {
+     "sid": "1074-gamedata.base",
+     "name": "Heng",
+     "fid": "defaultEmpireFactionSID",
+     "x": 48030,
+     "z": -41953
+    },
+    {
+     "sid": "1533492-__world reactions Slavers.mod",
+     "name": "South Stone Camp",
+     "fid": "1084-gamedata.base",
+     "x": 64742,
+     "z": -49500
+    },
+    {
+     "sid": "55661-rebirth.mod",
+     "name": "Trader's Edge",
+     "fid": "1088-gamedata.base",
+     "x": 49563,
+     "z": -43045
+    }
+   ],
+   "spots": [
+    [
+     65088,
+     -45504
+    ],
+    [
+     66240,
+     -51264
+    ],
+    [
+     53568,
+     -46656
+    ],
+    [
+     42048,
+     -39744
+    ],
+    [
+     69696,
+     -42048
+    ],
+    [
+     60480,
+     -39744
+    ],
+    [
+     76608,
+     -61632
+    ],
+    [
+     76608,
+     -58176
+    ],
+    [
+     52416,
+     -28224
+    ],
+    [
+     75456,
+     -50112
+    ],
+    [
+     66240,
+     -65088
+    ],
+    [
+     72000,
+     -47808
+    ]
+   ],
+   "area": 1078
+  },
+  "Hidden Forest": {
+   "adj": [
+    "Arm of Okran",
+    "Cannibal Plains",
+    "Floodlands",
+    "Northern Coast",
+    "Wend"
+   ],
+   "gangs": [
+    "518-gamedata.base",
+    "49377-rebirth.mod",
+    "42022-rebirth.mod"
+   ],
+   "towns": [
+    {
+     "sid": "49368-rebirth.mod",
+     "name": "Flotsam Village",
+     "fid": "49377-rebirth.mod",
+     "x": -38508,
+     "z": -84584
+    }
+   ],
+   "spots": [
+    [
+     -32832,
+     -78912
+    ],
+    [
+     -35136,
+     -91584
+    ],
+    [
+     -40896,
+     -78912
+    ],
+    [
+     -39744,
+     -72000
+    ],
+    [
+     -30528,
+     -92736
+    ],
+    [
+     -35136,
+     -92736
+    ],
+    [
+     -44352,
+     -90432
+    ],
+    [
+     -40896,
+     -72000
+    ],
+    [
+     -36288,
+     -100800
+    ],
+    [
+     -38592,
+     -70848
+    ],
+    [
+     -39744,
+     -81216
+    ],
+    [
+     -43200,
+     -88128
+    ]
+   ],
+   "area": 307
+  },
+  "High Bonefields": {
+   "adj": [
+    "Bonefields",
+    "Burning Forest",
+    "South Wetlands",
+    "The Swamp"
+   ],
+   "gangs": [
+    "56595-Dialogue.mod",
+    "96261-rebirth.mod"
+   ],
+   "towns": [],
+   "spots": [
+    [
+     -21312,
+     75456
+    ],
+    [
+     -25920,
+     75456
+    ],
+    [
+     -13248,
+     67392
+    ],
+    [
+     -5184,
+     73152
+    ],
+    [
+     -5184,
+     68544
+    ],
+    [
+     -23616,
+     91584
+    ],
+    [
+     -19008,
+     75456
+    ],
+    [
+     -2880,
+     74304
+    ],
+    [
+     -9792,
+     69696
+    ],
+    [
+     -1728,
+     67392
+    ],
+    [
+     -14400,
+     85824
+    ],
+    [
+     -17856,
+     90432
+    ]
+   ],
+   "area": 313
+  },
+  "Howler Maze": {
+   "adj": [
+    "Heng"
+   ],
+   "gangs": [],
+   "towns": [
+    {
+     "sid": "5132102-Dark Hive.mod",
+     "name": "Hideout of Wanted",
+     "fid": "5132108-Dark Hive.mod",
+     "x": 82359,
+     "z": -22157
+    }
+   ],
+   "spots": [
+    [
+     91584,
+     -20160
+    ],
+    [
+     98496,
+     -40896
+    ],
+    [
+     92736,
+     -33984
+    ],
+    [
+     80064,
+     -30528
+    ],
+    [
+     86976,
+     -31680
+    ],
+    [
+     91584,
+     -40896
+    ],
+    [
+     76608,
+     -36288
+    ],
+    [
+     73152,
+     -37440
+    ],
+    [
+     86976,
+     -36288
+    ],
+    [
+     84672,
+     -28224
+    ],
+    [
+     97344,
+     -48960
+    ],
+    [
+     99648,
+     -28224
+    ]
+   ],
+   "area": 657
+  },
+  "Iron Valleys": {
+   "adj": [
+    "Deadlands",
+    "Skinner's Roam",
+    "The Black Desert"
+   ],
+   "gangs": [
+    "66292-rebirth.mod",
+    "5007316-Rusty Raiders FACTION.mod"
+   ],
+   "towns": [],
+   "spots": [
+    [
+     4032,
+     -28224
+    ],
+    [
+     7488,
+     -32832
+    ],
+    [
+     -576,
+     -43200
+    ],
+    [
+     7488,
+     -29376
+    ],
+    [
+     -8640,
+     -42048
+    ],
+    [
+     -7488,
+     -27072
+    ],
+    [
+     -7488,
+     -37440
+    ],
+    [
+     5184,
+     -30528
+    ],
+    [
+     -6336,
+     -44352
+    ],
+    [
+     -6336,
+     -40896
+    ],
+    [
+     576,
+     -32832
+    ],
+    [
+     -576,
+     -36288
+    ]
+   ],
+   "area": 314
+  },
+  "Leviathan Coast": {
+   "adj": [
+    "Cannibal Plains",
+    "The Iron Trail"
+   ],
+   "gangs": [
+    "5131014-Dark Hive.mod",
+    "1892-TEXT TEXTURE.mod"
+   ],
+   "towns": [
+    {
+     "sid": "10-The Leviathan Ronin.mod",
+     "name": "Hilt",
+     "fid": "11-The Leviathan Ronin.mod",
+     "x": -74797,
+     "z": -117955
+    },
+    {
+     "sid": "1535135-Guild of Surgeons.mod",
+     "name": "Leviathons Watch",
+     "fid": "1532969-Guild of Surgeons.mod",
+     "x": -80201,
+     "z": -119294
+    },
+    {
+     "sid": "261-Leviathan Ronin (Reloaded).mod",
+     "name": "Airnagard",
+     "fid": "76-Leviathan Ronin (Reloaded).mod",
+     "x": -63718,
+     "z": -139468
+    },
+    {
+     "sid": "397-Leviathan Ronin (Reloaded).mod",
+     "name": "Mining Factory",
+     "fid": "49356-rebirth.mod",
+     "x": -102505,
+     "z": -129283
+    }
+   ],
+   "spots": [
+    [
+     -77760,
+     -145728
+    ],
+    [
+     -86976,
+     -121536
+    ],
+    [
+     -59328,
+     -131904
+    ],
+    [
+     -93888,
+     -122688
+    ],
+    [
+     -66240,
+     -122688
+    ],
+    [
+     -59328,
+     -138816
+    ],
+    [
+     -75456,
+     -128448
+    ],
+    [
+     -63936,
+     -123840
+    ],
+    [
+     -72000,
+     -120384
+    ],
+    [
+     -70848,
+     -133056
+    ],
+    [
+     -99648,
+     -136512
+    ],
+    [
+     -88128,
+     -137664
+    ]
+   ],
+   "area": 1010
+  },
+  "Northern Coast": {
+   "adj": [
+    "Arm of Okran",
+    "Bast",
+    "Cannibal Plains",
+    "Darkfinger",
+    "Hidden Forest",
+    "Okran's Valley",
+    "Sinkuun"
+   ],
+   "gangs": [
+    "518-gamedata.base",
+    "49377-rebirth.mod",
+    "1305-gamedata.base",
+    "42022-rebirth.mod"
+   ],
+   "towns": [
+    {
+     "sid": "1222-gamedata.base",
+     "name": "Fishing Village",
+     "fid": "513-gamedata.base",
+     "x": -25164,
+     "z": -103643
+    },
+    {
+     "sid": "49387-rebirth.mod",
+     "name": "Ghost Village",
+     "fid": "513-gamedata.base",
+     "x": -35685,
+     "z": -105219
+    }
+   ],
+   "spots": [
+    [
+     -20160,
+     -96192
+    ],
+    [
+     -38592,
+     -110016
+    ],
+    [
+     -20160,
+     -104256
+    ],
+    [
+     -14400,
+     -103104
+    ],
+    [
+     -30528,
+     -104256
+    ],
+    [
+     -2880,
+     -107712
+    ],
+    [
+     -12096,
+     -105408
+    ],
+    [
+     -10944,
+     -96192
+    ],
+    [
+     -35136,
+     -111168
+    ],
+    [
+     -13248,
+     -98496
+    ],
+    [
+     -23616,
+     -95040
+    ],
+    [
+     -33984,
+     -107712
+    ]
+   ],
+   "area": 358
+  },
+  "Obedience": {
+   "adj": [],
+   "gangs": [
+    "5131014-Dark Hive.mod"
+   ],
+   "towns": [],
+   "spots": [
+    [
+     -73152,
+     -55872
+    ],
+    [
+     -73152,
+     -54720
+    ],
+    [
+     -72000,
+     -60480
+    ],
+    [
+     -75456,
+     -57024
+    ],
+    [
+     -70848,
+     -54720
+    ],
+    [
+     -74304,
+     -58176
+    ],
+    [
+     -75456,
+     -60480
+    ],
+    [
+     -75456,
+     -54720
+    ],
+    [
+     -70848,
+     -57024
+    ],
+    [
+     -74304,
+     -57024
+    ],
+    [
+     -70848,
+     -55872
+    ],
+    [
+     -74304,
+     -55872
+    ]
+   ],
+   "area": 30
+  },
+  "Okran's Gulf": {
+   "adj": [
+    "Border Zone",
+    "Dreg",
+    "Floodlands",
+    "Fog Islands",
+    "Okran's Pride",
+    "Rebirth",
+    "Vain"
+   ],
+   "gangs": [
+    "1305-gamedata.base",
+    "42022-rebirth.mod",
+    "49377-rebirth.mod",
+    "200-gamedata.base",
+    "18007-rebirth.mod",
+    "42257-rebirth.mod"
+   ],
+   "towns": [
+    {
+     "sid": "10-Holy Mines.mod",
+     "name": "Sinners Gulch",
+     "fid": "1083-gamedata.base",
+     "x": -40268,
+     "z": -12674
+    },
+    {
+     "sid": "12-Holy Mines.mod",
+     "name": "Pale Hill",
+     "fid": "1083-gamedata.base",
+     "x": -60672,
+     "z": -39486
+    },
+    {
+     "sid": "1536171-Bounties Galore.mod",
+     "name": "Tyr's Outpost",
+     "fid": "1083-gamedata.base",
+     "x": -56430,
+     "z": -49649
+    },
+    {
+     "sid": "18923-Newwworld.mod",
+     "name": "Holy Military Base",
+     "fid": "1083-gamedata.base",
+     "x": -52347,
+     "z": -39279
+    },
+    {
+     "sid": "18925-Newwworld.mod",
+     "name": "Stack",
+     "fid": "1083-gamedata.base",
+     "x": -56047,
+     "z": -13188
+    },
+    {
+     "sid": "44883-rebirth.mod",
+     "name": "Deadhive Overrun",
+     "fid": "18893-rebirth.mod",
+     "x": -61089,
+     "z": -50758
+    }
+   ],
+   "spots": [
+    [
+     -65088,
+     -21312
+    ],
+    [
+     -54720,
+     -31680
+    ],
+    [
+     -68544,
+     -33984
+    ],
+    [
+     -51264,
+     -9792
+    ],
+    [
+     -46656,
+     -15552
+    ],
+    [
+     -45504,
+     -10944
+    ],
+    [
+     -51264,
+     -31680
+    ],
+    [
+     -59328,
+     -20160
+    ],
+    [
+     -50112,
+     -14400
+    ],
+    [
+     -42048,
+     -40896
+    ],
+    [
+     -54720,
+     -55872
+    ],
+    [
+     -46656,
+     -40896
+    ]
+   ],
+   "area": 856
+  },
+  "Okran's Pride": {
+   "adj": [
+    "Arm of Okran",
+    "Border Zone",
+    "Okran's Gulf",
+    "Okran's Valley",
+    "Rebirth",
+    "Skinner's Roam",
+    "Wend"
+   ],
+   "gangs": [
+    "42022-rebirth.mod",
+    "49377-rebirth.mod",
+    "200-gamedata.base",
+    "18007-rebirth.mod",
+    "1305-gamedata.base",
+    "16860-gamedata.base"
+   ],
+   "towns": [
+    {
+     "sid": "12628-Newwworld.mod",
+     "name": "Blister Hill",
+     "fid": "1083-gamedata.base",
+     "x": -37262,
+     "z": -43587
+    },
+    {
+     "sid": "14-Holy Villages.mod",
+     "name": "Taril",
+     "fid": "1083-gamedata.base",
+     "x": -50164,
+     "z": -30008
+    },
+    {
+     "sid": "15-Holy Villages.mod",
+     "name": "Redin",
+     "fid": "1083-gamedata.base",
+     "x": -43830,
+     "z": -23196
+    },
+    {
+     "sid": "16-Holy Villages.mod",
+     "name": "Cork ",
+     "fid": "1083-gamedata.base",
+     "x": -35840,
+     "z": -30320
+    },
+    {
+     "sid": "18021-Newwworld.mod",
+     "name": "Bad Teeth",
+     "fid": "1083-gamedata.base",
+     "x": -33385,
+     "z": -19953
+    },
+    {
+     "sid": "52-Holy Villages.mod",
+     "name": "Bell Sow",
+     "fid": "1083-gamedata.base",
+     "x": -21191,
+     "z": -43604
+    }
+   ],
+   "spots": [
+    [
+     -36288,
+     -12096
+    ],
+    [
+     -31680,
+     -19008
+    ],
+    [
+     -23616,
+     -50112
+    ],
+    [
+     -38592,
+     -20160
+    ],
+    [
+     -46656,
+     -27072
+    ],
+    [
+     -44352,
+     -28224
+    ],
+    [
+     -30528,
+     -14400
+    ],
+    [
+     -21312,
+     -45504
+    ],
+    [
+     -28224,
+     -51264
+    ],
+    [
+     -30528,
+     -13248
+    ],
+    [
+     -25920,
+     -36288
+    ],
+    [
+     -19008,
+     -44352
+    ]
+   ],
+   "area": 584
+  },
+  "Okran's Valley": {
+   "adj": [
+    "Arm of Okran",
+    "Bast",
+    "Northern Coast",
+    "Okran's Pride",
+    "Wend"
+   ],
+   "gangs": [
+    "42022-rebirth.mod",
+    "518-gamedata.base",
+    "49377-rebirth.mod",
+    "1305-gamedata.base",
+    "200-gamedata.base",
+    "18007-rebirth.mod"
+   ],
+   "towns": [
+    {
+     "sid": "18024-Newwworld.mod",
+     "name": "Holy Farm",
+     "fid": "1083-gamedata.base",
+     "x": -18229,
+     "z": -57829
+    },
+    {
+     "sid": "54-Holy Villages.mod",
+     "name": "Meridin",
+     "fid": "1083-gamedata.base",
+     "x": -25374,
+     "z": -70217
+    },
+    {
+     "sid": "55-Holy Villages.mod",
+     "name": "Pilgrims Pass",
+     "fid": "1083-gamedata.base",
+     "x": -17490,
+     "z": -57910
+    },
+    {
+     "sid": "55663-rebirth.mod",
+     "name": "Holy Farm",
+     "fid": "1083-gamedata.base",
+     "x": -12522,
+     "z": -90185
+    }
+   ],
+   "spots": [
+    [
+     -20160,
+     -73152
+    ],
+    [
+     -17856,
+     -66240
+    ],
+    [
+     -20160,
+     -68544
+    ],
+    [
+     -12096,
+     -81216
+    ],
+    [
+     -27072,
+     -68544
+    ],
+    [
+     -10944,
+     -84672
+    ],
+    [
+     -22464,
+     -59328
+    ],
+    [
+     -22464,
+     -66240
+    ],
+    [
+     -21312,
+     -66240
+    ],
+    [
+     -14400,
+     -89280
+    ],
+    [
+     -12096,
+     -77760
+    ],
+    [
+     -23616,
+     -74304
+    ]
+   ],
+   "area": 402
+  },
+  "Purple Sands": {
+   "adj": [
+    "Berserker Country",
+    "Cannibal Plains",
+    "Floodlands",
+    "The Iron Trail",
+    "The Shrieking Forest"
+   ],
+   "gangs": [
+    "518-gamedata.base",
+    "1892-TEXT TEXTURE.mod"
+   ],
+   "towns": [
+    {
+     "sid": "1535799-Bounties Galore.mod",
+     "name": "Berserker Outpost",
+     "fid": "42257-rebirth.mod",
+     "x": -93696,
+     "z": -92431
+    },
+    {
+     "sid": "37-The Leviathan Ronin.mod",
+     "name": "Fluorite",
+     "fid": "12-The Leviathan Ronin.mod",
+     "x": -94200,
+     "z": -86887
+    }
+   ],
+   "spots": [
+    [
+     -84672,
+     -98496
+    ],
+    [
+     -77760,
+     -84672
+    ],
+    [
+     -86976,
+     -100800
+    ],
+    [
+     -93888,
+     -81216
+    ],
+    [
+     -82368,
+     -83520
+    ],
+    [
+     -84672,
+     -83520
+    ],
+    [
+     -89280,
+     -92736
+    ],
+    [
+     -80064,
+     -91584
+    ],
+    [
+     -83520,
+     -83520
+    ],
+    [
+     -89280,
+     -91584
+    ],
+    [
+     -81216,
+     -93888
+    ],
+    [
+     -92736,
+     -91584
+    ]
+   ],
+   "area": 303
+  },
+  "Rebirth": {
+   "adj": [
+    "Floodlands",
+    "Okran's Gulf",
+    "Okran's Pride",
+    "Wend"
+   ],
+   "gangs": [
+    "49377-rebirth.mod"
+   ],
+   "towns": [
+    {
+     "sid": "18921-Newwworld.mod",
+     "name": "Rebirth",
+     "fid": "1083-gamedata.base",
+     "x": -47334,
+     "z": -55623
+    },
+    {
+     "sid": "49366-rebirth.mod",
+     "name": "Flotsam Safehouse",
+     "fid": "49377-rebirth.mod",
+     "x": -46235,
+     "z": -63766
+    }
+   ],
+   "spots": [
+    [
+     -51264,
+     -52416
+    ],
+    [
+     -47808,
+     -57024
+    ],
+    [
+     -48960,
+     -58176
+    ],
+    [
+     -44352,
+     -52416
+    ],
+    [
+     -42048,
+     -58176
+    ],
+    [
+     -45504,
+     -53568
+    ],
+    [
+     -48960,
+     -53568
+    ],
+    [
+     -48960,
+     -62784
+    ],
+    [
+     -44352,
+     -59328
+    ],
+    [
+     -45504,
+     -54720
+    ],
+    [
+     -40896,
+     -60480
+    ],
+    [
+     -45504,
+     -65088
+    ]
+   ],
+   "area": 142
+  },
+  "Royal Valley": {
+   "adj": [
+    "Bonefields",
+    "Greyshelf",
+    "Sonorous Dark"
+   ],
+   "gangs": [],
+   "towns": [
+    {
+     "sid": "1032-gamedata.base",
+     "name": "Southern Hive",
+     "fid": "56777-Dialogue.mod",
+     "x": 33907,
+     "z": 103953
+    }
+   ],
+   "spots": [
+    [
+     48960,
+     107712
+    ],
+    [
+     43200,
+     111168
+    ],
+    [
+     31680,
+     91584
+    ],
+    [
+     51264,
+     108864
+    ],
+    [
+     27072,
+     114624
+    ],
+    [
+     36288,
+     118080
+    ],
+    [
+     29376,
+     118080
+    ],
+    [
+     23616,
+     93888
+    ],
+    [
+     36288,
+     114624
+    ],
+    [
+     42048,
+     105408
+    ],
+    [
+     47808,
+     107712
+    ],
+    [
+     47808,
+     108864
+    ]
+   ],
+   "area": 705
+  },
+  "Shem": {
+   "adj": [
+    "Bonefields",
+    "Border Zone",
+    "Burning Forest",
+    "Deadlands",
+    "Flats Lagoon",
+    "Skinner's Roam",
+    "The Swamp",
+    "Venge"
+   ],
+   "gangs": [
+    "1305-gamedata.base",
+    "200-gamedata.base",
+    "56595-Dialogue.mod",
+    "5131014-Dark Hive.mod",
+    "18007-rebirth.mod"
+   ],
+   "towns": [
+    {
+     "sid": "42305-Newwworld.mod",
+     "name": "Settled Nomads",
+     "fid": "42097-rebirth.mod",
+     "x": -16822,
+     "z": 21954
+    },
+    {
+     "sid": "5007297-Town of Shem.mod",
+     "name": "Sukui",
+     "fid": "5007298-Town of Shem.mod",
+     "x": 1559,
+     "z": 29818
+    },
+    {
+     "sid": "55660-rebirth.mod",
+     "name": "Smugglers Bar",
+     "fid": "48791-Dialogue.mod",
+     "x": 400,
+     "z": 14393
+    }
+   ],
+   "spots": [
+    [
+     7488,
+     23616
+    ],
+    [
+     -4032,
+     21312
+    ],
+    [
+     5184,
+     44352
+    ],
+    [
+     4032,
+     37440
+    ],
+    [
+     6336,
+     38592
+    ],
+    [
+     -24768,
+     23616
+    ],
+    [
+     576,
+     13248
+    ],
+    [
+     576,
+     22464
+    ],
+    [
+     5184,
+     17856
+    ],
+    [
+     1728,
+     35136
+    ],
+    [
+     -17856,
+     25920
+    ],
+    [
+     -576,
+     33984
+    ]
+   ],
+   "area": 765
+  },
+  "Shun": {
+   "adj": [
+    "Spider Plains",
+    "The Crater",
+    "The Hook"
+   ],
+   "gangs": [
+    "56595-Dialogue.mod",
+    "1305-gamedata.base"
+   ],
+   "towns": [],
+   "spots": [
+    [
+     -105408,
+     96192
+    ],
+    [
+     -97344,
+     85824
+    ],
+    [
+     -122688,
+     104256
+    ],
+    [
+     -120384,
+     75456
+    ],
+    [
+     -136512,
+     63936
+    ],
+    [
+     -116928,
+     104256
+    ],
+    [
+     -104256,
+     82368
+    ],
+    [
+     -120384,
+     88128
+    ],
+    [
+     -118080,
+     80064
+    ],
+    [
+     -141120,
+     73152
+    ],
+    [
+     -108864,
+     100800
+    ],
+    [
+     -126144,
+     73152
+    ]
+   ],
+   "area": 1389
+  },
+  "Sinkuun": {
+   "adj": [
+    "Bast",
+    "Darkfinger",
+    "Northern Coast",
+    "The Great Desert"
+   ],
+   "gangs": [
+    "1532482-__May 18 2.mod",
+    "16860-gamedata.base"
+   ],
+   "towns": [
+    {
+     "sid": "1532797-Lore Friendly Recruitment - The Adventurer's Guild.mod",
+     "name": "Shirokyo",
+     "fid": "1532719-Lore Friendly Recruitment - The Adventurer's Guild.mod",
+     "x": 19484,
+     "z": -108727
+    },
+    {
+     "sid": "1533962-__SE world states.mod",
+     "name": "Distant Hive Village",
+     "fid": "18000-gamedata.base",
+     "x": 31474,
+     "z": -140053
+    },
+    {
+     "sid": "1536421-Bounties Galore.mod",
+     "name": "Outlaws' Refuge",
+     "fid": "42022-rebirth.mod",
+     "x": 2353,
+     "z": -108286
+    },
+    {
+     "sid": "5007394-The Shoddy Firearm Mod.mod",
+     "name": "Iron Hearth",
+     "fid": "5007395-The Shoddy Firearm Mod.mod",
+     "x": 10884,
+     "z": -106081
+    },
+    {
+     "sid": "55649-rebirth.mod",
+     "name": "Fort Simion",
+     "fid": "54297-rebirth.mod",
+     "x": 25227,
+     "z": -127999
+    },
+    {
+     "sid": "55662-rebirth.mod",
+     "name": "The Bastion",
+     "fid": "16855-gamedata.base",
+     "x": 13730,
+     "z": -112421
+    },
+    {
+     "sid": "64903-rebirth.mod",
+     "name": "Tower Of Goats",
+     "fid": "3943-gamedata.base",
+     "x": 16721,
+     "z": -135768
+    }
+   ],
+   "spots": [
+    [
+     19008,
+     -121536
+    ],
+    [
+     9792,
+     -113472
+    ],
+    [
+     1728,
+     -100800
+    ],
+    [
+     27072,
+     -114624
+    ],
+    [
+     23616,
+     -134208
+    ],
+    [
+     28224,
+     -126144
+    ],
+    [
+     29376,
+     -139968
+    ],
+    [
+     1728,
+     -107712
+    ],
+    [
+     24768,
+     -120384
+    ],
+    [
+     20160,
+     -106560
+    ],
+    [
+     12096,
+     -123840
+    ],
+    [
+     20160,
+     -131904
+    ]
+   ],
+   "area": 699
+  },
+  "Skimsands": {
+   "adj": [
+    "Arm of Okran",
+    "Bast",
+    "Heng",
+    "Spine Canyon",
+    "The Black Desert",
+    "The Eye",
+    "The Great Desert"
+   ],
+   "gangs": [
+    "5007316-Rusty Raiders FACTION.mod",
+    "42022-rebirth.mod",
+    "14491-rebirth.mod",
+    "1532482-__May 18 2.mod",
+    "1305-gamedata.base",
+    "16860-gamedata.base"
+   ],
+   "towns": [],
+   "spots": [
+    [
+     28224,
+     -29376
+    ],
+    [
+     -5184,
+     -58176
+    ],
+    [
+     30528,
+     -40896
+    ],
+    [
+     28224,
+     -45504
+    ],
+    [
+     4032,
+     -48960
+    ],
+    [
+     -2880,
+     -67392
+    ],
+    [
+     10944,
+     -63936
+    ],
+    [
+     12096,
+     -52416
+    ],
+    [
+     9792,
+     -63936
+    ],
+    [
+     17856,
+     -47808
+    ],
+    [
+     37440,
+     -38592
+    ],
+    [
+     5184,
+     -63936
+    ]
+   ],
+   "area": 783
+  },
+  "Skinner's Roam": {
+   "adj": [
+    "Arm of Okran",
+    "Border Zone",
+    "Deadlands",
+    "Iron Valleys",
+    "Okran's Pride",
+    "Shem"
+   ],
+   "gangs": [
+    "1305-gamedata.base",
+    "200-gamedata.base",
+    "840011-OrcRaceReview.mod",
+    "18007-rebirth.mod",
+    "66292-rebirth.mod",
+    "42022-rebirth.mod"
+   ],
+   "towns": [
+    {
+     "sid": "11-Holy Mines.mod",
+     "name": "Salvation",
+     "fid": "1083-gamedata.base",
+     "x": -19652,
+     "z": -3125
+    },
+    {
+     "sid": "13-Holy Mines.mod",
+     "name": "Torn",
+     "fid": "1083-gamedata.base",
+     "x": -25863,
+     "z": -14337
+    },
+    {
+     "sid": "14-Holy Mines.mod",
+     "name": "Busted Wall",
+     "fid": "1083-gamedata.base",
+     "x": -24980,
+     "z": -34039
+    },
+    {
+     "sid": "18948-Newwworld.mod",
+     "name": "Holy Mines",
+     "fid": "1083-gamedata.base",
+     "x": -25892,
+     "z": -14736
+    },
+    {
+     "sid": "840010-OrcRaceReview.mod",
+     "name": "Gork's Throne",
+     "fid": "840011-OrcRaceReview.mod",
+     "x": -22930,
+     "z": -31005
+    }
+   ],
+   "spots": [
+    [
+     -7488,
+     -20160
+    ],
+    [
+     -4032,
+     -17856
+    ],
+    [
+     -23616,
+     -13248
+    ],
+    [
+     -14400,
+     -20160
+    ],
+    [
+     -15552,
+     -14400
+    ],
+    [
+     -17856,
+     -27072
+    ],
+    [
+     -13248,
+     -9792
+    ],
+    [
+     -15552,
+     2880
+    ],
+    [
+     -17856,
+     -15552
+    ],
+    [
+     -17856,
+     12096
+    ],
+    [
+     -25920,
+     -21312
+    ],
+    [
+     -10944,
+     -8640
+    ]
+   ],
+   "area": 817
+  },
+  "Sniper Valley": {
+   "adj": [
+    "Sonorous Dark",
+    "Stobe's Gamble",
+    "The Crags",
+    "The Pits"
+   ],
+   "gangs": [
+    "63028-Dialogue.mod",
+    "5007316-Rusty Raiders FACTION.mod"
+   ],
+   "towns": [],
+   "spots": [
+    [
+     67392,
+     80064
+    ],
+    [
+     70848,
+     76608
+    ],
+    [
+     80064,
+     73152
+    ],
+    [
+     68544,
+     82368
+    ],
+    [
+     70848,
+     83520
+    ],
+    [
+     75456,
+     80064
+    ],
+    [
+     66240,
+     83520
+    ],
+    [
+     68544,
+     78912
+    ],
+    [
+     72000,
+     76608
+    ],
+    [
+     66240,
+     82368
+    ],
+    [
+     68544,
+     85824
+    ],
+    [
+     66240,
+     77760
+    ]
+   ],
+   "area": 119
+  },
+  "Sonorous Dark": {
+   "adj": [
+    "Ashlands",
+    "Greyshelf",
+    "Royal Valley",
+    "Sniper Valley",
+    "Stobe's Gamble",
+    "The Pits"
+   ],
+   "gangs": [
+    "63028-Dialogue.mod"
+   ],
+   "towns": [
+    {
+     "sid": "14539-gamedata.base",
+     "name": "Skinhouse HQ",
+     "fid": "63028-Dialogue.mod",
+     "x": 80316,
+     "z": 82933
+    },
+    {
+     "sid": "58-40K Necrons.mod",
+     "name": "Tomb of the Dead",
+     "fid": "61-40K Necrons.mod",
+     "x": 72842,
+     "z": 101752
+    },
+    {
+     "sid": "66543-rebirth.mod",
+     "name": "Skinhouse",
+     "fid": "63028-Dialogue.mod",
+     "x": 73532,
+     "z": 94828
+    }
+   ],
+   "spots": [
+    [
+     83520,
+     93888
+    ],
+    [
+     74304,
+     90432
+    ],
+    [
+     68544,
+     97344
+    ],
+    [
+     81216,
+     108864
+    ],
+    [
+     80064,
+     112320
+    ],
+    [
+     83520,
+     78912
+    ],
+    [
+     72000,
+     106560
+    ],
+    [
+     81216,
+     112320
+    ],
+    [
+     81216,
+     82368
+    ],
+    [
+     65088,
+     100800
+    ],
+    [
+     82368,
+     105408
+    ],
+    [
+     73152,
+     82368
+    ]
+   ],
+   "area": 537
+  },
+  "South Wetlands": {
+   "adj": [
+    "Bonefields",
+    "High Bonefields",
+    "The Crater",
+    "The Hook",
+    "The Swamp"
+   ],
+   "gangs": [
+    "51638-rebirth.mod",
+    "1536625-Bounties Galore.mod",
+    "5442-gamedata.base",
+    "1305-gamedata.base"
+   ],
+   "towns": [
+    {
+     "sid": "1080-gamedata.base",
+     "name": "Slave Markets",
+     "fid": "1084-gamedata.base",
+     "x": -30522,
+     "z": 83964
+    },
+    {
+     "sid": "11-Resort Island.mod",
+     "name": "Resort Island",
+     "fid": "1088-gamedata.base",
+     "x": -49225,
+     "z": 73440
+    },
+    {
+     "sid": "51646-rebirth.mod",
+     "name": "Wetlands Hideout",
+     "fid": "51638-rebirth.mod",
+     "x": -41374,
+     "z": 71775
+    }
+   ],
+   "spots": [
+    [
+     -40896,
+     86976
+    ],
+    [
+     -52416,
+     85824
+    ],
+    [
+     -35136,
+     91584
+    ],
+    [
+     -60480,
+     80064
+    ],
+    [
+     -60480,
+     78912
+    ],
+    [
+     -51264,
+     69696
+    ],
+    [
+     -67392,
+     77760
+    ],
+    [
+     -28224,
+     88128
+    ],
+    [
+     -51264,
+     91584
+    ],
+    [
+     -33984,
+     86976
+    ],
+    [
+     -66240,
+     85824
+    ],
+    [
+     -29376,
+     83520
+    ]
+   ],
+   "area": 698
+  },
+  "Spider Plains": {
+   "adj": [
+    "Border Zone",
+    "Shun",
+    "Stenn Desert",
+    "The Crater",
+    "The Swamp",
+    "Vain"
+   ],
+   "gangs": [
+    "42257-rebirth.mod",
+    "56595-Dialogue.mod",
+    "14491-rebirth.mod",
+    "5442-gamedata.base",
+    "1305-gamedata.base"
+   ],
+   "towns": [
+    {
+     "sid": "49365-rebirth.mod",
+     "name": "Berserker Village",
+     "fid": "42257-rebirth.mod",
+     "x": -82246,
+     "z": 44769
+    },
+    {
+     "sid": "50994-rebirth.mod",
+     "name": "Last Stand",
+     "fid": "11624-Dialogue (10).mod",
+     "x": -98015,
+     "z": 44645
+    }
+   ],
+   "spots": [
+    [
+     -91584,
+     46656
+    ],
+    [
+     -73152,
+     43200
+    ],
+    [
+     -96192,
+     51264
+    ],
+    [
+     -78912,
+     63936
+    ],
+    [
+     -114624,
+     43200
+    ],
+    [
+     -113472,
+     45504
+    ],
+    [
+     -86976,
+     52416
+    ],
+    [
+     -77760,
+     59328
+    ],
+    [
+     -65088,
+     53568
+    ],
+    [
+     -110016,
+     40896
+    ],
+    [
+     -93888,
+     58176
+    ],
+    [
+     -106560,
+     38592
+    ]
+   ],
+   "area": 865
+  },
+  "Spine Canyon": {
+   "adj": [
+    "Skimsands",
+    "The Great Desert"
+   ],
+   "gangs": [
+    "1085-gamedata.base",
+    "42022-rebirth.mod",
+    "16860-gamedata.base"
+   ],
+   "towns": [],
+   "spots": [
+    [
+     19008,
+     -58176
+    ],
+    [
+     12096,
+     -66240
+    ],
+    [
+     15552,
+     -60480
+    ],
+    [
+     17856,
+     -57024
+    ],
+    [
+     16704,
+     -61632
+    ],
+    [
+     22464,
+     -60480
+    ],
+    [
+     16704,
+     -62784
+    ],
+    [
+     20160,
+     -57024
+    ],
+    [
+     23616,
+     -46656
+    ],
+    [
+     9792,
+     -69696
+    ],
+    [
+     22464,
+     -53568
+    ],
+    [
+     21312,
+     -52416
+    ]
+   ],
+   "area": 140
+  },
+  "Stenn Desert": {
+   "adj": [
+    "Border Zone",
+    "Spider Plains",
+    "Vain"
+   ],
+   "gangs": [
+    "42257-rebirth.mod",
+    "5131014-Dark Hive.mod"
+   ],
+   "towns": [
+    {
+     "sid": "1533122-Guild of Surgeons.mod",
+     "name": "Hope",
+     "fid": "1532969-Guild of Surgeons.mod",
+     "x": -77254,
+     "z": 33216
+    },
+    {
+     "sid": "2608-gamedata.base",
+     "name": "Admag",
+     "fid": "11624-Dialogue (10).mod",
+     "x": -89275,
+     "z": 15301
+    },
+    {
+     "sid": "44854-rebirth.mod",
+     "name": "Waystation",
+     "fid": "1233-gamedata.base",
+     "x": -71377,
+     "z": 25376
+    },
+    {
+     "sid": "50992-rebirth.mod",
+     "name": "Shek Ruins",
+     "fid": "56595-Dialogue.mod",
+     "x": -80377,
+     "z": 17633
+    },
+    {
+     "sid": "51005-rebirth.mod",
+     "name": "The Great Fortress",
+     "fid": "11624-Dialogue (10).mod",
+     "x": -87191,
+     "z": 26187
+    }
+   ],
+   "spots": [
+    [
+     -101952,
+     35136
+    ],
+    [
+     -77760,
+     31680
+    ],
+    [
+     -83520,
+     21312
+    ],
+    [
+     -95040,
+     33984
+    ],
+    [
+     -90432,
+     16704
+    ],
+    [
+     -73152,
+     28224
+    ],
+    [
+     -100800,
+     30528
+    ],
+    [
+     -96192,
+     29376
+    ],
+    [
+     -91584,
+     10944
+    ],
+    [
+     -92736,
+     37440
+    ],
+    [
+     -86976,
+     42048
+    ],
+    [
+     -83520,
+     19008
+    ]
+   ],
+   "area": 764
+  },
+  "Stobe's Gamble": {
+   "adj": [
+    "Flats Lagoon",
+    "Greyshelf",
+    "Sniper Valley",
+    "Sonorous Dark",
+    "Stobe's Garden",
+    "The Crags",
+    "Venge"
+   ],
+   "gangs": [
+    "62792-rebirth.mod",
+    "5007316-Rusty Raiders FACTION.mod"
+   ],
+   "towns": [
+    {
+     "sid": "1532821-rebirth.mod",
+     "name": "Free Settlement",
+     "fid": "defaultEmpireFactionSID",
+     "x": 56864,
+     "z": 34771
+    },
+    {
+     "sid": "52160-Newwworld.mod",
+     "name": "Spring",
+     "fid": "58229-Dialogue.mod",
+     "x": 52759,
+     "z": 61800
+    }
+   ],
+   "spots": [
+    [
+     30528,
+     42048
+    ],
+    [
+     70848,
+     30528
+    ],
+    [
+     39744,
+     39744
+    ],
+    [
+     29376,
+     48960
+    ],
+    [
+     72000,
+     68544
+    ],
+    [
+     67392,
+     46656
+    ],
+    [
+     59328,
+     46656
+    ],
+    [
+     37440,
+     43200
+    ],
+    [
+     53568,
+     44352
+    ],
+    [
+     62784,
+     53568
+    ],
+    [
+     65088,
+     65088
+    ],
+    [
+     65088,
+     38592
+    ]
+   ],
+   "area": 1471
+  },
+  "Stobe's Garden": {
+   "adj": [
+    "Greenbeach",
+    "Stobe's Gamble",
+    "The Crags",
+    "The Outlands",
+    "The Pits",
+    "The Pits East"
+   ],
+   "gangs": [
+    "62792-rebirth.mod",
+    "63028-Dialogue.mod",
+    "62805-rebirth.mod",
+    "18007-rebirth.mod",
+    "5007316-Rusty Raiders FACTION.mod"
+   ],
+   "towns": [
+    {
+     "sid": "56152-rebirth.mod",
+     "name": "Waystation Ruins",
+     "fid": "1233-gamedata.base",
+     "x": 91878,
+     "z": 24764
+    },
+    {
+     "sid": "95755-__december17.mod",
+     "name": "Ark",
+     "fid": "62805-rebirth.mod",
+     "x": 102598,
+     "z": 27791
+    },
+    {
+     "sid": "96157-Dialogue.mod",
+     "name": "Crab Village",
+     "fid": "62806-rebirth.mod",
+     "x": 118076,
+     "z": 46240
+    }
+   ],
+   "spots": [
+    [
+     105408,
+     27072
+    ],
+    [
+     112320,
+     31680
+    ],
+    [
+     84672,
+     30528
+    ],
+    [
+     78912,
+     33984
+    ],
+    [
+     93888,
+     38592
+    ],
+    [
+     107712,
+     20160
+    ],
+    [
+     105408,
+     45504
+    ],
+    [
+     104256,
+     21312
+    ],
+    [
+     100800,
+     31680
+    ],
+    [
+     119232,
+     42048
+    ],
+    [
+     100800,
+     46656
+    ],
+    [
+     99648,
+     24768
+    ]
+   ],
+   "area": 862
+  },
+  "Stormgap Coast": {
+   "adj": [
+    "The Eye",
+    "The Outlands",
+    "Venge"
+   ],
+   "gangs": [
+    "96175-rebirth.mod",
+    "62805-rebirth.mod",
+    "5442-gamedata.base"
+   ],
+   "towns": [
+    {
+     "sid": "962-gamedata.base",
+     "name": "Brink",
+     "fid": "defaultEmpireFactionSID",
+     "x": 61813,
+     "z": 5531
+    },
+    {
+     "sid": "964-gamedata.base",
+     "name": "Eyesocket",
+     "fid": "1084-gamedata.base",
+     "x": 51538,
+     "z": -10402
+    },
+    {
+     "sid": "97071-Dialogue.mod",
+     "name": "Cult Village",
+     "fid": "97072-Dialogue.mod",
+     "x": 93029,
+     "z": -4054
+    }
+   ],
+   "spots": [
+    [
+     48960,
+     2880
+    ],
+    [
+     103104,
+     -4032
+    ],
+    [
+     50112,
+     1728
+    ],
+    [
+     103104,
+     -8640
+    ],
+    [
+     91584,
+     -2880
+    ],
+    [
+     89280,
+     -8640
+    ],
+    [
+     111168,
+     -9792
+    ],
+    [
+     72000,
+     -7488
+    ],
+    [
+     74304,
+     -8640
+    ],
+    [
+     103104,
+     -10944
+    ],
+    [
+     53568,
+     -10944
+    ],
+    [
+     101952,
+     -5184
+    ]
+   ],
+   "area": 668
+  },
+  "The Black Desert": {
+   "adj": [
+    "Deadlands",
+    "Grey Desert",
+    "Iron Valleys",
+    "Skimsands",
+    "The Eye"
+   ],
+   "gangs": [
+    "66292-rebirth.mod",
+    "5007316-Rusty Raiders FACTION.mod"
+   ],
+   "towns": [
+    {
+     "sid": "10-Sultans Outpost 1.mod",
+     "name": "Sultan Outpost",
+     "fid": "5008243-Sailback.mod",
+     "x": 22031,
+     "z": -21725
+    },
+    {
+     "sid": "418-Great Frontiers - World Overhaul.mod",
+     "name": "Gas Grove",
+     "fid": "66292-rebirth.mod",
+     "x": 17898,
+     "z": -25862
+    },
+    {
+     "sid": "5007317-Rusty Raiders FACTION.mod",
+     "name": "Rust HQ",
+     "fid": "5007316-Rusty Raiders FACTION.mod",
+     "x": 19075,
+     "z": -31826
+    }
+   ],
+   "spots": [
+    [
+     19008,
+     -35136
+    ],
+    [
+     22464,
+     -24768
+    ],
+    [
+     20160,
+     -25920
+    ],
+    [
+     21312,
+     -22464
+    ],
+    [
+     25920,
+     -27072
+    ],
+    [
+     23616,
+     -21312
+    ],
+    [
+     22464,
+     -27072
+    ],
+    [
+     22464,
+     -32832
+    ],
+    [
+     16704,
+     -28224
+    ],
+    [
+     23616,
+     -28224
+    ],
+    [
+     16704,
+     -23616
+    ],
+    [
+     17856,
+     -25920
+    ]
+   ],
+   "area": 116
+  },
+  "The Crags": {
+   "adj": [
+    "Sniper Valley",
+    "Stobe's Gamble",
+    "Stobe's Garden",
+    "The Pits"
+   ],
+   "gangs": [
+    "62792-rebirth.mod",
+    "62805-rebirth.mod",
+    "63028-Dialogue.mod"
+   ],
+   "towns": [
+    {
+     "sid": "62790-rebirth.mod",
+     "name": "Iron HQ",
+     "fid": "62792-rebirth.mod",
+     "x": 91276,
+     "z": 54330
+    }
+   ],
+   "spots": [
+    [
+     83520,
+     51264
+    ],
+    [
+     82368,
+     58176
+    ],
+    [
+     92736,
+     58176
+    ],
+    [
+     98496,
+     51264
+    ],
+    [
+     82368,
+     68544
+    ],
+    [
+     86976,
+     65088
+    ],
+    [
+     86976,
+     66240
+    ],
+    [
+     81216,
+     47808
+    ],
+    [
+     80064,
+     69696
+    ],
+    [
+     97344,
+     55872
+    ],
+    [
+     78912,
+     67392
+    ],
+    [
+     90432,
+     62784
+    ]
+   ],
+   "area": 298
+  },
+  "The Crater": {
+   "adj": [
+    "Shun",
+    "South Wetlands",
+    "Spider Plains",
+    "The Hook"
+   ],
+   "gangs": [],
+   "towns": [
+    {
+     "sid": "5008357-Crystal City.mod",
+     "name": "Crystal City",
+     "fid": "5008121-Soulbody.mod",
+     "x": -80631,
+     "z": 73982
+    }
+   ],
+   "spots": [
+    [
+     -85824,
+     77760
+    ],
+    [
+     -81216,
+     90432
+    ],
+    [
+     -82368,
+     91584
+    ],
+    [
+     -77760,
+     77760
+    ],
+    [
+     -91584,
+     88128
+    ],
+    [
+     -83520,
+     93888
+    ],
+    [
+     -90432,
+     77760
+    ],
+    [
+     -75456,
+     78912
+    ],
+    [
+     -93888,
+     78912
+    ],
+    [
+     -80064,
+     95040
+    ],
+    [
+     -85824,
+     74304
+    ],
+    [
+     -89280,
+     80064
+    ]
+   ],
+   "area": 308
+  },
+  "The Eye": {
+   "adj": [
+    "Grey Desert",
+    "Heng",
+    "Skimsands",
+    "Stormgap Coast",
+    "The Black Desert",
+    "Venge"
+   ],
+   "gangs": [
+    "1085-gamedata.base",
+    "96175-rebirth.mod",
+    "16860-gamedata.base",
+    "62805-rebirth.mod",
+    "5131014-Dark Hive.mod",
+    "1305-gamedata.base"
+   ],
+   "towns": [],
+   "spots": [
+    [
+     32832,
+     -23616
+    ],
+    [
+     46656,
+     -29376
+    ],
+    [
+     51264,
+     -15552
+    ],
+    [
+     35136,
+     -27072
+    ],
+    [
+     45504,
+     -6336
+    ],
+    [
+     31680,
+     -21312
+    ],
+    [
+     38592,
+     -17856
+    ],
+    [
+     43200,
+     -12096
+    ],
+    [
+     32832,
+     -17856
+    ],
+    [
+     42048,
+     -29376
+    ],
+    [
+     35136,
+     -30528
+    ],
+    [
+     50112,
+     -24768
+    ]
+   ],
+   "area": 380
+  },
+  "The Great Desert": {
+   "adj": [
+    "Bast",
+    "Heng",
+    "Sinkuun",
+    "Skimsands",
+    "Spine Canyon"
+   ],
+   "gangs": [
+    "518-gamedata.base",
+    "14491-rebirth.mod",
+    "1085-gamedata.base",
+    "16860-gamedata.base",
+    "1532482-__May 18 2.mod",
+    "5131014-Dark Hive.mod"
+   ],
+   "towns": [
+    {
+     "sid": "1076-gamedata.base",
+     "name": "Bark",
+     "fid": "defaultEmpireFactionSID",
+     "x": 87804,
+     "z": -109400
+    },
+    {
+     "sid": "1078-gamedata.base",
+     "name": "Heft",
+     "fid": "defaultEmpireFactionSID",
+     "x": 68773,
+     "z": -71497
+    },
+    {
+     "sid": "1785-gamedata.base",
+     "name": "Stone Camp",
+     "fid": "1084-gamedata.base",
+     "x": 46784,
+     "z": -85386
+    },
+    {
+     "sid": "2601-gamedata.base",
+     "name": "Stoat",
+     "fid": "defaultEmpireFactionSID",
+     "x": 34745,
+     "z": -71308
+    },
+    {
+     "sid": "55396-rebirth.mod",
+     "name": "Port South",
+     "fid": "1084-gamedata.base",
+     "x": 87627,
+     "z": -89296
+    },
+    {
+     "sid": "55651-rebirth.mod",
+     "name": "Sho-Battai",
+     "fid": "defaultEmpireFactionSID",
+     "x": 53832,
+     "z": -94597
+    }
+   ],
+   "spots": [
+    [
+     28224,
+     -60480
+    ],
+    [
+     75456,
+     -97344
+    ],
+    [
+     88128,
+     -108864
+    ],
+    [
+     36288,
+     -59328
+    ],
+    [
+     80064,
+     -105408
+    ],
+    [
+     88128,
+     -104256
+    ],
+    [
+     61632,
+     -110016
+    ],
+    [
+     42048,
+     -105408
+    ],
+    [
+     46656,
+     -120384
+    ],
+    [
+     42048,
+     -53568
+    ],
+    [
+     76608,
+     -78912
+    ],
+    [
+     57024,
+     -88128
+    ]
+   ],
+   "area": 2924
+  },
+  "The Hook": {
+   "adj": [
+    "Bonefields",
+    "Shun",
+    "South Wetlands",
+    "The Crater"
+   ],
+   "gangs": [
+    "56595-Dialogue.mod",
+    "1305-gamedata.base",
+    "1536625-Bounties Galore.mod",
+    "200-gamedata.base",
+    "14491-rebirth.mod",
+    "1532482-__May 18 2.mod"
+   ],
+   "towns": [
+    {
+     "sid": "1081-gamedata.base",
+     "name": "Manhunter Base",
+     "fid": "54587-rebirth.mod",
+     "x": -41625,
+     "z": 100239
+    },
+    {
+     "sid": "1364-gamedata.base",
+     "name": "Clownsteady",
+     "fid": "defaultEmpireFactionSID",
+     "x": -61298,
+     "z": 91650
+    },
+    {
+     "sid": "1533495-__world reactions Slavers.mod",
+     "name": "Slave Farm South",
+     "fid": "1084-gamedata.base",
+     "x": -53379,
+     "z": 109777
+    },
+    {
+     "sid": "51402-rebirth.mod",
+     "name": "Drifter's Last",
+     "fid": "defaultEmpireFactionSID",
+     "x": -79935,
+     "z": 114830
+    },
+    {
+     "sid": "68-cook_set.mod",
+     "name": "Seaside Restaurant",
+     "fid": "defaultEmpireFactionSID",
+     "x": -87317,
+     "z": 130818
+    }
+   ],
+   "spots": [
+    [
+     -30528,
+     97344
+    ],
+    [
+     -85824,
+     96192
+    ],
+    [
+     -77760,
+     99648
+    ],
+    [
+     -86976,
+     114624
+    ],
+    [
+     -61632,
+     118080
+    ],
+    [
+     -44352,
+     91584
+    ],
+    [
+     -91584,
+     124992
+    ],
+    [
+     -74304,
+     95040
+    ],
+    [
+     -74304,
+     100800
+    ],
+    [
+     -86976,
+     120384
+    ],
+    [
+     -78912,
+     126144
+    ],
+    [
+     -72000,
+     91584
+    ]
+   ],
+   "area": 1533
+  },
+  "The Iron Trail": {
+   "adj": [
+    "Cannibal Plains",
+    "Leviathan Coast",
+    "Purple Sands"
+   ],
+   "gangs": [
+    "1892-TEXT TEXTURE.mod",
+    "518-gamedata.base",
+    "5007316-Rusty Raiders FACTION.mod"
+   ],
+   "towns": [
+    {
+     "sid": "5007340-Dark Hive.mod",
+     "name": "Strange Place",
+     "fid": "5007286-Dark Hive.mod",
+     "x": -121655,
+     "z": -120732
+    }
+   ],
+   "spots": [
+    [
+     -105408,
+     -116928
+    ],
+    [
+     -110016,
+     -116928
+    ],
+    [
+     -76608,
+     -105408
+    ],
+    [
+     -104256,
+     -119232
+    ],
+    [
+     -122688,
+     -123840
+    ],
+    [
+     -98496,
+     -111168
+    ],
+    [
+     -115776,
+     -122688
+    ],
+    [
+     -93888,
+     -114624
+    ],
+    [
+     -114624,
+     -112320
+    ],
+    [
+     -101952,
+     -120384
+    ],
+    [
+     -115776,
+     -114624
+    ],
+    [
+     -96192,
+     -120384
+    ]
+   ],
+   "area": 425
+  },
+  "The Outlands": {
+   "adj": [
+    "Greenbeach",
+    "Stobe's Garden",
+    "Stormgap Coast"
+   ],
+   "gangs": [
+    "62805-rebirth.mod",
+    "96175-rebirth.mod",
+    "14491-rebirth.mod",
+    "62792-rebirth.mod"
+   ],
+   "towns": [
+    {
+     "sid": "1535735-Bounties Galore.mod",
+     "name": "Barcrest",
+     "fid": "1535736-Bounties Galore.mod",
+     "x": 116482,
+     "z": 2680
+    },
+    {
+     "sid": "55650-rebirth.mod",
+     "name": "Fishing Village",
+     "fid": "defaultEmpireFactionSID",
+     "x": 109061,
+     "z": -2181
+    },
+    {
+     "sid": "55656-rebirth.mod",
+     "name": "Black Scratch",
+     "fid": "1233-gamedata.base",
+     "x": 85123,
+     "z": 4446
+    },
+    {
+     "sid": "961-gamedata.base",
+     "name": "Farming Village",
+     "fid": "defaultEmpireFactionSID",
+     "x": 78050,
+     "z": -6429
+    }
+   ],
+   "spots": [
+    [
+     111168,
+     5184
+    ],
+    [
+     77760,
+     10944
+    ],
+    [
+     85824,
+     4032
+    ],
+    [
+     88128,
+     10944
+    ],
+    [
+     91584,
+     23616
+    ],
+    [
+     114624,
+     13248
+    ],
+    [
+     68544,
+     10944
+    ],
+    [
+     110016,
+     576
+    ],
+    [
+     68544,
+     4032
+    ],
+    [
+     88128,
+     -1728
+    ],
+    [
+     69696,
+     -1728
+    ],
+    [
+     107712,
+     5184
+    ]
+   ],
+   "area": 729
+  },
+  "The Pits": {
+   "adj": [
+    "Ashlands",
+    "Sniper Valley",
+    "Sonorous Dark",
+    "Stobe's Garden",
+    "The Crags",
+    "The Pits East"
+   ],
+   "gangs": [
+    "62792-rebirth.mod",
+    "63028-Dialogue.mod"
+   ],
+   "towns": [
+    {
+     "sid": "95510-rebirth.mod",
+     "name": "Police Barracks",
+     "fid": "49356-rebirth.mod",
+     "x": 101292,
+     "z": 64034
+    }
+   ],
+   "spots": [
+    [
+     91584,
+     76608
+    ],
+    [
+     97344,
+     74304
+    ],
+    [
+     95040,
+     70848
+    ],
+    [
+     100800,
+     57024
+    ],
+    [
+     107712,
+     62784
+    ],
+    [
+     106560,
+     62784
+    ],
+    [
+     99648,
+     80064
+    ],
+    [
+     98496,
+     80064
+    ],
+    [
+     104256,
+     78912
+    ],
+    [
+     96192,
+     68544
+    ],
+    [
+     101952,
+     76608
+    ],
+    [
+     92736,
+     70848
+    ]
+   ],
+   "area": 422
+  },
+  "The Pits East": {
+   "adj": [
+    "Greenbeach",
+    "Stobe's Garden",
+    "The Pits"
+   ],
+   "gangs": [
+    "62805-rebirth.mod",
+    "62792-rebirth.mod"
+   ],
+   "towns": [
+    {
+     "sid": "62789-rebirth.mod",
+     "name": "Crab Town",
+     "fid": "62806-rebirth.mod",
+     "x": 141393,
+     "z": 54121
+    },
+    {
+     "sid": "90-Animal Variations.mod",
+     "name": "Dusty's Domain",
+     "fid": "62806-rebirth.mod",
+     "x": 141159,
+     "z": 62739
+    }
+   ],
+   "spots": [
+    [
+     130752,
+     69696
+    ],
+    [
+     112320,
+     65088
+    ],
+    [
+     129600,
+     54720
+    ],
+    [
+     121536,
+     62784
+    ],
+    [
+     126144,
+     67392
+    ],
+    [
+     119232,
+     80064
+    ],
+    [
+     145728,
+     55872
+    ],
+    [
+     137664,
+     73152
+    ],
+    [
+     136512,
+     68544
+    ],
+    [
+     112320,
+     74304
+    ],
+    [
+     128448,
+     59328
+    ],
+    [
+     136512,
+     61632
+    ]
+   ],
+   "area": 743
+  },
+  "The Shrieking Forest": {
+   "adj": [
+    "Berserker Country",
+    "Dreg",
+    "Floodlands",
+    "Fog Islands",
+    "Purple Sands"
+   ],
+   "gangs": [
+    "518-gamedata.base"
+   ],
+   "towns": [],
+   "spots": [
+    [
+     -77760,
+     -80064
+    ],
+    [
+     -74304,
+     -70848
+    ],
+    [
+     -76608,
+     -76608
+    ],
+    [
+     -80064,
+     -81216
+    ],
+    [
+     -80064,
+     -82368
+    ],
+    [
+     -89280,
+     -72000
+    ],
+    [
+     -84672,
+     -76608
+    ],
+    [
+     -82368,
+     -70848
+    ],
+    [
+     -74304,
+     -78912
+    ],
+    [
+     -91584,
+     -75456
+    ],
+    [
+     -76608,
+     -83520
+    ],
+    [
+     -91584,
+     -80064
+    ]
+   ],
+   "area": 210
+  },
+  "The Swamp": {
+   "adj": [
+    "Border Zone",
+    "Burning Forest",
+    "High Bonefields",
+    "Shem",
+    "South Wetlands",
+    "Spider Plains"
+   ],
+   "gangs": [
+    "51638-rebirth.mod",
+    "56595-Dialogue.mod",
+    "1536625-Bounties Galore.mod",
+    "18007-rebirth.mod",
+    "5003905-Bandit Variety.mod",
+    "14491-rebirth.mod"
+   ],
+   "towns": [
+    {
+     "sid": "10-Minor Faction Overhaul - White Eyebrow Clan.mod",
+     "name": "White Eyebrow Tower",
+     "fid": "18011-rebirth.mod",
+     "x": -53313,
+     "z": 33726
+    },
+    {
+     "sid": "1201-gamedata.base",
+     "name": "Mud Town",
+     "fid": "41162-Dialogue.mod",
+     "x": -43561,
+     "z": 40055
+    },
+    {
+     "sid": "1535801-Bounties Galore.mod",
+     "name": "Swamp Ninja Ruins",
+     "fid": "51638-rebirth.mod",
+     "x": -28933,
+     "z": 48639
+    },
+    {
+     "sid": "42272-Newwworld.mod",
+     "name": "Swamp Village",
+     "fid": "41162-Dialogue.mod",
+     "x": -61979,
+     "z": 33880
+    },
+    {
+     "sid": "50321-rebirth.mod",
+     "name": "Shark",
+     "fid": "41162-Dialogue.mod",
+     "x": -47041,
+     "z": 48137
+    },
+    {
+     "sid": "51381-rebirth.mod",
+     "name": "Grayflayer Village",
+     "fid": "48791-Dialogue.mod",
+     "x": -34602,
+     "z": 40162
+    },
+    {
+     "sid": "51482-rebirth.mod",
+     "name": "Swamp Hideout",
+     "fid": "51652-rebirth.mod",
+     "x": -59568,
+     "z": 63933
+    },
+    {
+     "sid": "66515-Dialogue.mod",
+     "name": "Stone Rat Village",
+     "fid": "48753-Dialogue.mod",
+     "x": -44314,
+     "z": 62571
+    },
+    {
+     "sid": "66517-Dialogue.mod",
+     "name": "Rot",
+     "fid": "48814-Dialogue.mod",
+     "x": -40578,
+     "z": 30659
+    }
+   ],
+   "spots": [
+    [
+     -44352,
+     40896
+    ],
+    [
+     -61632,
+     43200
+    ],
+    [
+     -33984,
+     28224
+    ],
+    [
+     -24768,
+     31680
+    ],
+    [
+     -30528,
+     40896
+    ],
+    [
+     -59328,
+     37440
+    ],
+    [
+     -40896,
+     29376
+    ],
+    [
+     -63936,
+     31680
+    ],
+    [
+     -28224,
+     63936
+    ],
+    [
+     -37440,
+     44352
+    ],
+    [
+     -72000,
+     57024
+    ],
+    [
+     -70848,
+     59328
+    ]
+   ],
+   "area": 1560
+  },
+  "Vain": {
+   "adj": [
+    "Border Zone",
+    "Dreg",
+    "Okran's Gulf",
+    "Spider Plains",
+    "Stenn Desert"
+   ],
+   "gangs": [
+    "1536625-Bounties Galore.mod",
+    "42022-rebirth.mod",
+    "5442-gamedata.base",
+    "1305-gamedata.base"
+   ],
+   "towns": [
+    {
+     "sid": "1535142-Bounties Galore.mod",
+     "name": "Gryfs Drug Farm",
+     "fid": "1536625-Bounties Galore.mod",
+     "x": -111974,
+     "z": -17066
+    },
+    {
+     "sid": "5131683-Dark Hive.mod",
+     "name": "Supply Warehouse",
+     "fid": "5131014-Dark Hive.mod",
+     "x": -112942,
+     "z": -17961
+    },
+    {
+     "sid": "51817-rebirth.mod",
+     "name": "Tower of Fog",
+     "fid": "18893-rebirth.mod",
+     "x": -130787,
+     "z": 7525
+    },
+    {
+     "sid": "96293-Dialogue.mod",
+     "name": "Western Hive",
+     "fid": "18000-gamedata.base",
+     "x": -132020,
+     "z": -21316
+    }
+   ],
+   "spots": [
+    [
+     -114624,
+     -1728
+    ],
+    [
+     -126144,
+     -13248
+    ],
+    [
+     -103104,
+     576
+    ],
+    [
+     -112320,
+     20160
+    ],
+    [
+     -101952,
+     -20160
+    ],
+    [
+     -112320,
+     -20160
+    ],
+    [
+     -120384,
+     5184
+    ],
+    [
+     -107712,
+     -13248
+    ],
+    [
+     -96192,
+     5184
+    ],
+    [
+     -114624,
+     22464
+    ],
+    [
+     -107712,
+     -4032
+    ],
+    [
+     -75456,
+     -576
+    ]
+   ],
+   "area": 1337
+  },
+  "Venge": {
+   "adj": [
+    "Deadlands",
+    "Flats Lagoon",
+    "Grey Desert",
+    "Shem",
+    "Stobe's Gamble",
+    "Stormgap Coast",
+    "The Eye"
+   ],
+   "gangs": [],
+   "towns": [
+    {
+     "sid": "5007444-Oni.mod",
+     "name": "Tower of Trial",
+     "fid": "5007306-Oni.mod",
+     "x": 44999,
+     "z": 23819
+    },
+    {
+     "sid": "95726-rebirth.mod",
+     "name": "Tower of Abuse",
+     "fid": "97613-rebirth.mod",
+     "x": 23826,
+     "z": 17893
+    },
+    {
+     "sid": "96219-rebirth.mod",
+     "name": "Old Control Tower",
+     "fid": "95512-rebirth.mod",
+     "x": 44496,
+     "z": 14532
+    }
+   ],
+   "spots": [
+    [
+     30528,
+     23616
+    ],
+    [
+     6336,
+     36288
+    ],
+    [
+     28224,
+     4032
+    ],
+    [
+     45504,
+     -1728
+    ],
+    [
+     21312,
+     25920
+    ],
+    [
+     52416,
+     30528
+    ],
+    [
+     12096,
+     27072
+    ],
+    [
+     28224,
+     2880
+    ],
+    [
+     57024,
+     30528
+    ],
+    [
+     5184,
+     28224
+    ],
+    [
+     29376,
+     -1728
+    ],
+    [
+     30528,
+     6336
+    ]
+   ],
+   "area": 1292
+  },
+  "Wend": {
+   "adj": [
+    "Arm of Okran",
+    "Floodlands",
+    "Hidden Forest",
+    "Okran's Pride",
+    "Okran's Valley",
+    "Rebirth"
+   ],
+   "gangs": [
+    "42022-rebirth.mod"
+   ],
+   "towns": [],
+   "spots": [
+    [
+     -33984,
+     -62784
+    ],
+    [
+     -43200,
+     -66240
+    ],
+    [
+     -30528,
+     -59328
+    ],
+    [
+     -38592,
+     -61632
+    ],
+    [
+     -38592,
+     -66240
+    ],
+    [
+     -31680,
+     -50112
+    ],
+    [
+     -32832,
+     -62784
+    ],
+    [
+     -31680,
+     -61632
+    ],
+    [
+     -42048,
+     -68544
+    ],
+    [
+     -44352,
+     -67392
+    ],
+    [
+     -43200,
+     -68544
+    ],
+    [
+     -33984,
+     -59328
+    ]
+   ],
+   "area": 113
+  }
+ },
+ "gangs": {
+  "1085-gamedata.base": "Sand ninjas",
+  "1305-gamedata.base": "Starving Bandits",
+  "14491-rebirth.mod": "Shinobi Thieves",
+  "1532482-__May 18 2.mod": "Yabuta Outlaws",
+  "1536625-Bounties Galore.mod": "Drug Peddlers",
+  "16860-gamedata.base": "Bloodraiders",
+  "18007-rebirth.mod": "Black Dragon Ninjas",
+  "1892-TEXT TEXTURE.mod": "World Devourer War Gang",
+  "200-gamedata.base": "Dust Bandits",
+  "40551-rebirth.mod": "Trade Ninjas",
+  "42022-rebirth.mod": "Holy Nation Outlaws",
+  "42257-rebirth.mod": "Berserkers",
+  "49377-rebirth.mod": "Flotsam Ninjas",
+  "5003620-Bandit Variety.mod": "Dust Raiders",
+  "5003905-Bandit Variety.mod": "Band of Blades",
+  "5007316-Rusty Raiders FACTION.mod": "Rusty Raiders",
+  "5131014-Dark Hive.mod": "Dark Reavers",
+  "51638-rebirth.mod": "Swamp Ninjas",
+  "518-gamedata.base": "Cannibals",
+  "5442-gamedata.base": "Outlaw",
+  "56595-Dialogue.mod": "Band of Bones",
+  "62792-rebirth.mod": "Skeleton Bandits",
+  "62805-rebirth.mod": "Reavers",
+  "63028-Dialogue.mod": "Skin Bandits",
+  "66292-rebirth.mod": "Black Desert Ninjas",
+  "840011-OrcRaceReview.mod": "Greenskins",
+  "96175-rebirth.mod": "Grass Pirates",
+  "96261-rebirth.mod": "The Gorrillo Bandits"
+ }
+}

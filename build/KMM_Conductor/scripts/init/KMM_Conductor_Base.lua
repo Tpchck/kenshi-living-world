@@ -302,6 +302,53 @@ end
 ---------------------------------------------------------------------------------------------- хроника и шина событий
 KC.DAY = 0
 KC.GL = {}   -- GOALS (цели фракций, роль оплотов): блок перед world_step
+-- HEALTH (2026-11-15): отказы функций дирижёра идут в реестр KMM_Gov (ключ KMM_Conductor.<имя>): пауза 1/5/30 мин и повтор вместо
+-- «до перезапуска». Флаг t[f] = true остаётся (его читают все, кто проверял его раньше); ключ паузы — в боковой таблице HPK (поля в t
+-- не плодим: таблицы флагов перечисляют как «что выключено»). Точка входа зовёт h_live: пауза истекла -> флаг снят (nil), одна попытка;
+-- h_done после успешной попытки сообщает реестру ok. Нет Gov — прежнее «до перезапуска».
+KC.GL.HPK = setmetatable({}, { __mode = "k" })   -- [таблица флагов] = { [флаг] = ключ реестра }
+KC.GL.HTR = setmetatable({}, { __mode = "k" })   -- [таблица флагов] = { [флаг] = ключ } — идёт попытка после паузы
+function KC.GL.h_gov() local g = rawget(_G, "KMM_Gov"); if type(g) == "table" and type(g.h_fail) == "function" then return g end end
+function KC.GL.h_up(key) local g = KC.GL.h_gov(); if not g then return true end; local ok, r = pcall(g.h_up, key); return (not ok) or r ~= false end
+function KC.GL.h_ok(key) local g = KC.GL.h_gov(); if g then pcall(g.h_ok, key) end end
+function KC.GL.h_fail(key, err) local g = KC.GL.h_gov(); if not g then return nil end; local ok, r = pcall(g.h_fail, key, err); if ok then return r end end
+function KC.GL.h_off(key, why, kind) local g = KC.GL.h_gov(); if g and type(g.h_off) == "function" then pcall(g.h_off, key, why, kind) end end
+function KC.GL.hside(T, t) local m = T[t]; if not m then m = {}; T[t] = m end; return m end
+-- отказ: t[f] = true; пауза в реестре -> вернёт секунды паузы; иначе nil (до перезапуска)
+function KC.GL.h_down(t, f, key, err)
+  t[f] = true
+  KC.GL.hside(KC.GL.HTR, t)[f] = nil
+  local p = KC.GL.h_fail(key, err)
+  KC.GL.hside(KC.GL.HPK, t)[f] = (type(p) == "number") and key or nil
+  return (type(p) == "number") and p or nil
+end
+-- навсегда (нет API / крэш-сторож / вердикт): флаг без ключа паузы
+function KC.GL.h_forever(t, f, key, why, kind)
+  t[f] = true
+  KC.GL.hside(KC.GL.HPK, t)[f] = nil; KC.GL.hside(KC.GL.HTR, t)[f] = nil
+  KC.GL.h_off(key, why, kind)
+end
+-- точка входа: true = сейчас выключено; пауза истекла -> флаг снят, попытка
+function KC.GL.h_live(t, f)
+  if not t[f] then return false end
+  local m = KC.GL.HPK[t]
+  local key = m and m[f]
+  if key and KC.GL.h_up(key) then t[f] = nil; m[f] = nil; KC.GL.hside(KC.GL.HTR, t)[f] = key; return false end
+  return true
+end
+-- попытка после паузы прошла: ok в реестр (дёшево, если паузы не было)
+function KC.GL.h_done(t, f)
+  local m = KC.GL.HTR[t]
+  local key = m and m[f]
+  if key then m[f] = nil; KC.GL.h_ok(key) end
+end
+-- отказ с записью в лог: what — имя для строки; logf — функция лога
+function KC.GL.h_bad(t, f, key, err, what, logf)
+  local p = KC.GL.h_down(t, f, key, err)
+  local msg = what .. (p and (" failed, retry in " .. p .. " s: ") or " disabled until restart: ") .. tostring(err)
+  pcall(logf or function(m) _G.KMM_Conductor.guard_log(m) end, msg)
+  return p
+end
 function KC.chronicle_line(ev)
   local f = { string.format("%.2f", ev.day or 0), tostring(ev.id), ev.type, ev.town_sid or "", ev.town_name or "",
               ev.a and KC.name(ev.a) or "", ev.b and KC.name(ev.b) or "", ev.leader_sid or "", ev.leader_name or "", ev.status or "applied", ev.text or "" }
@@ -335,9 +382,10 @@ function KC.notify(ev)
   local t = tostring(ev.type)
   for i = 1, #KC.SUBS do
     local s = KC.SUBS[i]
-    if s and not s.off and KC.sub_match(s.pattern, t) then
+    if s and not KC.GL.h_live(s, "off") and KC.sub_match(s.pattern, t) then
       local ok, err = pcall(s.fn, ev)
-      if not ok then s.off = true; KC.sub_log(string.format("subscriber #%d (%s) disabled until restart: %s", s.id, s.pattern, tostring(err))) end
+      if not ok then KC.GL.h_bad(s, "off", "KMM_Conductor.sub:" .. tostring(s.pattern) .. "#" .. tostring(s.id), err, string.format("subscriber #%d (%s)", s.id, s.pattern), KC.sub_log)
+      else KC.GL.h_done(s, "off") end
     end
   end
   KC.SUB_DEPTH = KC.SUB_DEPTH - 1
@@ -358,9 +406,10 @@ end
 KC.REV2_OFF = {}
 function KC.R2() return (KC.P and KC.P.rev2) or {} end
 function KC.r2safe(nm, fn, ...)
-  if KC.REV2_OFF[nm] then return nil end
+  if KC.GL.h_live(KC.REV2_OFF, nm) then return nil end
   local ok, a, b = pcall(fn, ...)
-  if not ok then KC.REV2_OFF[nm] = true; KC.sub_log("rev2 " .. nm .. " disabled until restart: " .. tostring(a)); return nil end
+  if not ok then KC.GL.h_bad(KC.REV2_OFF, nm, "KMM_Conductor.rev2_" .. nm, a, "rev2 " .. nm, KC.sub_log); return nil end
+  KC.GL.h_done(KC.REV2_OFF, nm)
   return a, b
 end
 
@@ -387,9 +436,12 @@ function KC.emit(ev)   -- ev.type обязателен; stock_*/town_* (KMM_Stoc
   KC.chronicle_line(ev)
   KC.bus(ev)
   KC.notify(ev)
-  if KC.react_impl and not KC.REACT_OFF then
+  KC.RX = KC.RX or {}   -- HEALTH: флаг реакций (KC.REACT_OFF зеркалит его для старых читателей)
+  if KC.react_impl and not KC.GL.h_live(KC.RX, "off") then
+    KC.REACT_OFF = nil
     local okr, er = pcall(KC.react_impl, ev)
-    if not okr then KC.REACT_OFF = true; pcall(function() _G.KMM_Conductor.guard_log('react disabled until restart: ' .. tostring(er)) end) end
+    if not okr then KC.GL.h_bad(KC.RX, "off", "KMM_Conductor.react", er, "react"); KC.REACT_OFF = true
+    else KC.GL.h_done(KC.RX, "off") end
   end
   if KC.WS_TRIG[ev.type] and KC.WSL.on_event then KC.WSL.on_event() end
   if KC.GL.hook then KC.GL.hook(ev) end   -- GOALS: опасность вокруг оплотов
