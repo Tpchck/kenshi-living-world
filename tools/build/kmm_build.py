@@ -30,7 +30,7 @@ import kmod  # noqa: E402
 
 KENSHI = r"C:\Program Files (x86)\Steam\steamapps\common\Kenshi"
 # порядок важен: поздние потоки видят новые записи ранних (могут ссылаться, но не менять их)
-DATA_STREAMS = [("core", "KMM_Core"), ("relics", "KMM_Relics"), ("wardrobe", "KMM_Wardrobe"), ("economy", "KMM_Economy"), ("behavior", "KMM_Behavior"), ("traces", "KMM_Traces"), ("tech", "KMM_Tech"), ("diplo", "KMM_Diplo"), ("town", "KMM_Town"), ("elite", "KMM_Elite"), ("atlas", "KMM_Atlas"), ("fix", "KMM_Fix")]
+DATA_STREAMS = [("core", "KMM_Core"), ("relics", "KMM_Relics"), ("wardrobe", "KMM_Wardrobe"), ("economy", "KMM_Economy"), ("behavior", "KMM_Behavior"), ("traces", "KMM_Traces"), ("tech", "KMM_Tech"), ("build", "KMM_Build"), ("diplo", "KMM_Diplo"), ("town", "KMM_Town"), ("elite", "KMM_Elite"), ("atlas", "KMM_Atlas"), ("fix", "KMM_Fix")]
 LUA_STREAMS = [("conductor", "KMM_Conductor"), ("rumors", "KMM_Rumors"), ("ore", "KMM_Ore"), ("stock", "KMM_Stock"), ("tempo", "KMM_Tempo"), ("native", "KMM_Native")]   # native: Lua-адаптер + DLL (tools/cpp/kmm_native/build.bat кладёт DLL в build/KMM_Native)
 f32 = lambda v: struct.unpack("<f", struct.pack("<f", v))[0]  # noqa: E731
 
