@@ -118,6 +118,16 @@ def test_money_cap_starving():
     assert _shared.money_norm(Ch("Dust Bandit", 8, 0, 200))["money max"] >= 300   # обычные бандиты — как раньше
 
 
+def test_gun_geo_mult():
+    g = json.load(open(os.path.join(HERE, "..", "..", "rules", "streams", "wardrobe.json"), encoding="utf-8"))["context"]["firearms"]["geo"]
+    gg = _shared.GunGeo.__new__(_shared.GunGeo)
+    gg.g, gg.hubs = g, {"h": ("Hub", (0, 0), "t")}
+    assert gg.mult((g["boost_r"] - 1, 0)) == g["near_boost"]               # у мастерской чаще
+    assert gg.mult((g["near_r"], 0)) == 1.0
+    assert abs(gg.mult((g["far_r"] * 3, 0)) - g["far_mult"]) < 1e-9        # далеко — редко, но не ноль
+    assert gg.mult((g["near_r"] + 1, 0)) > gg.mult((g["far_r"] - 1, 0))    # монотонно
+
+
 if __name__ == "__main__":
     n = 0
     for k, f in sorted(globals().items()):

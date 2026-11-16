@@ -5,11 +5,13 @@
 - vendor_turnover — торговцы обновляют ассортимент чаще.
 - items — ITEMS-блок: цены предметов (кроме брони/оружия/патронов), цены записок/книг, мёртвые предметы в списки торговцев по тематике, дубли в пулах (tools/streams/_items.py, rules items).
 Владение: CHARACTER, торговые/воровские/караванные SQUAD_TEMPLATE, TOWN, VENDOR_LIST, ITEMS_CULTURE (DECISIONS.md)."""
+import json
 import re
 import struct
+import zlib
 
 from kmod import F32, Ref
-from _shared import money_norm, role_of
+from _shared import money_norm, role_of, GunGeo
 import _items
 
 f32 = lambda v: struct.unpack("<f", struct.pack("<f", v))[0]  # noqa: E731
@@ -161,8 +163,45 @@ def _items_block(ctx, s, rules):
     s.report["dup_pairs"] = len(swap)
 
 
+def _gun_geo(ctx, s, rules):
+    """География огнестрела в лавках (B4 Н9/И8; ручки: rules/streams/wardrobe.json context.firearms.geo): пороховой ствол и боеприпас
+    в списке лавки остаётся с вероятностью mult(расстояние города лавки до ближайшей мастерской), иначе ссылка снимается (записи целы)."""
+    wr = json.load(open(r"C:/KenshiModMap/rules/streams/wardrobe.json", encoding="utf-8"))
+    geo = wr["context"]["firearms"].get("geo") or {}
+    if not geo.get("enabled") or not geo.get("vendor_prune"):
+        return
+    cat = json.load(open(wr["catalog"], encoding="utf-8"))["items"]
+    fire = {x["sid"] for x in cat if x["type"] == "CROSSBOW" and x.get("firearm") and x.get("ranged") == "allow"
+            and x["origin"] not in ("imperial", "chaos", "xenos")}
+    GG = GunGeo(ctx, geo, fire)
+    _, lpos = GG.maps()
+    ammo = re.compile(geo["ammo_rx"], re.I)
+    M = ctx.M
+    for h in GG.hubs.values():
+        s.report["geo_hub:" + h[0] + " (" + h[2] + ")"] = 1
+    for vl in sorted(ctx.all("VENDOR_LIST"), key=lambda v: v.sid):
+        if "-KMM_" in vl.sid or vl.sid in GG.gun_lists:
+            continue
+        ps = lpos.get(vl.sid)
+        m = sum(GG.mult(p) for p in ps) / len(ps) if ps else geo["unknown_mult"]
+        s.report["geo_lists_located" if ps else "geo_lists_unlocated"] += 1
+        for c in ("crossbows", "crossbow blueprints", "items"):
+            drop = []
+            for r in vl.refs.get(c, []):
+                it = M.get(r.target)
+                if it is None or not (r.target in fire if c != "items" else (it.type_name == "ITEM" and ammo.search(it.name or ""))):
+                    continue
+                s.report["geo_refs_seen:" + ("ammo" if c == "items" else "gun")] += 1
+                if (zlib.crc32((vl.sid + "|" + r.target).encode()) ^ geo["seed"]) % 10000 >= min(1.0, m) * 10000:
+                    drop.append(r.target)
+            if drop:
+                s.change(vl.sid, del_refs={c: drop})
+                s.report["geo_refs_dropped:" + ("ammo" if c == "items" else "gun")] += len(drop)
+
+
 def build(ctx, s, rules):
     _money(ctx, s, rules)
+    _gun_geo(ctx, s, rules)
     _items_block(ctx, s, rules)
     changed_squads = {}  # sid -> (values, refs): одна дельта на отряд
 

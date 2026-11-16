@@ -206,6 +206,29 @@ def build(ctx, s, rules):
     # ZONE_FIX (2026-11-13, наложение зданий в Heng): поздние моды «снимками» зон воскрешают удалённые/откатывают
     # перенесённые здания раннего мода (CATO <- Towns Expansion и др.) — KMM_Fix грузится последним и повторяет
     # намеренное состояние (tools/build/zone_fix.py). Выключатель: fix.json zone_fix.enabled.
+    # ICON_FIX (2026-11-16): huge mod icons (1600-2500 px) render blank -> downscaled copies in KMM_Fix (tools/build/icon_fix.py)
+    if rules.get("icon_fix", {}).get("enabled", True):
+        import sys as _sys2
+        if r"C:\KenshiModMap\tools\build" not in _sys2.path:
+            _sys2.path.insert(0, r"C:\KenshiModMap\tools\build")
+        import icon_fix
+        IF = rules.get("icon_fix", {})
+        pairs = [(it.sid, it.values.get("icon")) for it in ctx.M.values()
+                 if it.type_name == "ITEM" or isinstance(it.values.get("icon"), str)]
+        pairs = [(sid, ic) for sid, ic in pairs if isinstance(ic, str) and ic and ctx.in_game(sid)]
+        newv, ist = icon_fix.run(pairs, r"C:\KenshiModMap\build\KMM_Fix\icons", IF.get("limit", 1024), IF.get("target", 512))
+        for sid, v in newv.items():
+            s.change(sid, values={"icon": v})
+        # icon file exists nowhere: empty icon -> the game renders it from the item's 3D model (as for vanilla items)
+        for sid in ist.pop("lost_sids", []):
+            vv = ctx.M[sid].values
+            if any(isinstance(vv.get(k), str) and vv.get(k).strip() for k in ("ground mesh", "mesh")):
+                s.change(sid, values={"icon": ""})
+                s.report["icon_fix_auto"] += 1
+        for k, v in ist.items():
+            s.report["icon_fix_" + k] = v
+        if ist["failed"]:
+            raise RuntimeError("icon_fix: failed to write %d icons" % ist["failed"])
     if rules.get("zone_fix", {}).get("enabled", True):
         import os as _os
         import sys as _sys
@@ -527,7 +550,7 @@ def rename_auto(ctx, s, RA, done=frozenset()):
     by_sid = {k: v for k, v in RA.get("dict_sid", {}).items() if not k.startswith("_")}
     todo = {}
     for it in M.values():
-        if it.type_name not in types or it.sid in done or not ctx.in_game(it.sid):
+        if it.type_name not in types or it.sid in done or not ctx.in_game(it.sid) or it.values.get("REMOVED"):
             continue
         n = it.name or ""
         d = it.values.get("description")

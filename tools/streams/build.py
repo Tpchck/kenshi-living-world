@@ -328,6 +328,10 @@ def build(ctx, s, rules):
         # категория пункта: закреплённая раскладкой (канон среди закреплённых), иначе категория канона
         cl = [b for b in bs if lc(b)]
         tc = bcat[cl[0]] if cl else bcat[bs[0]]
+        # 2026-11-16 (playtest: plain raw-meat Campfire vanished from CAMPING): a vanilla canon keeps its own category;
+        # a furniture layout mod (Cattrina's "Cozy Campfire") must not drag the vanilla building away
+        if is_vanilla(origin.get(bs[0], ""), rules):
+            tc = bcat[bs[0]]
         if len({bcat[b] for b in cl}) > 1:
             rep["fold_layout_exception"] += 1        # раскладка BCT держит дубль в двух категориях
         for b in bs:

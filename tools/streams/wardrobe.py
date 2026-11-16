@@ -327,6 +327,24 @@ def build(ctx, s, rules):
                     ranks.add(r.target)
     leaders -= ranks   # 2026-11-15 плейтест: все туманники в одном Armoured Hood — общий шаблон лидера и рядовых
 
+    # география огнестрела (B4 Н9/И8): множитель частоты ствола по расстоянию дома шаблона до ближайшей мастерской
+    GEO_ = rules["context"]["firearms"].get("geo") or {}
+    GG = None
+    char_gmult, fac_gmult = {}, {}
+    if GEO_.get("enabled"):
+        from _shared import GunGeo
+        GG = GunGeo(ctx, GEO_, [x["sid"] for x in cat if x["type"] == "CROSSBOW" and x.get("firearm")])
+        _cpos, _ = GG.maps()
+        char_gmult = {c_: sum(GG.mult(p_) for p_ in ps) / len(ps) for c_, ps in _cpos.items()}
+        _fm = collections.defaultdict(list)
+        for t_ in GG.towns:
+            fr_ = t_.refs.get("faction")
+            if fr_ and fr_[0].target in M and t_.sid in GG.pos:
+                _fm[M[fr_[0].target].name].append(GG.mult(GG.pos[t_.sid]))
+        fac_gmult = {k_: sum(v_) / len(v_) for k_, v_ in _fm.items()}
+        s.report["geo_hubs"] = len(GG.hubs)
+        s.report["geo_hub:" + "; ".join(sorted(h[0] for h in GG.hubs.values()))] = 1
+
     RACE_EXPLICIT = set()   # персонажи с явной расой (ref «race»): строгая проверка
 
     def race_set(ch, fname):
@@ -843,6 +861,11 @@ def build(ctx, s, rules):
         if not is_wh and fname not in CX["lore_hard"]["no_firearms"]:
             tech = FX["tech"].get(fname, FX["tech_default"])
             pf = tech * FX["base"] * (FX["leader_mult"] if is_leader else 1) * (FX["vet_mult"] if re.search(FX["vet_rx"], cname, re.I) else 1)                 * (FX["hunter_mult"] if re.search(FX["hunter_rx"], cname, re.I) else 1)
+            if GG is not None:
+                gm_ = char_gmult.get(sid, fac_gmult.get(fname, GEO_["unknown_mult"]))
+                pf *= gm_
+                stat["geo_chars"] += 1
+                stat["geo_mult_sum_x1000"] += int(gm_ * 1000)
             if ncls in WR["classes"] and rng.random() < min(FX["cap"], pf):
                 have_f = {r.target for r in ch.refs.get("crossbows", [])} | {r.target for r in refs.get("crossbows", [])}
                 cf = [x for x in cat if x["type"] == "CROSSBOW" and x.get("ranged") == "allow" and x.get("firearm") and x["origin"] not in ("imperial", "chaos", "xenos")
