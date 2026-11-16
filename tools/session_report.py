@@ -43,7 +43,7 @@ def session_start():
 def activity(t0):
     out = []
     p = os.path.join(LOGS, "debug.log")
-    tags, disabled = collections.Counter(), []
+    tags = collections.Counter()
     if os.path.exists(p):
         for l in open(p, encoding="utf-8", errors="replace"):
             try:
@@ -55,10 +55,8 @@ def activity(t0):
             m = re.match(r".{19} \[(\w+)\] (\w+)", l)
             if m:
                 tags[m.group(1) + " " + m.group(2)] += 1
-            if "disabled until restart" in l:
-                disabled.append(l.strip()[:200])
     out.append("debug.log за сессию: " + (", ".join(f"{k} x{v}" for k, v in tags.most_common(14)) or "пусто"))
-    out += ["  ОТКЛЮЧЕНО: " + d for d in disabled]
+    out += health_registry(t0)
     p = os.path.join(LOGS, "chronicle.log")
     if os.path.exists(p):
         kinds = collections.Counter(l.split("\t")[2] for l in open(p, encoding="utf-8", errors="replace") if l.count("\t") >= 3)
@@ -72,6 +70,11 @@ def activity(t0):
 STATE = os.path.join(ROOT, "state")
 # что должно появиться в логах, если модуль реально работает в игре (файл, подстрока, смысл)
 MARKERS = [
+    ("debug.log", ": OFF (", "ВНИМАНИЕ: реестр здоровья выключил механику навсегда (noapi/crash) — смотреть строку"),
+    ("debug.log", "-> pause", "ПАУЗА: реестр здоровья — отказ механики, пауза и повтор (не навсегда)"),
+    ("tempo.log", "PAUSED", "ПАУЗА: темп лавок — отказ шага, пауза реестра"),
+    ("debug.log", "recovered after", "реестр здоровья: механика восстановилась после паузы"),
+    ("debug.log", "health: ok", "реестр здоровья: сводка KMM_Gov (есть механики не в ok)"),
     ("probe.log", "PROBE summary", "самопроверка: проход завершён (итог ok/fail/absent — раздел «Самопроверка»)"),
     ("probe.log", "PROBE internal fail", "ВНИМАНИЕ: модуль самопроверки выключился ошибкой"),
     ("debug.log", "override registered at load", "побеждённый лежит: перехват ядра зарегистрирован при загрузке"),
@@ -263,7 +266,15 @@ MARKERS = [
 TS = re.compile(r"^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}")
 OFFSETS = os.path.join(LOGS, "session_offsets.json")   # размеры логов на момент прошлых отчётов: начало сессии для логов без меток
 SPIKE = 5    # >= 5 одинаковых строк в одну секунду (тесты давали пачки по 5 и 26) — всплеск офлайн-теста (B3 И9), в счёт не идёт
-FAIL_RX = re.compile(r"disabled until restart|DISABLED|unavailable|off until restart|FAIL\b")
+FAIL_RX = re.compile(r"disabled until restart|DISABLED|unavailable|off until restart|FAIL\b|: OFF \(|failed, retry in|PAUSED\b")
+# реестр здоровья KMM_Gov (2026-11-16): отказ -> пауза и повтор вместо «disabled until restart»; навсегда — только OFF (noapi/crash).
+# СЛОМАНО: старое «disabled until restart» (модуль без Gov) и «[KMM_Gov] health <ключ>: OFF (<reason>)».
+# ПАУЗА: «<имя> failed, retry in N s: <err>» (модули), «[KMM_Gov] health <ключ>: fail #n -> pause N s», «PAUSED <имя> N s» (tempo.log).
+# ВОССТАНОВЛЕНО: «[KMM_Gov] health <ключ>: recovered after n fails».
+REG_OFF = re.compile(r"disabled until restart|\bhealth (\S+): OFF \(")
+REG_PAUSE = re.compile(r"\bhealth (\S+): fail #\d+ -> pause|(?:\] |^)([^\]]*?) failed, retry in \d+|\bPAUSED (\S+) \d+ s")
+REG_RECOVER = re.compile(r"\bhealth (\S+): recovered after (\d+) fails")
+REG_SUMMARY = "[KMM_Gov] health: "
 _CACHE = {}
 
 
@@ -371,6 +382,8 @@ def marker_status(m, t0):
     fail = "ВНИМАНИЕ" in what or bool(FAIL_RX.search(sub))
     if not n:
         return " ", f"{approx}0", ""
+    if what.startswith("ПАУЗА"):   # отказ с повтором (реестр KMM_Gov): не СЛОМАНО, а отдельно
+        return "~", f"{approx}{n}", " (отказ -> пауза и повтор: " + hits[-1][-140:].strip() + ")"
     if fail:
         return "!", f"{approx}{n}", " СЛОМАНО: " + hits[-1][-160:].strip()
     if val:
@@ -378,6 +391,41 @@ def marker_status(m, t0):
         if vals and max(vals) == 0:
             return "0", f"{approx}{n}", " (везде 0 — повод был, эффекта нет)"
     return "+", f"{approx}{n}", ""
+
+
+def _reg_key(m):
+    return re.sub(r"^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} ", "", next((g for g in m.groups() if g), "?")).strip()[-60:]
+
+
+def health_registry(t0):
+    """Отказы механик за сессию по всем логам KMM: СЛОМАНО (OFF / до перезапуска), ПАУЗА (отказ с повтором), ВОССТАНОВЛЕНО."""
+    names = sorted(f for f in os.listdir(LOGS) if f.endswith(".log") and not f.startswith(("_", "verify_fail_", "install")))
+    off, pause, rec, summ = [], {}, {}, None
+    for f in names:
+        for l in session_lines(f, t0)[0]:
+            if REG_SUMMARY in l:
+                summ = l.strip()
+                continue
+            if REG_OFF.search(l):
+                off.append(f"{f}: {l.strip()[:200]}")
+                continue
+            m = REG_RECOVER.search(l)
+            if m:
+                k = _reg_key(m)
+                rec[k] = (rec.get(k, (0, ""))[0] + 1, l.strip())
+                continue
+            m = REG_PAUSE.search(l)
+            if m:
+                k = f"{f}:{_reg_key(m)}"
+                pause[k] = (pause.get(k, (0, ""))[0] + 1, l.strip())
+    out = [f"реестр здоровья: СЛОМАНО {len(off)}, на паузе {len(pause)} механик (отказов {sum(v[0] for v in pause.values())}), "
+           f"восстановлений {sum(v[0] for v in rec.values())}"]
+    out += ["  СЛОМАНО: " + x for x in off[:12]]
+    out += [f"  ПАУЗА {k} x{n}: {l[-170:]}" for k, (n, l) in sorted(pause.items())[:15]]
+    out += [f"  ВОССТАНОВЛЕНО {k} x{n}" for k, (n, _) in sorted(rec.items())]
+    if summ:
+        out.append("  последняя сводка реестра: " + summ[:220])
+    return out
 
 
 def modules(t0):
