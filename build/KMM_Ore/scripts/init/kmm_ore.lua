@@ -29,7 +29,7 @@ local DEFAULTS = {
   poll_seconds = 1.0, chars_per_poll = 4, work_radius = 800, max_dt_hours = 2.0, work_task_types = { 87, 152, 189 },
   pretend_task_types = { 190, 221 }, subject_fields = { "subject", "currentSubTarget" }, diag_task_checks = 3,
   learn_orders = true, learn_max = 4,
-  scan_enabled = true, scan_seconds = 30, scan_radius = 3000, scan_max_objects = 80, auto_rate = 1.0, auto_max_hours = 6,
+  scan_enabled = true, scan_seconds = 30, scan_radius = 3000, scan_max_objects = 250, auto_rate = 1.0, auto_max_hours = 6,
   region_live = true, region_k = 1.0, region_floor = 0.2, region_refresh_hours = 6,
   feed_conductor = true, player_to_world = 0.25, feed_every_hours = 2, recent_days = 10,
   save_every_seconds = 60, log_every_hours = 6, diag_every_hours = 12,
@@ -238,6 +238,18 @@ local function ensure_world()
         src = "save"
       end
       RT.nodes = S.ore_nodes
+      -- PRUNE (2026-11-16): a mine node untouched long enough to be fully regrown is dropped (it comes back full anyway);
+      -- surface nodes never regrow and stay
+      local d = game_day()
+      if d then
+        local drop = {}
+        for k, s in pairs(RT.nodes) do
+          local c = type(s) == "table" and cfg.classes[s.cls]
+          if c and c.regen_per_day > 0 and s.last_day and s.last_day >= 0 and s.R and s.R0
+             and d - s.last_day >= (s.R0 - s.R) / c.regen_per_day + 30 then drop[#drop + 1] = k end
+        end
+        for _, k in ipairs(drop) do RT.nodes[k] = nil end
+      end
       n = count(RT.nodes)
     else
       RT.nodes, n = load_file()
