@@ -225,7 +225,7 @@ local function ensure_world()
   if not key then return false end
   local S = cstate() or false
   if key ~= RT.world or S ~= RT.S then
-    if RT.world then flush_feed(true); if RT.dirty then g_save() end end
+    if RT.world then RT.feed = {}; if RT.dirty then g_save() end end   -- other save loaded: unsent labour (<= feed_every_hours) belongs to the old world, drop it
     RT.world, RT.S = key, S
     local src, n
     if S then   -- узлы живут в состоянии мира дирижёра: сохраняются в сейв и откатываются вместе с ним

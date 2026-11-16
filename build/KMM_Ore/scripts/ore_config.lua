@@ -30,7 +30,7 @@ return {
   learn_orders = true,         -- приказ игрока на рудный узел добавляет его TaskType к рабочим (подписка в первом рабочем тике)
 
   -- автоматические буры игрока (auto в ore_templates.lua): скан зданий вокруг персонажей
-  scan_enabled = true, scan_seconds = 30, scan_radius = 3000, scan_max_objects = 80,
+  scan_enabled = true, scan_seconds = 30, scan_radius = 3000, scan_max_objects = 250,
   auto_rate = 1.0,             -- работо-часов на час работы автобура под питанием
   auto_max_hours = 6,          -- потолок за один скан
 
