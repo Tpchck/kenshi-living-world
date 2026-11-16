@@ -150,7 +150,7 @@ local function classify(gd)
   if DISABLED.funcs or next(FUNCS) == nil then TPL[tpl] = false; return tpl, nil end
   local ok, res = pcall(function()
     local n = tonumber(gd:getListSize("functionality")) or 0
-    for i = 0, math.min(n, 4) do
+    for i = 0, math.min(n, 5) - 1 do   -- индексы 0..n-1: getFromList за концом списка — чтение мимо вектора в C++
       local f = gd:getFromList("functionality", i)
       if f and FUNCS[f] then return FUNCS[f] end
     end
