@@ -93,11 +93,33 @@ local function dlog(msg)
   append((cfg and cfg.debug_log) or DEFAULTS.debug_log, os.date("%Y-%m-%d %H:%M:%S") .. " [KMM_Ore] " .. tostring(msg))
   klog(msg)
 end
+-- HEALTH: отказы идут в реестр KMM_Gov (ключи KMM_Ore.<механика>): пауза 60/300/1800 с и повтор; без Gov - до перезапуска.
+-- Навсегда (noapi) - только доказанное отсутствие API: нет lektor/getObjectsWithinSphere для скана.
+local function HG() local g = rawget(_G, "KMM_Gov"); if type(g) == "table" and type(g.h_fail) == "function" then return g end end
+local DISABLED_P, RETRY = {}, {}
+local function is_down(nm)
+  if not DISABLED[nm] then return false end
+  local key = DISABLED_P[nm]
+  local g = HG()
+  if key and g then
+    local ok, up = pcall(g.h_up, key)
+    if (not ok) or up ~= false then DISABLED[nm], DISABLED_P[nm], RETRY[nm] = nil, nil, true; return false end
+  end
+  return true
+end
+local function go_down(nm, err, what)
+  DISABLED[nm], DISABLED_P[nm], RETRY[nm] = true, nil, nil
+  local g, p = HG(), nil
+  if g then local ok, r = pcall(g.h_fail, "KMM_Ore." .. nm, err); if ok and type(r) == "number" then p = r end end
+  if p then DISABLED_P[nm] = "KMM_Ore." .. nm end
+  dlog((what or nm) .. (p and (" failed, retry in " .. p .. " s: ") or " disabled until restart: ") .. tostring(err))
+end
+local function go_ok(nm) if RETRY[nm] then RETRY[nm] = nil; local g = HG(); if g then pcall(g.h_ok, "KMM_Ore." .. nm) end end end
 local function guarded(nm, fn)
   return function(...)
-    if DISABLED[nm] then return end
+    if is_down(nm) then return end
     local ok, err = pcall(fn, ...)
-    if not ok then DISABLED[nm] = true; dlog(nm .. " disabled until restart: " .. tostring(err)) end
+    if not ok then go_down(nm, err) else go_ok(nm) end
   end
 end
 local function conductor() return rawget(_G, "KMM_Conductor") end
@@ -147,7 +169,7 @@ local function classify(gd)
     if t.cls and cfg.classes[t.cls] then return tpl, t end
     return tpl, nil
   end
-  if DISABLED.funcs or next(FUNCS) == nil then TPL[tpl] = false; return tpl, nil end
+  if is_down("funcs") or next(FUNCS) == nil then TPL[tpl] = false; return tpl, nil end
   local ok, res = pcall(function()
     local n = tonumber(gd:getListSize("functionality")) or 0
     for i = 0, math.min(n, 5) - 1 do   -- индексы 0..n-1: getFromList за концом списка — чтение мимо вектора в C++
@@ -156,7 +178,8 @@ local function classify(gd)
     end
     return nil
   end)
-  if not ok then DISABLED.funcs = true; dlog("funcs fallback disabled until restart: " .. tostring(res)); TPL[tpl] = false; return tpl, nil end
+  if not ok then go_down("funcs", res, "funcs fallback"); TPL[tpl] = false; return tpl, nil end
+  go_ok("funcs")
   if not res then TPL[tpl] = false; return tpl, nil end
   local nm = string.lower(tostring(gd.name or ""))
   t = { cls = (nm:find("drill") or nm:find("mine")) and "mine" or "surface", res = res, auto = nm:find("auto") ~= nil }
@@ -263,12 +286,13 @@ local function ensure_world()
 end
 
 ---------------------------------------------------------------------------------------------- связь с дирижёром (необязательна)
-local function link_fail(err) DISABLED.conductor_link = true; dlog("conductor_link disabled until restart: " .. tostring(err)) end
+local function link_fail(err) go_down("conductor_link", err) end
 local function region_share(x, z)
   local C = conductor()
-  if not cfg.feed_conductor or DISABLED.conductor_link or not (C and C.region_ore) then return 1 end
+  if not cfg.feed_conductor or is_down("conductor_link") or not (C and C.region_ore) then return 1 end
   local ok, v = pcall(C.region_ore, x, z)
   if not ok then link_fail(v); return 1 end
+  go_ok("conductor_link")
   return tonumber(v) or 1
 end
 -- труд копится по узлу и уходит в мир порциями (раз в feed_every_hours игровых часов, при смене мира и сохранении)
@@ -280,10 +304,11 @@ flush_feed = function(force)
   if not next(RT.feed) then return end
   local batch = RT.feed
   RT.feed = {}
-  if not cfg.feed_conductor or DISABLED.conductor_link or not (C and C.player_mined) then return end
+  if not cfg.feed_conductor or is_down("conductor_link") or not (C and C.player_mined) then return end
   for _, e in pairs(batch) do
     local ok, err = pcall(C.player_mined, e.a, e.x, e.z)
     if not ok then link_fail(err); return end
+    go_ok("conductor_link")
     RT.stats.fed = RT.stats.fed + e.a
   end
 end
@@ -330,7 +355,7 @@ end
 -- Остаток залежи в названии узла (по итогам плейтеста 2026-11-13): «Iron [ore left 73%]», при выработанной жиле региона —
 -- «Iron [ore left 73% vein 40%]». Меняем только при сдвиге на >= 1 %; ошибка API (нет getName/setName) отключает только показ.
 local function show_left(b, key, s, reg)
-  if cfg.show_left == false or DISABLED.show_left then return end
+  if cfg.show_left == false or is_down("show_left") then return end
   local v = view(key)
   local pct = math.floor(math.max(0, s.R) / s.R0 * 100 + 0.5)
   local vp = (reg and reg < 0.95) and math.floor(reg * 100 + 0.5) or nil
@@ -343,7 +368,7 @@ local function show_left(b, key, s, reg)
     local extra = vp and string.format(" %s %d%%", cfg.vein_label or "vein", vp) or ""
     b:setName(string.format("%s [%s %d%%%s]", base, cfg.left_label or "ore left", pct, extra))
   end)
-  if ok then v.shown = tag else DISABLED.show_left = true; dlog("show_left disabled until restart: " .. tostring(err)) end
+  if ok then v.shown = tag; go_ok("show_left") else go_down("show_left", err) end
 end
 local function node_of(pb, tpl, t, x, z, day)
   local key = string.format("%s@%d,%d", tpl, math.floor(x + 0.5), math.floor(z + 0.5))
@@ -547,7 +572,7 @@ local function scan(pcs, day)
   RT.t_scan = t
   local gw = rawget(_G, "getGameWorld") and getGameWorld()
   local lk = rawget(_G, "lektor")
-  if not (gw and lk and lk.new) then DISABLED.scan = true; olog("scan unavailable: no lektor/getObjectsWithinSphere, automatic drills not counted"); return end
+  if not (gw and lk and lk.new) then DISABLED.scan, DISABLED_P.scan = true, nil; local g = HG(); if g and type(g.h_off) == "function" then pcall(g.h_off, "KMM_Ore.scan", "no lektor/getObjectsWithinSphere", "noapi") end; olog("scan unavailable: no lektor/getObjectsWithinSphere, automatic drills not counted"); return end
   if not RT.buf then RT.buf = lk.new("RootObject*") end   -- один буфер на сессию (ContainersReference)
   RT.scan_rr = RT.scan_rr % #pcs + 1
   local pc = pcs[RT.scan_rr]
@@ -657,7 +682,7 @@ local function tick(from_conductor)
   hook_orders()
   RT.stats.polls = RT.stats.polls + 1
   step(pcs, day)
-  if not DISABLED.scan then g_scan(pcs, day) end
+  if not is_down("scan") then g_scan(pcs, day) end
   flush_feed(false)
   chain_report(day)
   if RT.dirty and t - RT.t_save >= cfg.save_every_seconds then g_save(); g_summary(day) end
