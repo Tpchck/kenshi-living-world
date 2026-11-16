@@ -309,6 +309,30 @@ local function log(line)
   print(TAG .. line)
 end
 
+-- HEALTH: отказы идут в реестр KMM_Gov (ключи KMM_Rumors.tick|map|journal|<обработчик>): пауза 60/300/1800 с и повтор; без Gov - до перезапуска.
+local HPK, HTR = {}, {}
+local function HG() local g = rawget(_G, "KMM_Gov"); if type(g) == "table" and type(g.h_fail) == "function" then return g end end
+-- отказ: t[f] = true; пауза реестра -> вернёт секунды (флаг снимет h_live), иначе nil
+local function h_down(t, f, key, err)
+  t[f] = true; HPK[key], HTR[key] = nil, nil
+  local g, p = HG(), nil
+  if g then local ok, r = pcall(g.h_fail, key, err); if ok and type(r) == "number" then p = r end end
+  if p then HPK[key] = true end
+  return p
+end
+-- true = выключено сейчас; пауза истекла -> флаг снят, одна попытка
+local function h_live(t, f, key)
+  if not t[f] then return false end
+  if HPK[key] then
+    local g = HG()
+    local ok, up = pcall(g and g.h_up or function() return true end, key)
+    if (not ok) or up ~= false then t[f] = nil; HPK[key] = nil; HTR[key] = true; return false end
+  end
+  return true
+end
+local function h_done(key) if HTR[key] then HTR[key] = nil; local g = HG(); if g then pcall(g.h_ok, key) end end end
+local function h_msg(what, p, err) return what .. (p and (" failed, retry in " .. p .. " s: ") or " disabled until restart: ") .. tostring(err) end
+
 local function gameHours()
   local ok, h = pcall(function() return getGameWorld():getTimeStamp_inGameHours():getTotalHours() end)
   return ok and h or nil
@@ -715,10 +739,11 @@ CFG.MAP = {
 R.map = R.map or { day = -1, places = 0, squads = 0, live = {} }
 
 local function mapOff(where, err)
-  R.map.off = true
-  log("map disabled until restart in " .. where .. ": " .. tostring(err))
+  local p = h_down(R.map, "off", "KMM_Rumors.map", err)
+  local m = p and ("map failed in " .. where .. ", retry in " .. p .. " s: " .. tostring(err)) or ("map disabled until restart in " .. where .. ": " .. tostring(err))
+  log(m)
   local okf, f = pcall(io.open, "C:/KenshiModMap/logs/debug.log", "a")
-  if okf and f then f:write(os.date("%Y-%m-%d %H:%M:%S"), " [KMM_Rumors] map disabled until restart in ", where, ": ", tostring(err), "\n"); f:close() end
+  if okf and f then f:write(os.date("%Y-%m-%d %H:%M:%S"), " [KMM_Rumors] ", m, "\n"); f:close() end
 end
 
 -- фракции, у которых искать город места: хозяин города по дирижёру, стороны события, доп. список
@@ -836,14 +861,14 @@ end
 
 -- слух реально сказан: место -> карта, разыскиваемый -> его отряд на карте
 local function mapHint(e, level, dist, now)
-  if not CFG.MAP.ON or R.map.off then return end
+  if not CFG.MAP.ON or h_live(R.map, "off", "KMM_Rumors.map") then return end
   local d = math.floor(now / 24)
   if d ~= R.map.day then R.map.day, R.map.places, R.map.squads = d, 0, 0 end
   if level >= 2 or (dist and dist > CFG.FAR_DISTANCE) then log("map skip event=" .. tostring(e.id) .. " reason=vague level=" .. level); return end
   local ok, err = pcall(mapPlace, e)
   if not ok then mapOff("place", err); return end
   ok, err = pcall(mapSquad, e, now)
-  if not ok then mapOff("squad", err) end
+  if not ok then mapOff("squad", err) else h_done("KMM_Rumors.map") end
 end
 
 ----------------------------------------------------------------------- V2 ГЛОБАЛЬНАЯ ПАМЯТЬ РАССКАЗАННОГО
@@ -884,14 +909,14 @@ local function chronicled(id)
   return false
 end
 local function journalFlush()
-  if not CFG.JOURNAL_ON or R.journalOff or #R.jq == 0 then return end
+  if not CFG.JOURNAL_ON or h_live(R, "journalOff", "KMM_Rumors.journal") or #R.jq == 0 then return end
   local MS = rawget(_G, "ManagementScreen")
   if not MS then
     if CFG.SHOW_IN_MESSAGE_LOG then
       local q = table.remove(R.jq, 1)
       local ok, err = pcall(function() getGameWorld():showPlayerAMessage_withLog(q.owner .. ": " .. q.msg, true) end)
       if ok then R.vstat.journal = R.vstat.journal + 1; log("journal ok via=showPlayerAMessage text=" .. q.msg)
-      else R.journalOff = true; R.vstat.journal_fail = R.vstat.journal_fail + 1; log("journal disabled until restart: showPlayerAMessage_withLog FAILED: " .. tostring(err)) end
+      else local p = h_down(R, "journalOff", "KMM_Rumors.journal", err); R.vstat.journal_fail = R.vstat.journal_fail + 1; log(h_msg("journal", p, "showPlayerAMessage_withLog FAILED: " .. tostring(err))) end
     end
     return
   end
@@ -904,11 +929,12 @@ local function journalFlush()
     if chronicled(q.id) then log("journal skip event=" .. tostring(q.id) .. " reason=chronicled"); return journalFlush() end
     local ok, err = pcall(function() ms:addMessage(q.owner, q.msg, (okc and c0) or 0) end)
     if not ok then
-      R.journalOff = true; R.vstat.journal_fail = R.vstat.journal_fail + 1
-      log("journal disabled until restart: addMessage FAILED: " .. tostring(err))
+      local p = h_down(R, "journalOff", "KMM_Rumors.journal", err); R.vstat.journal_fail = R.vstat.journal_fail + 1
+      log(h_msg("journal", p, "addMessage FAILED: " .. tostring(err)))
       return
     end
     R.vstat.journal = R.vstat.journal + 1
+    h_done("KMM_Rumors.journal")
     R.jdone[tostring(q.id)] = true
     if not R.journalOkLogged then R.journalOkLogged = true; log("journal: addMessage ok (ManagementScreen message log)") end
     log("journal event=" .. tostring(q.id) .. " owner=" .. q.owner .. " text=" .. q.msg)
@@ -1262,7 +1288,7 @@ local function resetWorld()
 end
 
 local function onTick()
-  if R.disabled then return end
+  if h_live(R, "disabled", "KMM_Rumors.tick") then return end
   local t = os.clock()
   if t - R.lastCheck < CFG.CHECK_INTERVAL_SEC then return end
   R.lastCheck = t
@@ -1286,25 +1312,25 @@ local function onTick()
   end)
   if ok and t - (R.visT or -1e9) >= CFG.VIS_LOG_SEC then R.visT = t; pcall(visLog, false) end   -- B1: метрика видимости
   if not ok then
-    R.disabled = true
-    log("tick disabled until restart: " .. tostring(err))
+    local m = h_msg("tick", h_down(R, "disabled", "KMM_Rumors.tick", err), err)
+    log(m)
     local okf, f = pcall(io.open, "C:/KenshiModMap/logs/debug.log", "a")
-    if okf and f then f:write(os.date("%Y-%m-%d %H:%M:%S"), " [KMM_Rumors] tick disabled until restart: ", tostring(err), "\n"); f:close() end
-  end
+    if okf and f then f:write(os.date("%Y-%m-%d %H:%M:%S"), " [KMM_Rumors] ", m, "\n"); f:close() end
+  else h_done("KMM_Rumors.tick") end
 end
 
 -- guard (как у остальных KMM-модулей): первая ошибка отключает только этот обработчик, причина → debug.log
 local GUARD_OFF = {}
 local function guarded(gname, fn)
   return function(...)
-    if GUARD_OFF[gname] then return end
+    if h_live(GUARD_OFF, gname, "KMM_Rumors." .. gname) then return end
     local ok, err = pcall(fn, ...)
     if not ok then
-      GUARD_OFF[gname] = true
-      log(gname .. " disabled until restart: " .. tostring(err))
+      local m = h_msg(gname, h_down(GUARD_OFF, gname, "KMM_Rumors." .. gname, err), err)
+      log(m)
       local okf, f = pcall(io.open, "C:/KenshiModMap/logs/debug.log", "a")
-      if okf and f then f:write(os.date("%Y-%m-%d %H:%M:%S"), " [KMM_Rumors] ", gname, " disabled until restart: ", tostring(err), "\n"); f:close() end
-    end
+      if okf and f then f:write(os.date("%Y-%m-%d %H:%M:%S"), " [KMM_Rumors] ", m, "\n"); f:close() end
+    else h_done("KMM_Rumors." .. gname) end
   end
 end
 
@@ -1313,10 +1339,10 @@ R.disabled = nil
 R.tickHandler = Events.on("GameWorld::charsUpdate", guarded("tick_hook", function(...)
   local ok, err = pcall(function(...) if _G.KMM_Gov then return KMM_Gov.run("rumors", onTick, ...) else return onTick(...) end end, ...)
   if not ok and not R.disabled then
-    R.disabled = true
-    log("tick disabled until restart: " .. tostring(err))
+    local m = h_msg("tick", h_down(R, "disabled", "KMM_Rumors.tick", err), err)
+    log(m)
     local okf, f = pcall(io.open, "C:/KenshiModMap/logs/debug.log", "a")
-    if okf and f then f:write(os.date("%Y-%m-%d %H:%M:%S"), " [KMM_Rumors] tick disabled until restart: ", tostring(err), "\n"); f:close() end
+    if okf and f then f:write(os.date("%Y-%m-%d %H:%M:%S"), " [KMM_Rumors] ", m, "\n"); f:close() end
   end
 end))
 
