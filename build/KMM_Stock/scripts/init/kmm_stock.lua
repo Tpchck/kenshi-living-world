@@ -65,11 +65,30 @@ local function dlog(msg)
   append((cfg and cfg.debug_log) or DEFAULTS.debug_log, os.date("%Y-%m-%d %H:%M:%S") .. " [KMM_Stock] " .. tostring(msg))
   klog(msg)
 end
+-- HEALTH (2026-11-15): отказ шага -> реестр ядра KMM_Gov (ключ KMM_Stock.<шаг>): пауза 1/5/30 мин и повтор, не «до перезапуска».
+-- DISABLED — только навсегда (нет Gov: прежнее поведение). off(nm) — шаг сейчас не работает (выключен или на паузе).
+local function HG() local g = rawget(_G, "KMM_Gov"); if type(g) == "table" and type(g.h_fail) == "function" then return g end end
+local function off(nm)
+  if DISABLED[nm] then return true end
+  local g = HG(); if not g then return false end
+  local ok, up = pcall(g.h_up, "KMM_Stock." .. nm)
+  return ok and up == false
+end
+local function h_ok(nm) local g = HG(); if g then pcall(g.h_ok, "KMM_Stock." .. nm) end end
+local function h_off(nm, why, kind) DISABLED[nm] = true; local g = HG(); if g and type(g.h_off) == "function" then pcall(g.h_off, "KMM_Stock." .. nm, why, kind) end end
+local function fail(nm, err)   -- отказ шага: пауза в реестре (вернёт секунды), без Gov — до перезапуска (nil)
+  local g, p = HG(), nil
+  if g then local ok, r = pcall(g.h_fail, "KMM_Stock." .. nm, err); if ok then p = r end end
+  if type(p) == "number" then dlog(nm .. " failed, retry in " .. p .. " s: " .. tostring(err)); return p end
+  if not DISABLED[nm] then DISABLED[nm] = true; dlog(nm .. " disabled until restart: " .. tostring(err)) end
+  return nil
+end
 local function guarded(nm, fn)
   return function(...)
-    if DISABLED[nm] then return end
+    if off(nm) then return end
     local ok, a, b = pcall(fn, ...)
-    if not ok then DISABLED[nm] = true; dlog(nm .. " disabled until restart: " .. tostring(a)); return nil end
+    if not ok then fail(nm, a); return nil end
+    h_ok(nm)
     return a, b
   end
 end
@@ -407,9 +426,9 @@ local function scan(S, pcs, day)
           local kind = b:isAShop() and "shop" or (cfg.storage and inv:isAContainer() and "storage") or nil
           if kind then
             local a0, r0 = RT.stats.added, RT.stats.removed
-            if kind == "shop" and not DISABLED.rot_apply then   -- TOWNLIFE: своя защита - ошибка отключает только ротацию, не склад
+            if kind == "shop" and not off("rot_apply") then   -- TOWNLIFE: своя защита - ошибка отключает только ротацию, не склад
               local okr, o = pcall(apply_rot, S, inv, tsid, budget)
-              if okr then budget = budget - (o or 0) else DISABLED.rot_apply = true; dlog("rot_apply disabled until restart: " .. tostring(o)) end
+              if okr then budget = budget - (o or 0); h_ok("rot_apply") else fail("rot_apply", o) end
             end
             budget = budget - work_inventory(S, inv, tsid, kind, budget)
             if RT.stats.added > a0 or RT.stats.removed > r0 then
@@ -526,13 +545,14 @@ end
 -- ваниль сама освежает лавку торговца раз в vendors refresh time (SQUAD_TEMPLATE); мы просим её сделать это ДО нашей раздачи (метод сам проверяет срок),
 -- чтобы базу заполнила ваниль, а склад только довёл «что и сколько» и последующий ванильный цикл не затирал свежую раздачу.
 local function native_refresh(ch)
-  if not cfg.native_refresh or DISABLED.native_refresh then return false end
+  if not cfg.native_refresh or off("native_refresh") then return false end
   local ok, done = pcall(function()
     local ap = ch:getPlatoon()
     if not (ap and ap.refreshInventory) then return false end
     return probe_call("refreshInventory", function() ap:refreshInventory(false) end)
   end)
-  if not ok then DISABLED.native_refresh = true; dlog("native_refresh disabled until restart: " .. tostring(done)); return false end
+  if not ok then fail("native_refresh", done); return false end
+  h_ok("native_refresh")
   if done then RT.stats.native = (RT.stats.native or 0) + 1 end
   return done
 end
@@ -746,7 +766,7 @@ end
 local NPC_JOB = { traders = true, sales = true, buy = true }
 local function pump(bf)   -- true, если квант выполнен; bf — первый кадр такта снимка
   if RT.dctx then
-    if DISABLED.model or RT.S ~= (conductor() and conductor().state()) then RT.dctx = nil
+    if off("model") or RT.S ~= (conductor() and conductor().state()) then RT.dctx = nil
     else g_dayadv(); return true end
   end
   local pick
@@ -794,7 +814,7 @@ local function tick()
   local S = C.state()
   if type(S) ~= "table" or type(S.F) ~= "table" then return end
   g_model(S, day)
-  if DISABLED.model or not (S.stock and S.stock.towns) then return end
+  if off("model") or not (S.stock and S.stock.towns) then return end
   if t - RT.t_scan >= cfg.scan_seconds then RT.t_scan = t; push_job("scan"); push_job("traders") end
   if t - RT.t_sale >= cfg.sale_seconds then RT.t_sale = t; push_job("sales") end
   if t - RT.t_relic >= cfg.relic_seconds then RT.t_relic = t; push_job("relic") end
