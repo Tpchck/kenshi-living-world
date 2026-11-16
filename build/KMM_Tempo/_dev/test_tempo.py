@@ -674,12 +674,15 @@ def t_till_scope(lua, tmp):
     """)
 
 
-@case("R3 касса: запись денег не применилась -> till выключается сам (лог), остальное работает")
+@case("R3 касса: запись денег не применилась у 3 торговцев подряд (ни одной удачной) -> till выключается сам (лог), остальное работает")
 def t_till_write_ignored(lua, tmp):
     lua.load_module()
     lua.run(TILL_PRE + """
       local a = mkhuman("RO", { money = 100 }); a.money_ro = true; snap_char(a, { trader = true, town = "T1" })
       TICK(3, 3, 0.01)
+      assert(not KMM_Tempo.status().disabled.till, "one ignored write is not a verdict")
+      for i = 2, 3 do local b = mkhuman("RO" .. i, { money = 100 }); b.money_ro = true; snap_char(b, { trader = true, town = "T1" }) end
+      TICK(6, 3, 0.01)
       local d = KMM_Tempo.status().disabled
       assert(d.till and d.till:find("money write not applied"), "till disabled: " .. tostring(d.till))
       assert(not d.npc_hunger and not d.all and not d.player_fatigue, "others alive")
