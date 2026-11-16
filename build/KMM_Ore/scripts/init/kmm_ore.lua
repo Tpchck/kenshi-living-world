@@ -50,13 +50,33 @@ local RT = {         -- состояние сессии (не сейва)
 }
 
 ---------------------------------------------------------------------------------------------- лог и guard
+-- Только целый UTF-8 в логи: LuaJIT обрезает имя чанка в тексте ошибки ([string "-- KMM_Ore v3 — …"]) по байтам,
+-- посреди кириллической буквы; битый байт ломает чтение лога (session_report, тесты). Невалидные байты → «?».
+local function utf8_clean(s)
+  s = tostring(s)
+  if not s:find("[\128-\255]") then return s end
+  local out, i, n = {}, 1, #s
+  while i <= n do
+    local c = s:byte(i)
+    local len = c < 0x80 and 1 or (c >= 0xC2 and c <= 0xDF) and 2 or (c >= 0xE0 and c <= 0xEF) and 3 or (c >= 0xF0 and c <= 0xF4) and 4 or 0
+    local good = len > 0 and i + len - 1 <= n
+    for j = i + 1, i + len - 1 do
+      if not good then break end
+      local b = s:byte(j)
+      if b < 0x80 or b > 0xBF then good = false end
+    end
+    if good then out[#out + 1] = s:sub(i, i + len - 1); i = i + len else out[#out + 1] = "?"; i = i + 1 end
+  end
+  return table.concat(out)
+end
 local function append(path, line)
+  line = utf8_clean(line)
   local ok, f = pcall(io.open, path, "a")
   if ok and f then f:write(line, "\n"); f:close(); return true end
   return false
 end
 local function klog(msg)
-  msg = TAG .. tostring(msg)
+  msg = utf8_clean(TAG .. tostring(msg))
   local kl = rawget(_G, "KenshiLua")
   if not (kl and pcall(function() kl.log(msg) end)) then print(msg) end
 end
@@ -382,6 +402,7 @@ local function target_building(act)
 end
 -- рудный узел, на котором персонаж сейчас работает: w | nil, стадия обрыва. Ошибки API не глотаются — их ловит guard тика.
 local function work_of(ch)
+  if type(ch.getBody) ~= "function" then return nil, "no_body" end   -- не персонаж с телом (у Character getBody есть: BindingsReference)
   local body = ch:getBody()
   if not body then return nil, "no_body" end
   local act = body:getCurrentAction()
