@@ -231,4 +231,7 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    # 2026-11-16: устарело. Эта таблица подменяла ОБЩИЕ ванильные/Kaizo world state (побочки на кампании, реплики, шаблоны).
+    # LUT теперь пишет tools/streams/ws_own.py (поток elite) только на свои WS; запуск отсюда затёр бы его.
+    import sys
+    sys.exit("ws_town_lut.py устарел: kmm_ws_lut.lua генерирует tools/streams/ws_own.py (поток elite, свои WS). Ничего не записано.")

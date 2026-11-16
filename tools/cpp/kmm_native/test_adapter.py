@@ -25,7 +25,7 @@ def case(name, setup, body, want):
     print(("ok  " if ok else "FAIL"), name, "" if ok else f"got={got!r} want={want!r}")
     fails += 0 if ok else 1
 probe = ("return tostring(K.getFactionForce('x'))..'|'..tostring(K.unique_set('n',0))..'|'..tostring(K.unique_get('n'))"
-         "..'|'..tostring(K.orderSquad(1,'join',2))..'|'..tostring(K.available)..'|'..tostring(K.ws_set('a',true))")
+         "..'|'..tostring(K.orderSquad(1,'join',2))..'|'..tostring(K.available)..'|'..tostring(K.ws_set('7-KMM_Elite.mod',true))")
 case("no module: all no-op", "package.loaded.kmm_native=nil", probe, "nil|false|nil|false|false|false")
 case("old v1 module: new fns no-op", "package.loaded.kmm_native={ws_hook_active=function() return true end, ws_set=function() return true end}",
      probe, "nil|false|nil|false|true|true")
@@ -36,5 +36,9 @@ case("bad args", "package.loaded.kmm_native={faction_force=function() return {sq
      "return tostring(K.getFactionForce(5))..'|'..tostring(K.unique_set(1,1))..'|'..tostring(K.unique_get(nil))", "nil|false|nil")
 case("throwing module disables adapter, no error", "package.loaded.kmm_native={faction_force=function() error('boom') end, ws_hook_active=function() return true end}",
      "local a=K.getFactionForce('f'); return tostring(a)..'|'..tostring(K.available)", "nil|false")
+case("whitelist: only own KMM sids reach the module", "CALLS={}; package.loaded.kmm_native={ws_hook_active=function() return true end, ws_set=function(s) CALLS[#CALLS+1]=s; return true end, ws_clear=function(s) CALLS[#CALLS+1]=s; return true end}",
+     "local r={K.ws_set('51751-Dialogue.mod',false), K.ws_set('1532623-__world reactions.mod',true), K.ws_set('5-KMM_Merged.mod',true), K.ws_set('x-KMM_Elite.mod',true), K.ws_clear('57392-rebirth.mod'), K.ws_set('900001-KMM_Elite.mod',true), K.ws_clear('900001-KMM_Elite.mod')}"
+     " local o={} for i=1,7 do o[i]=tostring(r[i]) end return table.concat(o,',')..'|'..#CALLS..'|'..K.refused()..'|'..tostring(K.is_own_ws('6-KMM_Elite.mod'))",
+     "false,false,false,false,false,true,true|2|5|true")
 print("OK" if not fails else "FAILED", fails)
 sys.exit(1 if fails else 0)
