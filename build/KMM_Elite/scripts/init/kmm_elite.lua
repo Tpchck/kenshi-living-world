@@ -305,3 +305,6 @@ KMM_Elite = {
   disabled = function() return DISABLED end,
   last_spawn = function() return last_spawn end,
 }
+
+-- PUBLISH (2026-11-16): KenshiLua runs each init script in its own sandbox; a plain global stays inside it.
+if KMM_Elite ~= nil then rawset(_G, "KMM_Elite", KMM_Elite) end
