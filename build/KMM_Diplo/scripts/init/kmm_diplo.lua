@@ -68,11 +68,33 @@ local function dlog(msg)
   if ok and f then f:write(os.date("%Y-%m-%d %H:%M:%S"), " [KMM_Diplo] ", tostring(msg), "\n"); f:close() end
   log(msg)
 end
+-- HEALTH: отказы идут в реестр KMM_Gov (ключи KMM_Diplo.<механика>): пауза 60/300/1800 с и повтор; без Gov - до перезапуска.
+local function HG() local g = rawget(_G, "KMM_Gov"); if type(g) == "table" and type(g.h_fail) == "function" then return g end end
+local DISABLED_P, RETRY = {}, {}
+local function is_down(nm)
+  if not DISABLED[nm] then return false end
+  local key = DISABLED_P[nm]
+  local g = HG()
+  if key and g then
+    local ok, up = pcall(g.h_up, key)
+    if (not ok) or up ~= false then DISABLED[nm], DISABLED_P[nm], RETRY[nm] = nil, nil, true; return false end
+  end
+  return true
+end
+local function go_down(nm, err)
+  DISABLED[nm], DISABLED_P[nm], RETRY[nm] = true, nil, nil
+  local g, p = HG(), nil
+  if g then local ok, r = pcall(g.h_fail, "KMM_Diplo." .. nm, err); if ok and type(r) == "number" then p = r end end
+  if p then DISABLED_P[nm] = "KMM_Diplo." .. nm end
+  dlog(nm .. (p and (" failed, retry in " .. p .. " s: ") or " disabled until restart: ") .. tostring(err))
+end
+local function go_ok(nm) if RETRY[nm] then RETRY[nm] = nil; local g = HG(); if g then pcall(g.h_ok, "KMM_Diplo." .. nm) end end end
 local function guarded(nm, fn)
   return function(...)
-    if DISABLED[nm] then return end
+    if is_down(nm) then return end
     local ok, r = pcall(fn, ...)
-    if not ok then DISABLED[nm] = true; dlog(nm .. " disabled until restart: " .. tostring(r)); return nil end
+    if not ok then go_down(nm, r); return nil end
+    go_ok(nm)
     return r
   end
 end
