@@ -1,0 +1,8 @@
+{
+	"enabled": true,
+	"ws_hook": true,
+	"faction_force": true,
+	"unique_set": false,
+	"game_version": "1.0.65",
+	"tooltip_compact": true
+}

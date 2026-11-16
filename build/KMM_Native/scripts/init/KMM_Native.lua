@@ -3,7 +3,8 @@
 -- if it is missing (plugin disabled, wrong game version, no RE_Kenshi) every call is a harmless no-op.
 --
 --   KMM_Native.available              -> field (evaluated lazily on access): true if the native module is loaded and the world-state hook is installed
---   KMM_Native.ws_set(sid, true|false)-> true if the override was stored
+--   KMM_Native.ws_set(sid, true|false)-> true if the override was stored; only own sids "<n>-KMM_<Name>.mod" (not KMM_Merged), else false
+--   KMM_Native.is_own_ws(sid)         -> true if ws_set/ws_clear accept this sid; KMM_Native.refused() -> number of refused calls
 --   KMM_Native.ws_clear(sid)          -> true if an override existed
 --   KMM_Native.ws_clear_all()         -> number of overrides removed
 --   KMM_Native.ws_get(sid)            -> true / false / nil (nil = no override)
@@ -64,13 +65,26 @@ function M.is_available()
   return call(function(m) return m.ws_hook_active() == true end, false)
 end
 
+-- Белый список (2026-11-16): подменять можно только СВОИ world state - записи модов KMM_* ("<n>-KMM_<Имя>.mod"), кроме KMM_Merged
+-- (там перенесённые чужие состояния). Общие ванильные/Kaizo WS читают их кампании, реплики и шаблоны: их ответ не трогаем.
+local function own_ws(sid)
+  if type(sid) ~= "string" or #sid > 200 then return false end
+  local mod = sid:match("^%d+%-(KMM_[%w_]+)%.mod$")
+  return mod ~= nil and mod ~= "KMM_Merged"
+end
+M.is_own_ws = own_ws
+local refused = 0
+function M.refused() return refused end
+
 function M.ws_set(sid, value)
   if type(sid) ~= "string" or type(value) ~= "boolean" then return false end
+  if not own_ws(sid) then refused = refused + 1; return false end
   return call(function(m) return m.ws_set(sid, value) == true end, false)
 end
 
 function M.ws_clear(sid)
   if type(sid) ~= "string" then return false end
+  if not own_ws(sid) then refused = refused + 1; return false end
   return call(function(m) return m.ws_clear(sid) == true end, false)
 end
 
