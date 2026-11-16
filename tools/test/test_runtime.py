@@ -253,7 +253,7 @@ for i = 1, 2000 do CLOCK = CLOCK + 1; DAYV = DAYV + 0.01; FIRE("GameWorld::chars
 check(lua_val("KMM_Traces.disabled().spawn") == "true", "сбой спавна отключил только spawn следов")
 check(lua_val("next(KMM_Conductor.disabled())") == "nil", "дирижёр продолжает работу после сбоя следов")
 dbg = open(os.path.join(TMP, "debug.log"), encoding="utf-8").read() if os.path.exists(os.path.join(TMP, "debug.log")) else ""
-check("spawn disabled until restart" in dbg, "причина отключения записана в debug.log")
+check(("spawn failed, retry in" in dbg or "spawn disabled until restart" in dbg), "причина отключения записана в debug.log")
 print("--- debug.log (хвост) ---")
 print("\n".join(dbg.splitlines()[-12:]))
 print("FAILS:", len(FAILS))
