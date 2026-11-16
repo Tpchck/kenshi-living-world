@@ -333,7 +333,7 @@ def t_npc_off(lua, tmp):
       SNAP = nil; TICK(10, 3, 0.01)
       assert(not KMM_Tempo.status().disabled.npc_pace, "no snapshot is not an error")
       snap_add("x", {}, 2); TICK(4, 3, 0.01)
-      assert(KMM_Tempo.status().disabled.npc_pace or KMM_Tempo.status().paused.npc_pace, "disabled (or paused by KMM_Gov health) without speedOverride")
+      assert(KMM_Tempo.status().disabled.npc_pace, "disabled without speedOverride")
     """)
 
 
@@ -487,7 +487,7 @@ def t_hunger_off(lua, tmp):
     lua.run(HUNGER_PRE + """
       for i = 1, 10 do local c = mkhuman("X" .. i); snap_char(c); c.med.hunger = nil end
       TICK(10, 3, 1)
-      assert(KMM_Tempo.status().disabled.npc_hunger or KMM_Tempo.status().paused.npc_hunger, "disabled (or paused by KMM_Gov health) without field")
+      assert(KMM_Tempo.status().disabled.npc_hunger, "disabled without field")
       assert(not KMM_Tempo.status().disabled.npc_pace and not KMM_Tempo.status().disabled.all, "others alive")
     """)
 
