@@ -2,8 +2,8 @@
 python -I -X utf8 tools/test/save_replay.py [сейв=quicksave,KMM_Test2 ...] [--days N] [--radius R]
 Мир берётся из %LOCALAPPDATA%\\kenshi\\save\\<имя>\\platoon (kmod): персонажи, фракции, расы, позиции, голод, инвентарь, отряды; города/фракции - из
 build/KMM_Conductor/conductor.json. Выдуманное (деньги, торговцы, здания, рабочие, ход игрока...) перечислено в шапке tools/test/save_world.lua.
-Ловит: ошибки Lua (traceback из обработчиков), самоотключения (debug.log 'disabled until restart' и .disabled()), обращения к неизвестным полям заглушки
-(UNKNOWN: ключ -> модуль:строка; помечено, есть ли метод в BindingsReference), рост таблиц и очередей. Код возврата 0 при отсутствии ошибок Lua и самоотключений."""
+Ловит: ошибки Lua (traceback из обработчиков), самоотключения (debug.log 'disabled until restart', реестр KMM_Gov 'OFF (' и паузы 'failed, retry in'/'-> pause'/'PAUSED', .disabled()), обращения к неизвестным полям заглушки
+(UNKNOWN: ключ -> модуль:строка; помечено, есть ли метод в BindingsReference), рост таблиц и очередей. Код возврата 0 при отсутствии ошибок Lua, самоотключений и пауз реестра."""
 import collections
 import ctypes
 import glob
@@ -364,8 +364,16 @@ def replay(save, days, tick_s, radius):
     nlogs = int(lua.num("#LOGS") or 0)
     logs = [lua.val(f"LOGS[{i}]") or "" for i in range(1, nlogs + 1)]
     lines = dbg.splitlines() + logs
-    R["disabled"] = sorted({l.strip()[:400] for l in lines if "disabled until restart" in l or "disabled for" in l})
-    R["bad_lines"] = sorted({l.strip()[:300] for l in lines if re.search(r"(?i)\berror\b|traceback|attempt to|bad argument", l) and "disabled until" not in l and "disabled for" not in l})[:40]
+    # реестр здоровья KMM_Gov (2026-11-16): навсегда — «disabled until restart» (модуль без Gov) и «health <ключ>: OFF (»;
+    # отказ с повтором — «failed, retry in N s», «health <ключ>: fail #n -> pause», «PAUSED <имя> N s»; восстановление — «recovered after».
+    # В стенде пауза = механика упала на заглушке: считается в итог так же, как раньше «disabled until restart».
+    off_rx = re.compile(r"disabled until restart|disabled for|\bhealth \S+: OFF \(")
+    pause_rx = re.compile(r"failed, retry in \d+|\bhealth \S+: fail #\d+ -> pause|\bPAUSED \S+ \d+ s")
+    R["disabled"] = sorted({l.strip()[:400] for l in lines if off_rx.search(l)})
+    R["paused"] = sorted({l.strip()[:400] for l in lines if pause_rx.search(l) and not off_rx.search(l)})
+    R["recovered"] = sorted({l.strip()[:300] for l in lines if re.search(r"\bhealth \S+: recovered after \d+ fails", l)})
+    R["bad_lines"] = sorted({l.strip()[:300] for l in lines if re.search(r"(?i)\berror\b|traceback|attempt to|bad argument", l)
+                             and not off_rx.search(l) and not pause_rx.search(l)})[:40]
     R["flags"] = {}
     for lab, g in GLOBAL_OF.items():
         v = lua.val("(function() local m = rawget(_G, '%s'); if not m then return 'MISSING' end; if type(m.disabled) == 'function' then local t = {}; for k, x in pairs(m.disabled()) do if x then t[#t+1] = k end end; table.sort(t); return table.concat(t, ',') end; return m.disabled and 'DISABLED' or '' end)()" % g)
@@ -408,9 +416,15 @@ def report(R, refm):
             seen.add(k)
             print("  ERR", e[:900].replace("\n", "\n      "))
     print("ошибки загрузки модулей:", R["load_errors"] or "нет")
-    print(f"самоотключения/паузы ({len(R['disabled'])}):")
+    print(f"самоотключения навсегда — СЛОМАНО ({len(R['disabled'])}):")
     for l in R["disabled"]:
         print("  OFF", l[:300])
+    print(f"паузы реестра — отказ с повтором ({len(R['paused'])}):")
+    for l in R["paused"]:
+        print("  PAUSE", l[:300])
+    print(f"восстановления после паузы ({len(R['recovered'])}):")
+    for l in R["recovered"]:
+        print("  RECOVERED", l[:300])
     print("флаги .disabled():", R["flags"] or "пусто")
     if R["bad_lines"]:
         print("строки логов с ошибками:")
@@ -453,8 +467,8 @@ def main():
     for s in saves:
         R = replay(s, days, tick_s, radius)
         report(R, refm)
-        bad += len(R["errors"]) + len(R["load_errors"]) + len(R["disabled"])
-    print("ИТОГ: ошибок Lua/самоотключений:", bad)
+        bad += len(R["errors"]) + len(R["load_errors"]) + len(R["disabled"]) + len(R["paused"])
+    print("ИТОГ: ошибок Lua/самоотключений/пауз реестра:", bad)
     sys.exit(1 if bad else 0)
 
 

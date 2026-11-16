@@ -173,7 +173,7 @@ local function mkplat(key, fid, trader)
     getBlackboard = function() return obj("Blackboard", { runAway = function() RUNAWAY = RUNAWAY + 1 end }) end,   -- INV: движок AIs не моделируем
     getSquadLeader = function() return p.leader end,
     getOwnerships = function() return obj("Ownerships", { _homeTown = TOWN_LIST[1] and TOWN_LIST[1].obj, getMoney = function() return p.money end,
-      addMoney = function(_, v) p.money = p.money + v end }) end,
+      addMoney = function(_, v) p.money = p.money + v end, setMoney = function(_, v) p.money = v end }) end,   -- setMoney: BindingsReference Ownerships (✓игра: TILL lowered 15.11)
   }, p)
   local ap = obj("ActivePlatoon", { getIsTrader = function() return trader end }, { me = me, isPlayer = false })
   rawset(ap, "me", me)
@@ -196,7 +196,8 @@ local function mkchar(rec, idx)
   med = obj("MedicalSystem", { pointOfNoReturn = function() return 40 end,
     getMovementSpeedInjuryMultiplier = function() return 1.0 end }, { hunger = c.hunger, blood = c.blood, knockoutTimer = c.ko, unconcious = false })
   local stt = obj("CharStats", { calculateHungerMult = function() return 1.0 end }, { moveSpeed = 10.0 })
-  local own = obj("Ownerships", { getMoney = function() return c.money or 300 end, addMoney = function(_, v) c.money = (c.money or 300) + v end })
+  local own = obj("Ownerships", { getMoney = function() return c.money or 300 end, addMoney = function(_, v) c.money = (c.money or 300) + v end,
+                                   setMoney = function(_, v) c.money = v end })   -- без setMoney REFM давал тихий no-op: Tempo видел «запись не применилась»
   c.med = med
   local race = obj("RaceData", {}, { robot = (rec.racen or ""):lower():find("bot") ~= nil, data = { stringID = rec.race, name = rec.racen or rec.race } })   -- как в справочнике: RaceData.data/.robot, без name/getName
   local self
@@ -332,7 +333,7 @@ RECOMPUTE = recompute_loaded
 function getPlayerInterface()
   return obj("PlayerInterface", {
     getAllPlayerCharacters = function() local live = {}; for _, p in ipairs(PCS) do if not p._c.dead then live[#live + 1] = p end end; return (ENGINE_LIST(live)) end,
-    getOwnerships = function() return obj("Ownerships", { getMoney = function() return 12000 end, addMoney = function() end }) end,
+    getOwnerships = function() return obj("Ownerships", { getMoney = function() return 12000 end, addMoney = function() end, setMoney = function() end }) end,
   })
 end
 

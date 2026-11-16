@@ -208,5 +208,40 @@ check("за сессию строк самопроверки нет" in S.probe_
 os.remove(os.path.join(tmp, "probe.log"))
 check("probe.log нет" in S.probe_section(t0)[0], "нет probe.log -> сказано прямо")
 
+# --- 6. реестр здоровья KMM_Gov: OFF -> СЛОМАНО, паузы и восстановления отдельно, старое «disabled until restart» тоже СЛОМАНО
+h = ts(t0 + datetime.timedelta(minutes=10))
+reg = [f"{h} [KMM_Town] haul failed, retry in 60 s: carrier addItem failed",
+       f"{ts(t0 + datetime.timedelta(minutes=11))} [KMM_Town] haul failed, retry in 300 s: carrier addItem failed",
+       f"{h} [KMM_Gov] health KMM_Town.haul: fail #1 -> pause 60 s: carrier addItem failed",
+       f"{ts(t0 + datetime.timedelta(minutes=12))} [KMM_Gov] health KMM_Town.haul: recovered after 2 fails",
+       f"{h} [KMM_Gov] health KMM_Ore.scan: OFF (noapi): no lektor",
+       f"{h} [KMM_Elite] spawn disabled until restart: boom",
+       f"{h} [KMM_Gov] health: ok 5, pause 1 [KMM_Town.haul], off 1 [KMM_Ore.scan]"]
+open(os.path.join(tmp, "debug.log"), "w", encoding="utf-8").write("\n".join(reg) + "\n")
+open(os.path.join(tmp, "tempo.log"), "w", encoding="utf-8").write(f"{h} PAUSED restock 60 s: boom\n")
+S._CACHE.clear()
+hr = S.health_registry(t0)
+txt = "\n".join(hr)
+check(hr[0].startswith("реестр здоровья: СЛОМАНО 2, на паузе 3 механик (отказов 4), восстановлений 1"), f"сводка реестра: {hr[0]}")
+check("СЛОМАНО: debug.log" in txt and "OFF (noapi)" in txt and "disabled until restart" in txt, "OFF и старое «disabled until restart» -> СЛОМАНО")
+check("ПАУЗА debug.log:haul x2" in txt and "ПАУЗА debug.log:KMM_Town.haul x1" in txt and "ПАУЗА tempo.log:restock x1" in txt, "паузы по механикам отдельно, с числом отказов")
+check("ВОССТАНОВЛЕНО KMM_Town.haul x1" in txt and "последняя сводка реестра" in txt, "восстановления и сводка KMM_Gov отдельно")
+st, _, _ = S.marker_status(M[("debug.log", ": OFF (")], t0)
+check(st == "!", f"маркер OFF -> [!] СЛОМАНО ({st})")
+for key in (("debug.log", "-> pause"), ("tempo.log", "PAUSED")):
+    st, _, note = S.marker_status(M[key], t0)
+    check(st == "~" and "пауза и повтор" in note, f"маркер {key[1]} -> [~] пауза, не СЛОМАНО ({st})")
+st, _, _ = S.marker_status(M[("debug.log", "recovered after")], t0)
+check(st == "+", f"маркер recovered after -> [+] ({st})")
+out = S.modules(t0)
+blk = []
+if out and out[0].startswith("СЛОМАНО"):
+    for l in out[1:]:
+        if not l.startswith("  ["):
+            break
+        blk.append(l)
+check(any("OFF (" in l for l in blk) and not any("[~]" in l for l in blk), f"OFF — в блоке СЛОМАНО раздела модулей, паузы туда не попадают ({len(blk)} строк)")
+check(any(l.startswith("  [~]") and "-> pause" in l for l in out), "паузы видны в маркерах как [~]")
+
 print("ALL OK" if not FAILS else "FAIL %d" % len(FAILS))
 sys.exit(1 if FAILS else 0)
