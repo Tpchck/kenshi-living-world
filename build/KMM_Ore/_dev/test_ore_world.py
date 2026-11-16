@@ -129,6 +129,89 @@ check(s2 and s2.ore[vt].pm and s2.ore[vt].claim_day, "ORE3 vein fields survive s
 -- 4) метрики дирижёра на месте после тика
 local d0 = math.floor(KC.DAY); for dd = d0, d0 + td * 3 do C.advance(dd) end
 check(type(S.ore_stress) == "number" and type(S.ore_share) == "number", "ore_stress/ore_share computed")
+-- 5) ORE4: шахтёры загруженного города черпают жилу города; вынутое идёт фракции в счёт нужды в ore_step (без двойного счёта)
+local Rb = n.R
+local got = C.town_mined(vt, 10)
+check(math.abs(got - 10) < 1e-9 and math.abs(n.R - (Rb - 10)) < 1e-9 and math.abs((n.npc_acc or 0) - 10) < 1e-9, "town_mined drains the town vein")
+check(C.town_mined("no-such-town", 5) == 0 and C.town_mined(vt, -1) == 0, "town_mined: unknown town / bad amount ignored")
+KC.ore_step()
+check(n.npc_acc == nil, "npc ore credited to the owner in ore_step")
+-- 6) ORE4: сводка рудника игрока с затуханием, мотив рейда «ore», цена металла
+S.base = { known = true, x = I.x, z = I.z, value = 50, ore = { active = 1, recent = 48, auto = 1, x = I.x + 100, z = I.z, day = KC.DAY } }
+local BO = C.base_ore()
+check(BO and math.abs(BO.recent - 48) < 0.5 and BO.auto == 1 and math.abs(BO.value - (BO.recent / 4 + 10)) < 1e-6 and math.abs(BO.cats - 25 * BO.value) < 1e-6, "base_ore value/cats")
+S.base.ore.day = KC.DAY - 30
+local BO2 = C.base_ore()
+check(BO2 == nil or (BO2.recent < 48 * 0.06 and BO2.auto == 0), "abandoned mine fades (10-day window)")
+S.base.ore.day = KC.DAY
+local fo = S.F[owner]
+fo.stress = 1.5
+local OM = KC.ore_motive(owner, fo, I.x, I.z)
+check(OM and math.abs(OM.w - math.min(2, 48 / 24)) < 0.05 and OM.x == I.x + 100, "ore motive: weight and target = mine")
+fo.stress = 1.0
+check(KC.ore_motive(owner, fo, I.x, I.z) == nil, "no ore motive without metal hunger")
+fo.stress = 1.5
+check(KC.ore_motive(owner, fo, I.x + 10 * KC.P.bus.radius, I.z) == nil, "no ore motive out of reach")
+S.metal_price = 1; fo.metal_def = 0
+check(math.abs(C.metal_mult(owner) - 1) < 1e-9, "metal_mult neutral world = 1")
+S.metal_price = 2.5; fo.metal_def = 1
+local mmx = C.metal_mult(owner)
+check(math.abs(mmx - 2.5 / (0.85 + 0.15 * 2.5)) < 1e-9, "metal_mult clamped at ore.price.max: " .. mmx)
+S.metal_price = 1; fo.metal_def = 0
+-- 7) ORE4: налог: ore_claim при отношении <= tax.rel зовёт сборщика (CA.tax_try) с точкой рудника
+local camp = C.camp()
+check(camp.tax_pick("defaultEmpireFactionSID") == "61061-Dialogue.mod", "UC tax campaign = Empire Visit TaxMan: " .. tostring(camp.tax_pick("defaultEmpireFactionSID")))
+check(camp.tax_pick("1088-gamedata.base") == "61568-Dialogue.mod", "Traders Guild tax campaign")
+local real_try, seen_tax = camp.tax_try, nil
+camp.tax_try = function(fid, t, x, z) seen_tax = { fid, t, x, z }; return false, "stub" end
+KC.P.ore.claim = { enabled = true, share = 0.03, cooldown_days = 20, rel = 1.5, rel_floor = -30 }
+KC.DAY = KC.DAY + 40
+KC.set_rel(owner, pf, -20)
+C.player_mined(need * 2, I.x + 1, I.z + 1)
+check(seen_tax and seen_tax[1] == owner and seen_tax[2] == vt and seen_tax[3] == I.x + 1, "claim at rel <= -15 asks for the tax man")
+seen_tax = nil
+KC.DAY = KC.DAY + 25
+KC.set_rel(owner, pf, 0)
+C.player_mined(need * 2, I.x + 1, I.z + 1)
+check(seen_tax == nil, "no tax man while relations are tolerable")
+camp.tax_try = real_try
+-- tax_try в «игре»: игрок у рудника, у UC есть поселение игрока рядом -> triggerCampaign, кулдаун tax.cooldown_days
+local fired = {}
+local warm = { getNearestTown = function(self, p) return { tag = "town" } end, triggerCampaign = function(self, ...) fired[#fired + 1] = { ... } end, activeCampaigns = {} }
+local fac = { warMgr = warm }
+getGameWorld = function() return { factionMgr = { getFactionByStringID = function(self, id) return fac end }, gamedata = { getData = function(self, sid, ty) return { sid = sid } end } } end
+getPlayerInterface = function() return { getAllPlayerCharacters = function() return { { getPosition = function() return { x = I.x, y = 0, z = I.z } end } } end } end
+S.ncamp = nil
+local uc = "defaultEmpireFactionSID"
+if S.F[uc] and S.F[pf] then
+  local ok1 = camp.tax_try(uc, vt, I.x, I.z)
+  check(ok1 == true and #fired == 1 and S.ore_tax and S.ore_tax[uc] == KC.DAY, "tax_try fires the vanilla TaxMan campaign")
+  local ok2, why2 = camp.tax_try(uc, vt, I.x, I.z)
+  check(ok2 == false and why2 == "cooldown" and #fired == 1, "tax cooldown holds: " .. tostring(why2))
+  local evt = S.events[#S.events]
+  check(evt and evt.type == "ore_tax" and evt.native == true, "ore_tax event (native, no Traces column)")
+  local s3 = KC.deserialize(KC.serialize(S))
+  check(s3 and s3.ore_tax and s3.ore_tax[uc] == KC.DAY, "S.ore_tax survives serialize")
+else
+  check(false, "UC and player faction present in the model")
+end
+-- рейд «ore»: родная кампания целится от рудника (getNearestTown от точки рудника), исход ждёт игрока у рудника
+local POS = {}
+warm.getNearestTown = function(self, p) POS[#POS + 1] = p; return { tag = "town" } end
+local rf
+for _, fid in ipairs(KC.sorted_keys(S.F)) do if fid ~= pf and S.F[fid].alive and camp.pick(fid, { "raid", "assault" }, 30) then rf = fid; break end end
+S.bcamp, S.ncamp = nil, nil
+S.base.ore.day = KC.DAY
+if rf then
+  local okr = camp.base_try(rf, "ore")
+  check(okr == true and POS[1] and POS[1].x == I.x + 100 and S.bcamp and S.bcamp.x == I.x + 100, "ore raid campaign targets the mine")
+  check(camp.base_text(rf, "ore"):find("diggings", 1, true) ~= nil, "ore raid text")
+  S.bcamp = nil
+else
+  check(false, "a faction with a usable raid campaign")
+end
+getGameWorld = function() error("no game") end
+getPlayerInterface = function() error("no game") end
 RESULT = (#FAILS == 0) and ("OK " .. N .. " checks") or ("FAIL " .. #FAILS .. "/" .. N .. ": " .. table.concat(FAILS, "; "))
 ''', "checks")
 L.luaL_loadstring(st, b"return RESULT")

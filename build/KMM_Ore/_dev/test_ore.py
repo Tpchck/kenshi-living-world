@@ -341,6 +341,29 @@ def t_region(lua, tmp):
     """)
 
 
+@case("ORE4: движок пересчитал поле (загрузка/достройка): чужое значение = новая base, наш множитель пишется снова")
+def t_rebase(lua, tmp):
+    lua.load_module()
+    lua.run("""
+      local pb, h = mknode("14521-rebirth.mod", 0, 0, 1.0)
+      PCS = { mkchar("A", 0, 0, h) }
+      TICK(80, 1, 0.02)
+      local s = first(KMM_Ore.nodes())
+      assert(s and s.base == 1.0 and s.lw and math.abs(pb._resourceMiningLevel - s.lw) < 1e-9, "last write remembered in the node")
+      local l1 = pb._resourceMiningLevel
+      assert(l1 < 1.0, "cut applied: " .. l1)
+      pb._resourceMiningLevel = 0.6     -- setupMiningResourceLevel: terrain value of the spot
+      TICK(5, 1, 0.02)
+      assert(math.abs(s.base - 0.6) < 1e-9, "engine value adopted as base: " .. tostring(s.base))
+      assert(math.abs(pb._resourceMiningLevel - 0.6 * l1) < 0.02, "cut re-applied on the new base: " .. pb._resourceMiningLevel)
+      local b2 = s.base
+      TICK(20, 1, 0.02)
+      assert(s.base == b2, "own writes are never taken for the engine's (no compounding)")
+      assert(KMM_Ore.ore_kind("14521-rebirth.mod") == "iron" and KMM_Ore.ore_kind("2098-gamedata.base") == "iron"
+             and KMM_Ore.ore_kind("56977-Copper drill.mod") == "copper" and KMM_Ore.ore_kind("nope") == nil, "ore_kind lookup")
+    """)
+
+
 @case("порции: не больше chars_per_poll персонажей за опрос")
 def t_portions(lua, tmp):
     lua.load_module()
