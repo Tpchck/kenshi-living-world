@@ -1070,6 +1070,7 @@
    "vet_rx": "veteran|captain|commander|sergeant|officer|elite|marshal|chief|boss|lord|general|warden|champion",
    "hunter_rx": "hunter|ranger|sniper|marksman|musket|gunner|trapper|sharpshooter",
    "tech": {
+    "Gunsmiths": 1.0,
     "Tech Hunters": 1.0,
     "United Cities": 1.0,
     "Traders Guild": 0.9,
@@ -1100,7 +1101,24 @@
     "Black Dragon Ninjas": 0.2
    },
    "tech_default": 0.25,
-   "shop_roles_rx": "gun|arms|weapon|armourer|smith"
+   "shop_roles_rx": "gun|arms|weapon|armourer|smith",
+   "geo": {
+    "_doc": "География огнестрела (B4 Н9/И8): мастерские находятся из данных (города фракции по hub_faction_rx и города с «оружейным» списком лавки); частота ствола у шаблона и в лавках = множитель по расстоянию до ближайшей мастерской (tools/streams/_shared.py GunGeo). Дом шаблона = города, где живут/бродят его отряды (среднее по ним), иначе среднее по городам фракции, иначе unknown_mult. Работает только для порохового оружия (Imperium/хаос/ксеносы, энергетика и HN не затрагиваются). Только новые спавны и пополнение лавок: сейв-совместимо.",
+    "enabled": true,
+    "hub_faction_rx": "gunsmith",
+    "hub_list_min": 5,
+    "hub_list_share": 0.5,
+    "boost_r": 25000,
+    "near_boost": 1.5,
+    "near_r": 40000,
+    "far_r": 150000,
+    "far_mult": 0.1,
+    "unknown_mult": 0.5,
+    "_vendor_doc": "Лавки (economy): у каждого порохового ствола и боеприпаса (ammo_rx) в списке вне мастерской остаётся вероятность mult(расстояние лавки), иначе ссылка снимается (детерминированно по seed). Список без известного города — unknown_mult. Оружейные списки (hub) и списки у мастерской не режутся. Ссылка на запись остаётся, запись не удаляется.",
+    "vendor_prune": true,
+    "ammo_rx": "ammunition|cartridge|musketball|musket ball|gunpowder|black powder|powder keg|bullet",
+    "seed": 9041
+   }
   },
   "accessories": {
    "_doc": "SLOTS: шанс на шаблон (потолок повторов общий; вещь ≤ repeat_hard_cap). Лидеры и WH пропускаются (опознавательный облик). eyes: пустыня/ржавая зона/кислота (climate × вес фракции; имя персонажа даёт 0.8); gloves: вооружённые base, мастеровые role; neck: холод/пустыня/торговцы.",
