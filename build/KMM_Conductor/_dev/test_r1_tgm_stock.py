@@ -128,7 +128,8 @@ pass(0)
 local d = dbg()
 check(d:find("TGM probe OK: src=char_here town TownA") ~= nil, "probe OK marker: " .. d)
 check(d:find("TGM write OK: town TownA item bread set 1.980 read 1.98") ~= nil, "write OK marker (1.2 x 1.5 x 1.1): " .. d)
-check(d:find("TGM town TownA %(A%) first: food=1%.65 metal=0%.88 weapons=1%.10 fac=1%.10 writes=4") ~= nil, "first town marker: " .. d)
+check(d:find("TGM town TownA %(A%) first: food=1%.65 metal=0%.88 weapons=1%.10 fac=1%.10 writes=6") ~= nil, "first town marker (+2 ore items in metal): " .. d)
+check(math.abs(TOWN.tradeGoodsMults[gd("1866-gamedata.base", 4)] - 0.88) < 1e-6 and math.abs(TOWN.tradeGoodsMults[gd("42158-gamedata.base", 4)] - 0.88) < 1e-6, "ORE4: Raw Iron and Copper priced as metal")
 check(math.abs(TOWN.tradeGoodsMults[BREAD] - 1.98) < 1e-6, "bread = native 1.2 x 1.65")
 check(math.abs(TOWN.tradeGoodsMults[gd("meat", 4)] - 1.65) < 1e-6 and math.abs(TOWN.tradeGoodsMults[gd("iron", 4)] - 0.88) < 1e-6, "meat/iron")
 check(math.abs(PL.priceMultWhenITrade - 1.0) < 1e-6, "no double count: trader keeps original mult, got " .. PL.priceMultWhenITrade)
@@ -146,7 +147,15 @@ check(math.abs(TOWN.tradeGoodsMults[gd("meat", 4)] - 1.8) < 1e-6 and math.abs(TO
 
 -- 3) событие склада (осада: корзина меняется) — сразу к цели, маркер
 SX.weapons = 1.6; SIG = "foodn,metaln,weaponsn|S"
+local mm0 = C.metal_mult
+C.metal_mult = function(fid) return 2 end   -- ORE4: дорогой металл мира -> руда и слитки дороже, потолок tgm_metal_max (2.5), не 1.8
 pass(0.1)
+check(math.abs(TOWN.tradeGoodsMults[gd("iron", 4)] - 1.76) < 1e-6 and math.abs(TOWN.tradeGoodsMults[gd("42158-gamedata.base", 4)] - 1.76) < 1e-6, "ORE4: metal x metal_mult: " .. tostring(TOWN.tradeGoodsMults[gd("iron", 4)]))
+C.metal_mult = function(fid) return 4 end
+TGM.T[next(TGM.T)].sig = "force"
+pass(0.1)
+check(math.abs(TOWN.tradeGoodsMults[gd("iron", 4)] - 2.5) < 1e-6, "ORE4: metal capped at tgm_metal_max 2.5: " .. tostring(TOWN.tradeGoodsMults[gd("iron", 4)]))
+C.metal_mult = mm0
 check(math.abs(TOWN.tradeGoodsMults[gd("sword", 2)] - 1.76) < 1e-6, "siege: sword jumps to 1.6 x 1.1 at once: " .. tostring(TOWN.tradeGoodsMults[gd("sword", 2)]))
 check(dbg():find("TGM town TownA %(A%) stock changed: .*weapons=1%.76") ~= nil, "stock changed marker")
 check(math.abs(PL.priceMultWhenITrade - 1.0) < 1e-6, "still no double count")

@@ -31,6 +31,7 @@ run(r'''
 N, FAILS = 0, {}
 function check(c, what) N = N + 1; if not c then FAILS[#FAILS + 1] = what end end
 local C, SG, T = KMM_Conductor, KMM_Siege, KMM_Traces
+SG.cfg.native_alarm = true   -- off in the build (2026-11-16); the mechanism itself is still checked
 C.reset()
 local TP = C.cfg().params.traces
 TP.first_hour_traces = 0; TP.max_per_day = 1000; TP.max_queue = 1000; TP.arrive_enabled = false

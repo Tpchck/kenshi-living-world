@@ -171,7 +171,7 @@ KMM_Gov.snapshot = snap0
 local st0 = M.cap_step
 M.cap_step = function() error("boom") end
 CLOCK = CLOCK + 100; tick()
-check(M.cap_off == true and not M.off and logged("captive watch disabled"), "error disables only X1")
+check(M.cap_off == true and not M.off and logged("captive watch failed"), "error disables only X1")
 M.cap_step = st0
 '''.replace("TMPDIR", TMP), "test")
 run(r'''
