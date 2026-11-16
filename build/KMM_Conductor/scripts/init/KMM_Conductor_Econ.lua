@@ -12,13 +12,11 @@ KC._SEG.Econ = function()
 -- Каждая функция в xsafe: первая ошибка отключает только её (причина -> debug.log). Состояние - в S (F[fid].know/lvl/..., S.town[sid].pop, S.forge).
 KC.XDIS = {}
 function KC.sorted_keys(t) local k = {}; for x in pairs(t) do k[#k + 1] = x end; table.sort(k); return k end
-function KC.xsafe(nm, fn, ...)
-  if KC.XDIS[nm] then return end
+function KC.xsafe(nm, fn, ...)   -- HEALTH: отказ -> пауза реестра (KMM_Conductor.<nm>), повтор
+  if KC.GL.h_live(KC.XDIS, nm) then return end
   local ok, err = pcall(fn, ...)
-  if not ok then
-    KC.XDIS[nm] = true
-    pcall(function() _G.KMM_Conductor.guard_log(nm .. " disabled until restart: " .. tostring(err)) end)
-  end
+  if not ok then KC.GL.h_bad(KC.XDIS, nm, "KMM_Conductor." .. nm, err, nm)
+  else KC.GL.h_done(KC.XDIS, nm) end
 end
 function KC.tlv(sid, c)   -- уровень склада города: доля нормы (пишет модель STOCK в s.lv раз в день)
   local st = KC.S.stock and KC.S.stock.towns and KC.S.stock.towns[sid]
@@ -79,9 +77,10 @@ local ROADS_OFF = {}
 local function RD() return (KC.P and KC.P.roads) or {} end
 local function rd_on(k) local R = RD(); return R.enabled ~= false and (k == nil or R[k] ~= false) end
 local function rsafe(nm, fn, ...)
-  if ROADS_OFF[nm] then return nil end
+  if KC.GL.h_live(ROADS_OFF, nm) then return nil end
   local ok, a, b = pcall(fn, ...)
-  if not ok then ROADS_OFF[nm] = true; pcall(function() _G.KMM_Conductor.guard_log("roads " .. nm .. " disabled until restart: " .. tostring(a)) end); return nil end
+  if not ok then KC.GL.h_bad(ROADS_OFF, nm, "KMM_Conductor.roads_" .. nm, a, "roads " .. nm); return nil end
+  KC.GL.h_done(ROADS_OFF, nm)
   return a, b
 end
 local function rd_slot()
@@ -374,7 +373,7 @@ function KC.relocate(sid, n, from_fid, okf)   -- беженцы идут в бл
     end
   end
   if not best then return end
-  if KC.RDS.rd_on("refugees") and not KC.RDS.ROADS_OFF.relocate then
+  if KC.RDS.rd_on("refugees") and not KC.GL.h_live(KC.RDS.ROADS_OFF, "relocate") then
     local e = KC.RDS.rsafe("relocate", KC.RDS.rd_add, { k = "refugees", f = from_fid, from = sid, to = best, n = n, days = KC.RDS.rd_travel(sid, best, 0.5) })
     if e then return best end
   end
@@ -976,9 +975,9 @@ local function l2_install()
   local function sub(nm, pat, fn)
     KC.subscribe(pat, function(ev)
       local key = "l2_" .. nm
-      if KC.XDIS[key] or not KC.S or not L2P().enabled then return end
+      if KC.GL.h_live(KC.XDIS, key) or not KC.S or not L2P().enabled then return end
       local ok, err = pcall(fn, ev)
-      if not ok then KC.XDIS[key] = true; pcall(function() _G.KMM_Conductor.guard_log(key .. " disabled until restart: " .. tostring(err)) end) end
+      if not ok then KC.GL.h_bad(KC.XDIS, key, "KMM_Conductor." .. key, err, key) else KC.GL.h_done(KC.XDIS, key) end
     end)
   end
   sub("glut", "stock_glut", function(ev)
@@ -1161,9 +1160,10 @@ local function links2_consider_impl(fid, f, cands, consider, peek, avoids, amb)
   return win
 end
 local function links2_consider(...)
-  if KC.XDIS.l2_choose then return nil end
+  if KC.GL.h_live(KC.XDIS, "l2_choose") then return nil end
   local ok, r = pcall(links2_consider_impl, ...)
-  if not ok then KC.XDIS.l2_choose = true; pcall(function() _G.KMM_Conductor.guard_log("l2_choose disabled until restart: " .. tostring(r)) end); return nil end
+  if not ok then KC.GL.h_bad(KC.XDIS, "l2_choose", "KMM_Conductor.l2_choose", r, "l2_choose"); return nil end
+  KC.GL.h_done(KC.XDIS, "l2_choose")
   return r
 end
 return { consider = links2_consider, step = links2_step, pick = chaos_pick, install = l2_install, P = L2P, state = l2 }
@@ -1200,7 +1200,7 @@ function KC.choose_action(fid)
   end
   local AVR = KC.R2().avoid_ratio or 0.4   -- REV2: слабый не лезет на явно сильного (кроме мести)
   local function avoids(o, ratio)
-    if KC.REV2_OFF.avoid or ratio >= AVR then return false end
+    if KC.GL.h_live(KC.REV2_OFF, "avoid") or ratio >= AVR then return false end
     local w = f.wronged and f.wronged[o]
     return not (w and KC.DAY - w < (KC.R2().avoid_revenge_days or 90)) and amb ~= "revenge"
   end
@@ -1308,7 +1308,7 @@ end
 -- REV2: совместный рейд — союзники по военному договору присоединяются к рейду/захвату, если им выгодно (общая цель, есть силы, не друзья цели)
 function KC.joint_allies(fid, o)
   local R, out = KC.R2(), {}
-  if KC.REV2_OFF.joint or R.joint_enabled == false or not (o and KC.S.F[o]) then return out end
+  if KC.GL.h_live(KC.REV2_OFF, "joint") or R.joint_enabled == false or not (o and KC.S.F[o]) then return out end
   for _, e in ipairs(KC.allies_of(fid, { military = true })) do
     local t, al = e.t, e.other
     local A = KC.S.F[al]
@@ -1346,7 +1346,7 @@ function KC.act(fid, a, o)
   local J = {}
   KC.P._ncur = nil
   if a == "raid" and o and KC.L2.camp and KC.L2.camp.try then KC.xsafe("native_campaign", KC.L2.camp.try, fid, o, a) end
-  if a == "raid" or a == "capture" then local okj, jr = pcall(KC.joint_allies, fid, o); if okj then J = jr else KC.REV2_OFF.joint = true; KC.sub_log("rev2 joint disabled until restart: " .. tostring(jr)) end end
+  if a == "raid" or a == "capture" then local okj, jr = pcall(KC.joint_allies, fid, o); if okj then J = jr; KC.GL.h_done(KC.REV2_OFF, "joint") else KC.GL.h_bad(KC.REV2_OFF, "joint", "KMM_Conductor.rev2_joint", jr, "rev2 joint", KC.sub_log) end end
   local jb = KC.joint_bonus(J)
   if a == "raid" or a == "capture" or a == "capture_free" or a == "raid_surplus" then f.last_war = KC.DAY end
   local sa0, so0 = f.strength, (o and KC.S.F[o] and KC.S.F[o].strength) or 0

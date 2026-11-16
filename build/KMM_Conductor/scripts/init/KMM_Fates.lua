@@ -682,3 +682,6 @@ KMM_Fates = {
   _M = M,
 }
 if Events and Events.on then pcall(Events.on, "GameWorld::charsUpdate", guarded) end
+
+-- PUBLISH (2026-11-16): KenshiLua runs each init script in its own sandbox; a plain global stays inside it.
+if KMM_Fates ~= nil then rawset(_G, "KMM_Fates", KMM_Fates) end

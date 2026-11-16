@@ -536,11 +536,15 @@ function KC.guard_log(msg)
   KC.append_file((KC.P and KC.P.guard and KC.P.guard.debug_log) or "C:/KenshiModMap/logs/debug.log", os.date("%Y-%m-%d %H:%M:%S") .. " [KMM_Conductor] " .. msg)
   KC.log(msg)
 end
+-- HEALTH (2026-11-15): отказ -> пауза реестра KMM_Gov (KMM_Conductor.<nm>) и повтор; KC.DISABLED[nm] = true на время паузы
+-- (по нему читают «выключено»); без Gov — прежнее «до перезапуска».
 function KC.guarded(nm, fn)
+  local key = "KMM_Conductor." .. nm
   return function(...)
-    if KC.DISABLED[nm] then return end
+    if KC.GL.h_live(KC.DISABLED, nm) then return end
     local ok, err = pcall(fn, ...)
-    if not ok then KC.DISABLED[nm] = true; KC.guard_log(nm .. " disabled until restart: " .. tostring(err)) end
+    if not ok then KC.GL.h_bad(KC.DISABLED, nm, key, err, nm, KC.guard_log)
+    else KC.GL.h_done(KC.DISABLED, nm) end
   end
 end
 KC.g_sim = KC.guarded("simulation", function(day) KC.advance(day, true) end)

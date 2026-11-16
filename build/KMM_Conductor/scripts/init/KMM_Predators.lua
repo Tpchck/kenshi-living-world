@@ -14,6 +14,9 @@
 -- S1 (2026-11-15): запах — промах зоны в точке -> источник у игрока, выключение только если API ни разу не сработал; ЭХО ПАВШИХ (блок EC ниже).
 local M = {}
 local DISABLED = false
+-- RETIRED (2026-11-16, owner: cut predators, vanilla patrols and nests hunt fine): crash 0xC0000005 in ZoneSmell::periodicUpdate
+-- after our addSmell. Whole module is a no-op: no nests, ambushes, smell, soul echo, squad jobs. S.ext.predators stays in the save untouched.
+local RETIRED = true
 local LOGP = "C:/KenshiModMap/logs/predators.log"
 local CFGP = { max_nests = 6, daily_chance = 0.4, hit_radius = 7000, vis_radius = 45000, bandit_range = 140000, rel_max = -10,
                patrol_min = 4, patrol_span = 4, patrol_days = 3, max_age = 22, cool_days = 14, max_per_fid = 2, vis_gap = 900, vis_per_day = 1, tick_gap = 5,
@@ -51,7 +54,7 @@ end
 local function forever(t, f, key, why, kind) t[f], t[f .. "_p"] = true, nil; h_off(key, why, kind) end
 local function wlog(what, p, err) dlog(what .. (p and (" failed, retry in " .. p .. " s: ") or " disabled until restart: ") .. tostring(err)) end
 local MOD = { off = false }
-local function is_off() DISABLED = live(MOD, "off"); return DISABLED end
+local function is_off() if RETIRED then DISABLED = true; return true end; DISABLED = live(MOD, "off"); return DISABLED end
 local function off(why) local p = down(MOD, "off", "KMM_Predators.module", why); DISABLED = true; wlog("predators", p, why) end
 local function guarded(nm, fn) return function(...) if is_off() then return end; local ok, er = pcall(fn, ...); if not ok then off(nm .. ": " .. tostring(er)) end end end
 
@@ -177,6 +180,7 @@ local function fobj(fid)
 end
 function M.smell_retract(ck)
   local s = SM.src[ck]; if not s then return false end
+  if RETIRED then SM.src[ck] = nil; return false end
   SM.src[ck] = nil
   local okz, zs = pcall(zone_smell, s.x, s.y, s.z)
   if not (okz and zs) then return false end
@@ -1051,10 +1055,12 @@ end
 M.tick = tick
 M.step = function(day) local C = C_(); local e = C and slot(C); if e then step_day(C, e, day or C.day()) end end   -- офлайн-тест
 M.slot = function() local C = C_(); return C and slot(C) end
-M.disabled = function() return DISABLED end
+M.disabled = function() return RETIRED or DISABLED end
+M.retired = RETIRED
 M.rt = RT
 
-if rawget(_G, "Events") and Events.on and not STARTED then
+if RETIRED then DISABLED = true; dlog("predators: retired (2026-11-16) - module off, vanilla predators only") end
+if not RETIRED and rawget(_G, "Events") and Events.on and not STARTED then
   STARTED = true
   Events.on("GameWorld::charsUpdate", guarded("predators", function(...) tick() end))
 end

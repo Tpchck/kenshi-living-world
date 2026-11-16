@@ -438,12 +438,13 @@ function G.h_fail(key, err, desc)
   if ok then return res end
   return nil
 end
--- навсегда: kind "noapi" (функции нет в движке) или "crash" (крэш-сторож); иначе используйте h_fail
+-- навсегда: kind "noapi" (функции нет в движке, по умолчанию), "crash" (крэш-сторож), "noeffect" (вызов есть, но не действует —
+-- вердикт после нескольких замеров) и т.п.; на обычные ошибки — h_fail
 function G.h_off(key, why, kind)
   local ok = pcall(function()
     local r = hrec(key)
     if r.state == "off" then return end
-    r.state, r.reason, r.err = "off", (kind == "crash" and "crash" or "noapi"), hstr(why)
+    r.state, r.reason, r.err = "off", (type(kind) == "string" and kind ~= "") and kind or "noapi", hstr(why)
     r.at_off = os.date("%Y-%m-%d %H:%M:%S"); r.t_fail = hnow()
     hlog(key .. ": OFF (" .. r.reason .. "): " .. r.err)
   end)

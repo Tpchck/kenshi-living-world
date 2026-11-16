@@ -49,7 +49,7 @@ local function fail(where, err)
 end
 
 H.P_DEF = { cycle_days = 30, stay = 0.4, pred_delay = 4, hunt_delay = 9, near_r = 45000, max_live = 3, live_days = 1.0, cooldown_days = 3.0,
-            global_cd_days = 0.5, tick_sec = 25, aim_town = true, smell_first = true, smell_check_s = 60, smell_eps = 0.0001, herd_size = { 8, 14 }, pred_size = { 4, 8 }, hunter_size = 4, max_events_day = 3,
+            global_cd_days = 0.5, tick_sec = 25, aim_town = true, smell_first = false, smell_check_s = 60, smell_eps = 0.0001, herd_size = { 8, 14 }, pred_size = { 4, 8 }, hunter_size = 4, max_events_day = 3,
             glut = { herd = { food = 0.08, lux = 0.03 }, hunt = { food = 0.2, lux = 0.1 }, cap = 1.6, range = 35000 } }
 
 H.load = function()
