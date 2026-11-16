@@ -5,6 +5,7 @@
   KMM_Traces.lua спавнит их пачкой в тире текущего богатства фракции (обеднение/обогащение видно сразу, а не заменой вещей);
 - беженцы фракции (бойцы T0 без оружия, ИИ бродяг Drifter squad) — из павшего, голодного или захваченного города;
 - «разорённый караван» (клон торгового отряда без лавки) — Lua убивает его сразу после спавна: тела и вьючные на дороге.
+Клоны не наследуют «world state» образца: отряды-следы спавнит Lua по модели дирижёра, условие ванильного мира (жив ли NPC) к ним не относится.
 Экзотика (WH/реликт) — только у своих WH-фракций (бюджет 2 %). Карта шаблонов для Lua → build/KMM_Conductor/traces.json."""
 import collections
 import json
@@ -89,7 +90,7 @@ def build(ctx, s, rules):
             ch = s.new("CHARACTER", soldier.name, template=soldier.sid)   # имя видно игроку: без служебных меток (тир — в sid/отчёте)
             ch.refs["clothing"] = clothing
             q = s.new("SQUAD_TEMPLATE", f"KMM {fd['name']} {t} band", template=main_sq.sid)
-            for k in ("leader", "squad", "squad2", "squad3", "vendors", "special"):
+            for k in ("leader", "squad", "squad2", "squad3", "vendors", "special", "world state"):   # world state: условие ванильного отряда-образца к следу дирижёра не относится
                 q.refs.pop(k, None)
             q.refs["leader"] = [Ref(ch.sid, 1, 0, 0)]
             q.refs["squad"] = [Ref(ch.sid, rules["tier_squad"][0], rules["tier_squad"][1], 0)]
@@ -146,7 +147,7 @@ def build(ctx, s, rules):
                 c.refs["starting health"] = sh
                 vch.append(c)
             vq = s.new("SQUAD_TEMPLATE", f"KMM {fd['name']} Veterans", template=main_sq.sid)
-            for k in ("leader", "squad", "squad2", "squad3", "vendors", "special"):
+            for k in ("leader", "squad", "squad2", "squad3", "vendors", "special", "world state"):
                 vq.refs.pop(k, None)
             vq.refs["leader"] = [Ref(vch[0].sid, 1, 0, 0)]
             vq.refs["squad"] = [Ref(c.sid, 1, 1, 0) for c in vch]
@@ -161,6 +162,7 @@ def build(ctx, s, rules):
         if tr and len(out["caravans"]) < rules["max_caravans"]:
             dq = s.new("SQUAD_TEMPLATE", f"KMM {fd['name']} ruined caravan", template=tr[0].sid, values={"is trader": False})
             dq.refs.pop("vendors", None)
+            dq.refs.pop("world state", None)
             out["caravans"][fid] = dq.sid
             out["dead_caravan_sids"].append(dq.sid)
             s.report["caravans"] += 1

@@ -85,10 +85,13 @@ def build(ctx, s, rules):
         out["units"][fid] = {"squad": q.sid, "name": u["name"], "key": u["key"]}
         ns = rules.get("native_special")
         if ns and ns.get("enabled"):
-            native_special(ctx, s, ns, fid, u, q, chars, base, out["units"][fid])
+            native_special(ctx, s, ns, fid, u, q, chars, base, out["units"][fid], rules.get("own_ws"))
     s.report["units"] = len(out["units"])
     if rules.get("personal_guard", {}).get("enabled"):
         personal_guard(ctx, s, rules["personal_guard"])
+    if rules.get("own_ws", {}).get("enabled"):   # LINKN: свои WS + TOWN-варианты (явные sid из реестра) — последним, после всех последовательных sid
+        import ws_own
+        ws_own.build(ctx, s, rules["own_ws"])
     os.makedirs(OUT_DIR, exist_ok=True)
     with open(os.path.join(OUT_DIR, "kmm_elite_data.lua"), "w", encoding="utf-8", newline="\n") as fh:
         fh.write("-- KMM_Elite data (сгенерировано tools/streams/elite.py - не править руками)\nreturn " + _lua(out) + "\n")
@@ -198,7 +201,7 @@ def personal_guard(ctx, s, R):
         s.report["vip_squads"] += 1
 
 
-def native_special(ctx, s, R, fid, u, q, chars, base, rec):
+def native_special(ctx, s, R, fid, u, q, chars, base, rec, rules_own_ws=None):
     """Родной механизм: UNIQUE_SQUAD_TEMPLATE в FACTION."special squads" (движок сам держит и респавнит отряд, replacement time).
     Открывается WORLD_EVENT_STATE-замком (по умолчанию ложен: «жив уник», которого нет); Lua kmm_elite включает его через
     KMM_Native.ws_set, когда фракция богата. Только новые записи + добавленная ссылка в FACTION (сейв-безопасно)."""
@@ -209,6 +212,10 @@ def native_special(ctx, s, R, fid, u, q, chars, base, rec):
     gate = s.new("CHARACTER", f"KMM Elite Gate {u['name']}", template=base.sid)   # никогда не спавнится: «NPC is alive» ложно
     ws = s.new("WORLD_EVENT_STATE", f"KMM Elite open {u['name']}", values={"notes": "KMM_Elite gate: Lua ws_set"})
     ws.refs["NPC is"] = [Ref(gate.sid, 1, 0, 0)]
+    fn = (rules_own_ws or {}).get("false_npc")
+    if fn and fn in M and M[fn].type_name == "CHARACTER":   # ложь при любом ответе движка о неизвестном NPC: «X жив» И «X НЕ жив» (ванильный уникал)
+        import ws_own
+        ws.refs.update(ws_own.false_refs(fn, extra_is=[gate.sid]))
     uq = s.new("UNIQUE_SQUAD_TEMPLATE", f"KMM Elite {u['name']}", template=tpl, values={
         "replacement time": R["replacement_hours"], "persistent": R.get("persistent", True)})
     for k in ("leader", "squad", "squad2", "missions", "world state", "faction"):

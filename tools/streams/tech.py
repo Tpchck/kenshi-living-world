@@ -90,7 +90,7 @@ def build(ctx, s, rules):
             f.refs["crossbow crafts"] = [Ref(x) for x in tier_sids("CROSSBOW", cr["tiers"])]
         else:
             f.refs["item crafts"] = [Ref(own[k], 2, 0, 0) for k in cr["items"]]
-        q = s.new("BUILDING", b["name"], template=tmpl.sid, values={"Description": b["description"], "building category": "CRAFTING - Relics"})
+        q = s.new("BUILDING", b["name"], template=tmpl.sid, values={"Description": b["description"], "building category": rules.get("building_category", "CRAFTING - Relics")})
         q.refs.pop("upgrades to", None)
         q.refs["functionality"] = [Ref(f.sid)]
         q.refs["construction"] = [Ref(own[k], n, 0, 0) for k, n in b["construction"]]
