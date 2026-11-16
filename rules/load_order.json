@@ -7,7 +7,7 @@
   "KMM_Economy",
   "KMM_Behavior",
   "KMM_Traces",
-  "KMM_Tech",
+  "KMM_Tech", "KMM_Build",
   "KMM_Diplo",
   "KMM_Town",
   "KMM_Elite",

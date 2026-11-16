@@ -1,0 +1,50 @@
+{
+ "_doc": "Поток TRACES: шаблоны отрядов для видимых следов дирижёра (tools/streams/traces.py). Только новые записи.",
+ "seed": 4401,
+ "refugee_ai_from": [
+  "SQUAD_TEMPLATE",
+  "Drifter squad",
+  "3950-gamedata.base"
+ ],
+ "tier_squad": [
+  2,
+  4
+ ],
+ "refugees": [
+  2,
+  4
+ ],
+ "max_caravans": 12,
+ "veteran": {
+  "limbs": {
+   "left arm": "28-gamedata.quack",
+   "right arm": "29-gamedata.quack",
+   "left leg": "30-gamedata.quack",
+   "right leg": "31-gamedata.quack"
+  },
+  "variants": [
+   [
+    "one-armed",
+    [
+     [
+      "left arm",
+      -150
+     ]
+    ]
+   ],
+   [
+    "cripple",
+    [
+     [
+      "right arm",
+      -150
+     ],
+     [
+      "left leg",
+      -60
+     ]
+    ]
+   ]
+  ]
+ }
+}

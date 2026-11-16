@@ -197,4 +197,10 @@
    ]
   }
  }
+,
+ "own_ws": {
+  "_doc": "LINKN: свои WORLD_EVENT_STATE + TOWN-варианты для смены владельцев городов дирижёром (tools/streams/ws_own.py, реестр номеров rules/ws_own_ids.json, таблица build/KMM_Conductor/scripts/modules/kmm_ws_lut.lua). false_npc — ванильный уникал (Emperor Tengu) для заведомо ложного запроса «жив И НЕ жив»: наш WS истинен только через KMM_Native.ws_set. Тот же приём добавлен к замкам native_special.",
+  "enabled": true,
+  "false_npc": "51751-Dialogue.mod"
+ }
 }

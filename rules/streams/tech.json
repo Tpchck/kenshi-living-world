@@ -10,6 +10,8 @@
     "weapon:unarmed"
   ],
   "category": "Relics",
+  "building_category": "RELICS",
+  "_building_category_doc": "Вкладка меню построек для станков реликтов (одна вкладка RELICS вместе с модовыми WH40k-станками, rules/streams/build.json categories).",
   "anchors": {
     "_doc": "Опоры дерева: первая существующая в ctx запись из списка (Crafting Redux, если подключён через lo.py EXTRA; иначе ваниль).",
     "tech6": [

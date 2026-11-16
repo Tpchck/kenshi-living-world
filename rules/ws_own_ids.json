@@ -1,0 +1,1171 @@
+{
+ "_doc": "Реестр номеров своих WORLD_EVENT_STATE/TOWN для LINKN (tools/streams/ws_own.py). sid = <номер>-KMM_Elite.mod. ТОЛЬКО ДОПИСЫВАТЬ: не удалять и не перенумеровывать (сейв хранит sid варианта в GAMESTATE_TOWN.replacementTown). src — вариант-образец на момент регистрации (при пропаже берётся следующий лучший, номера остаются).",
+ "next": 900467,
+ "pairs": {
+  "10-Holy Mines.mod|1084-gamedata.base": {
+   "src": "1534428-__Fixes.mod",
+   "town": 900002,
+   "ws": 900001
+  },
+  "10-Holy Mines.mod|11624-Dialogue (10).mod": {
+   "src": "1532990-__world reactions W.mod",
+   "town": 900004,
+   "ws": 900003
+  },
+  "10-Holy Mines.mod|1229-gamedata.base": {
+   "src": "1532993-__world reactions W.mod",
+   "town": 900006,
+   "ws": 900005
+  },
+  "10-Holy Mines.mod|51357-rebirth.mod": {
+   "src": "1532994-__world reactions W.mod",
+   "town": 900008,
+   "ws": 900007
+  },
+  "10-Minor Faction Overhaul - White Eyebrow Clan.mod|18007-rebirth.mod": {
+   "src": "5000382-Bandit Variety.mod",
+   "town": 900010,
+   "ws": 900009
+  },
+  "10-Minor Faction Overhaul - White Eyebrow Clan.mod|48743-Dialogue.mod": {
+   "src": "5000281-Bandit Variety.mod",
+   "town": 900012,
+   "ws": 900011
+  },
+  "10-Minor Faction Overhaul - White Eyebrow Clan.mod|48791-Dialogue.mod": {
+   "src": "5000283-Bandit Variety.mod",
+   "town": 900014,
+   "ws": 900013
+  },
+  "10-Minor Faction Overhaul - White Eyebrow Clan.mod|48814-Dialogue.mod": {
+   "src": "5000278-Bandit Variety.mod",
+   "town": 900016,
+   "ws": 900015
+  },
+  "10-The Leviathan Ronin.mod|12-The Leviathan Ronin.mod": {
+   "src": "68-Leviathan Ronin (Reloaded).mod",
+   "town": 900018,
+   "ws": 900017
+  },
+  "10-Towns Expansion.mod|42022-rebirth.mod": {
+   "src": "197-Towns Expansion.mod",
+   "town": 900020,
+   "ws": 900019
+  },
+  "1032-gamedata.base|18893-rebirth.mod": {
+   "src": "1531896-rebirth.mod",
+   "town": 900022,
+   "ws": 900021
+  },
+  "1074-gamedata.base|51646-Dialogue.mod": {
+   "src": "1532938-__world reactions NE.mod",
+   "town": 900024,
+   "ws": 900023
+  },
+  "1074-gamedata.base|62805-rebirth.mod": {
+   "src": "1532940-__world reactions NE.mod",
+   "town": 900026,
+   "ws": 900025
+  },
+  "1076-gamedata.base|51646-Dialogue.mod": {
+   "src": "1532893-__world reactions NE.mod",
+   "town": 900028,
+   "ws": 900027
+  },
+  "1078-gamedata.base|51646-Dialogue.mod": {
+   "src": "1532882-__world reactions NE.mod",
+   "town": 900030,
+   "ws": 900029
+  },
+  "1079-gamedata.base|42257-rebirth.mod": {
+   "src": "1533327-__world reactions Shek.mod",
+   "town": 900032,
+   "ws": 900031
+  },
+  "1079-gamedata.base|51357-rebirth.mod": {
+   "src": "1533323-__world reactions Shek.mod",
+   "town": 900034,
+   "ws": 900033
+  },
+  "1080-gamedata.base|5008123-Kaizo.mod": {
+   "src": "5008941-Kaizo.mod",
+   "town": 900036,
+   "ws": 900035
+  },
+  "1080-gamedata.base|51638-rebirth.mod": {
+   "src": "5004519-Bandit Variety.mod",
+   "town": 900038,
+   "ws": 900037
+  },
+  "1080-gamedata.base|51646-Dialogue.mod": {
+   "src": "1533518-__world reactions Slavers.mod",
+   "town": 900040,
+   "ws": 900039
+  },
+  "1081-gamedata.base|1214-gamedata.base": {
+   "src": "1533691-__world reactions Slavers.mod",
+   "town": 900042,
+   "ws": 900041
+  },
+  "11-Holy Mines.mod|11624-Dialogue (10).mod": {
+   "src": "38-Holy Mines.mod",
+   "town": 900044,
+   "ws": 900043
+  },
+  "11-Holy Mines.mod|51357-rebirth.mod": {
+   "src": "40-Holy Mines.mod",
+   "town": 900046,
+   "ws": 900045
+  },
+  "11-Resort Island.mod|58229-Dialogue.mod": {
+   "src": "10-Resort Island Liberation.mod",
+   "town": 900048,
+   "ws": 900047
+  },
+  "12-Holy Mines.mod|18893-rebirth.mod": {
+   "src": "33-Holy Mines.mod",
+   "town": 900050,
+   "ws": 900049
+  },
+  "1220-gamedata.base|1088-gamedata.base": {
+   "src": "5000216-Bandit Variety.mod",
+   "town": 900052,
+   "ws": 900051
+  },
+  "1220-gamedata.base|51646-Dialogue.mod": {
+   "src": "1533584-__world reactions Slavers.mod",
+   "town": 900054,
+   "ws": 900053
+  },
+  "1220-gamedata.base|54297-rebirth.mod": {
+   "src": "5000214-Bandit Variety.mod",
+   "town": 900056,
+   "ws": 900055
+  },
+  "1222-gamedata.base|1084-gamedata.base": {
+   "src": "1534435-__Fixes.mod",
+   "town": 900058,
+   "ws": 900057
+  },
+  "1222-gamedata.base|51646-Dialogue.mod": {
+   "src": "1533964-__SE world states.mod",
+   "town": 900060,
+   "ws": 900059
+  },
+  "12628-Newwworld.mod|42022-rebirth.mod": {
+   "src": "1532976-__world reactions.mod",
+   "town": 900062,
+   "ws": 900061
+  },
+  "12628-Newwworld.mod|49377-rebirth.mod": {
+   "src": "1532975-__world reactions.mod",
+   "town": 900064,
+   "ws": 900063
+  },
+  "12628-Newwworld.mod|defaultEmpireFactionSID": {
+   "src": "1534434-__Fixes.mod",
+   "town": 900066,
+   "ws": 900065
+  },
+  "13-Holy Mines.mod|1084-gamedata.base": {
+   "src": "1534428-__Fixes.mod",
+   "town": 900068,
+   "ws": 900067
+  },
+  "13-Holy Mines.mod|11624-Dialogue (10).mod": {
+   "src": "1532990-__world reactions W.mod",
+   "town": 900070,
+   "ws": 900069
+  },
+  "13-Holy Mines.mod|1229-gamedata.base": {
+   "src": "1532993-__world reactions W.mod",
+   "town": 900072,
+   "ws": 900071
+  },
+  "13-Holy Mines.mod|51357-rebirth.mod": {
+   "src": "1532994-__world reactions W.mod",
+   "town": 900074,
+   "ws": 900073
+  },
+  "1364-gamedata.base|5008123-Kaizo.mod": {
+   "src": "5008121-Kaizo.mod",
+   "town": 900076,
+   "ws": 900075
+  },
+  "1364-gamedata.base|51646-Dialogue.mod": {
+   "src": "1533694-__world reactions Slavers.mod",
+   "town": 900078,
+   "ws": 900077
+  },
+  "14-Holy Mines.mod|11624-Dialogue (10).mod": {
+   "src": "37-Holy Mines.mod",
+   "town": 900080,
+   "ws": 900079
+  },
+  "14-Holy Mines.mod|defaultEmpireFactionSID": {
+   "src": "35-Holy Mines.mod",
+   "town": 900082,
+   "ws": 900081
+  },
+  "14-Holy Villages.mod|11624-Dialogue (10).mod": {
+   "src": "101-Holy Villages.mod",
+   "town": 900084,
+   "ws": 900083
+  },
+  "15-Holy Villages.mod|11624-Dialogue (10).mod": {
+   "src": "89-Holy Villages.mod",
+   "town": 900086,
+   "ws": 900085
+  },
+  "1532820-rebirth.mod|18893-rebirth.mod": {
+   "src": "542-Great Frontiers - World Overhaul.mod",
+   "town": 900088,
+   "ws": 900087
+  },
+  "1532821-rebirth.mod|58229-Dialogue.mod": {
+   "src": "1532827-rebirth.mod",
+   "town": 900090,
+   "ws": 900089
+  },
+  "1533495-__world reactions Slavers.mod|1229-gamedata.base": {
+   "src": "1533692-__world reactions Slavers.mod",
+   "town": 900092,
+   "ws": 900091
+  },
+  "1533962-__SE world states.mod|1084-gamedata.base": {
+   "src": "1533961-__SE world states.mod",
+   "town": 900094,
+   "ws": 900093
+  },
+  "1533962-__SE world states.mod|18893-rebirth.mod": {
+   "src": "1531894-rebirth.mod",
+   "town": 900096,
+   "ws": 900095
+  },
+  "1535735-Bounties Galore.mod|1233-gamedata.base": {
+   "src": "1536727-Bounties Galore.mod",
+   "town": 900098,
+   "ws": 900097
+  },
+  "1536171-Bounties Galore.mod|18893-rebirth.mod": {
+   "src": "47-Bounties Galore Patch.mod",
+   "town": 900100,
+   "ws": 900099
+  },
+  "16-Holy Villages.mod|1084-gamedata.base": {
+   "src": "75-Holy Villages.mod",
+   "town": 900102,
+   "ws": 900101
+  },
+  "16-Holy Villages.mod|defaultEmpireFactionSID": {
+   "src": "74-Holy Villages.mod",
+   "town": 900104,
+   "ws": 900103
+  },
+  "18021-Newwworld.mod|11624-Dialogue (10).mod": {
+   "src": "1532983-__world reactions W.mod",
+   "town": 900106,
+   "ws": 900105
+  },
+  "18021-Newwworld.mod|42022-rebirth.mod": {
+   "src": "1532986-__world reactions W.mod",
+   "town": 900108,
+   "ws": 900107
+  },
+  "18021-Newwworld.mod|51357-rebirth.mod": {
+   "src": "1532985-__world reactions W.mod",
+   "town": 900110,
+   "ws": 900109
+  },
+  "18021-Newwworld.mod|defaultEmpireFactionSID": {
+   "src": "1534430-__Fixes.mod",
+   "town": 900112,
+   "ws": 900111
+  },
+  "18022-Newwworld.mod|18893-rebirth.mod": {
+   "src": "5000277-Bandit Variety.mod",
+   "town": 900114,
+   "ws": 900113
+  },
+  "18024-Newwworld.mod|1084-gamedata.base": {
+   "src": "1534429-__Fixes.mod",
+   "town": 900116,
+   "ws": 900115
+  },
+  "18024-Newwworld.mod|11624-Dialogue (10).mod": {
+   "src": "1532990-__world reactions W.mod",
+   "town": 900118,
+   "ws": 900117
+  },
+  "18024-Newwworld.mod|1229-gamedata.base": {
+   "src": "1532993-__world reactions W.mod",
+   "town": 900120,
+   "ws": 900119
+  },
+  "18024-Newwworld.mod|51357-rebirth.mod": {
+   "src": "1532994-__world reactions W.mod",
+   "town": 900122,
+   "ws": 900121
+  },
+  "18919-Newwworld.mod|1083-gamedata.base": {
+   "src": "5000398-Bandit Variety.mod",
+   "town": 900124,
+   "ws": 900123
+  },
+  "18919-Newwworld.mod|11624-Dialogue (10).mod": {
+   "src": "5000399-Bandit Variety.mod",
+   "town": 900126,
+   "ws": 900125
+  },
+  "18919-Newwworld.mod|200-gamedata.base": {
+   "src": "5000395-Bandit Variety.mod",
+   "town": 900128,
+   "ws": 900127
+  },
+  "18921-Newwworld.mod|1084-gamedata.base": {
+   "src": "5003792-Bandit Variety.mod",
+   "town": 900130,
+   "ws": 900129
+  },
+  "18921-Newwworld.mod|42022-rebirth.mod": {
+   "src": "1532971-__world reactions.mod",
+   "town": 900132,
+   "ws": 900131
+  },
+  "18921-Newwworld.mod|49377-rebirth.mod": {
+   "src": "1532970-__world reactions.mod",
+   "town": 900134,
+   "ws": 900133
+  },
+  "18921-Newwworld.mod|518-gamedata.base": {
+   "src": "5000423-Bandit Variety.mod",
+   "town": 900136,
+   "ws": 900135
+  },
+  "18923-Newwworld.mod|18893-rebirth.mod": {
+   "src": "1533242-__world reactions W.mod",
+   "town": 900138,
+   "ws": 900137
+  },
+  "18925-Newwworld.mod|11624-Dialogue (10).mod": {
+   "src": "1532980-__world reactions W.mod",
+   "town": 900140,
+   "ws": 900139
+  },
+  "18925-Newwworld.mod|42022-rebirth.mod": {
+   "src": "1532987-__world reactions W.mod",
+   "town": 900142,
+   "ws": 900141
+  },
+  "18925-Newwworld.mod|51357-rebirth.mod": {
+   "src": "1532984-__world reactions W.mod",
+   "town": 900144,
+   "ws": 900143
+  },
+  "18948-Newwworld.mod|1084-gamedata.base": {
+   "src": "1534428-__Fixes.mod",
+   "town": 900146,
+   "ws": 900145
+  },
+  "18948-Newwworld.mod|11624-Dialogue (10).mod": {
+   "src": "1532990-__world reactions W.mod",
+   "town": 900148,
+   "ws": 900147
+  },
+  "18948-Newwworld.mod|1229-gamedata.base": {
+   "src": "1532993-__world reactions W.mod",
+   "town": 900150,
+   "ws": 900149
+  },
+  "18948-Newwworld.mod|51357-rebirth.mod": {
+   "src": "1532994-__world reactions W.mod",
+   "town": 900152,
+   "ws": 900151
+  },
+  "2601-gamedata.base|1233-gamedata.base": {
+   "src": "1532932-__world reactions NE.mod",
+   "town": 900154,
+   "ws": 900153
+  },
+  "2601-gamedata.base|1532482-__May 18 2.mod": {
+   "src": "1532931-__world reactions NE.mod",
+   "town": 900156,
+   "ws": 900155
+  },
+  "2608-gamedata.base|42257-rebirth.mod": {
+   "src": "5003312-Bandit Variety.mod",
+   "town": 900158,
+   "ws": 900157
+  },
+  "2608-gamedata.base|51357-rebirth.mod": {
+   "src": "5003314-Bandit Variety.mod",
+   "town": 900160,
+   "ws": 900159
+  },
+  "261-Leviathan Ronin (Reloaded).mod|11-The Leviathan Ronin.mod": {
+   "src": "307-Leviathan Ronin (Reloaded).mod",
+   "town": 900162,
+   "ws": 900161
+  },
+  "261-Leviathan Ronin (Reloaded).mod|12-The Leviathan Ronin.mod": {
+   "src": "309-Leviathan Ronin (Reloaded).mod",
+   "town": 900164,
+   "ws": 900163
+  },
+  "304-Great Frontiers - World Overhaul.mod|42257-rebirth.mod": {
+   "src": "5003312-Bandit Variety.mod",
+   "town": 900166,
+   "ws": 900165
+  },
+  "304-Great Frontiers - World Overhaul.mod|51357-rebirth.mod": {
+   "src": "5003314-Bandit Variety.mod",
+   "town": 900168,
+   "ws": 900167
+  },
+  "33-gamedata.quack|5008721-Kaizo.mod": {
+   "src": "5008719-Kaizo.mod",
+   "town": 900170,
+   "ws": 900169
+  },
+  "33-gamedata.quack|56777-Dialogue.mod": {
+   "src": "5008809-Kaizo.mod",
+   "town": 900172,
+   "ws": 900171
+  },
+  "33-gamedata.quack|96359-rebirth.mod": {
+   "src": "1533709-__world reactions Slavers.mod",
+   "town": 900174,
+   "ws": 900173
+  },
+  "37-The Leviathan Ronin.mod|11-The Leviathan Ronin.mod": {
+   "src": "67-Leviathan Ronin (Reloaded).mod",
+   "town": 900176,
+   "ws": 900175
+  },
+  "40631-Newwworld.mod|1084-gamedata.base": {
+   "src": "1533961-__SE world states.mod",
+   "town": 900178,
+   "ws": 900177
+  },
+  "40631-Newwworld.mod|18893-rebirth.mod": {
+   "src": "1531894-rebirth.mod",
+   "town": 900180,
+   "ws": 900179
+  },
+  "42271-Newwworld.mod|18007-rebirth.mod": {
+   "src": "5000893-Bandit Variety.mod",
+   "town": 900182,
+   "ws": 900181
+  },
+  "42271-Newwworld.mod|42022-rebirth.mod": {
+   "src": "5000888-Bandit Variety.mod",
+   "town": 900184,
+   "ws": 900183
+  },
+  "42271-Newwworld.mod|5003620-Bandit Variety.mod": {
+   "src": "5000889-Bandit Variety.mod",
+   "town": 900186,
+   "ws": 900185
+  },
+  "42271-Newwworld.mod|5003626-Bandit Variety.mod": {
+   "src": "5010153-Kaizo.mod",
+   "town": 900188,
+   "ws": 900187
+  },
+  "42305-Newwworld.mod|1084-gamedata.base": {
+   "src": "1533960-__SE world states.mod",
+   "town": 900190,
+   "ws": 900189
+  },
+  "42305-Newwworld.mod|1214-gamedata.base": {
+   "src": "21-Settled Nomads Expanded V2.mod",
+   "town": 900192,
+   "ws": 900191
+  },
+  "44424-rebirth.mod|49377-rebirth.mod": {
+   "src": "5000587-Bandit Variety.mod",
+   "town": 900194,
+   "ws": 900193
+  },
+  "44852-rebirth.mod|11624-Dialogue (10).mod": {
+   "src": "5000896-Bandit Variety.mod",
+   "town": 900196,
+   "ws": 900195
+  },
+  "44852-rebirth.mod|1214-gamedata.base": {
+   "src": "5010284-Kaizo.mod",
+   "town": 900198,
+   "ws": 900197
+  },
+  "44852-rebirth.mod|5003624-Bandit Variety.mod": {
+   "src": "5003707-Bandit Variety.mod",
+   "town": 900200,
+   "ws": 900199
+  },
+  "44852-rebirth.mod|5003626-Bandit Variety.mod": {
+   "src": "5008098-Kaizo.mod",
+   "town": 900202,
+   "ws": 900201
+  },
+  "44853-rebirth.mod|18007-rebirth.mod": {
+   "src": "4999724-Bandit Variety.mod",
+   "town": 900204,
+   "ws": 900203
+  },
+  "44853-rebirth.mod|42022-rebirth.mod": {
+   "src": "4999726-Bandit Variety.mod",
+   "town": 900206,
+   "ws": 900205
+  },
+  "44853-rebirth.mod|5003626-Bandit Variety.mod": {
+   "src": "5003704-Bandit Variety.mod",
+   "town": 900208,
+   "ws": 900207
+  },
+  "44884-rebirth.mod|14491-rebirth.mod": {
+   "src": "5000384-Bandit Variety.mod",
+   "town": 900210,
+   "ws": 900209
+  },
+  "44884-rebirth.mod|18011-rebirth.mod": {
+   "src": "5000381-Bandit Variety.mod",
+   "town": 900212,
+   "ws": 900211
+  },
+  "44884-rebirth.mod|200-gamedata.base": {
+   "src": "5000383-Bandit Variety.mod",
+   "town": 900214,
+   "ws": 900213
+  },
+  "46401-Newwworld.mod|18893-rebirth.mod": {
+   "src": "542-Great Frontiers - World Overhaul.mod",
+   "town": 900216,
+   "ws": 900215
+  },
+  "49365-rebirth.mod|11624-Dialogue (10).mod": {
+   "src": "5003349-Bandit Variety.mod",
+   "town": 900218,
+   "ws": 900217
+  },
+  "49365-rebirth.mod|51357-rebirth.mod": {
+   "src": "5003350-Bandit Variety.mod",
+   "town": 900220,
+   "ws": 900219
+  },
+  "49366-rebirth.mod|1083-gamedata.base": {
+   "src": "5003731-Bandit Variety.mod",
+   "town": 900222,
+   "ws": 900221
+  },
+  "49366-rebirth.mod|518-gamedata.base": {
+   "src": "1531891-rebirth.mod",
+   "town": 900224,
+   "ws": 900223
+  },
+  "49368-rebirth.mod|1083-gamedata.base": {
+   "src": "5000408-Bandit Variety.mod",
+   "town": 900226,
+   "ws": 900225
+  },
+  "49368-rebirth.mod|16855-gamedata.base": {
+   "src": "5000409-Bandit Variety.mod",
+   "town": 900228,
+   "ws": 900227
+  },
+  "49368-rebirth.mod|518-gamedata.base": {
+   "src": "1531891-rebirth.mod",
+   "town": 900230,
+   "ws": 900229
+  },
+  "49387-rebirth.mod|518-gamedata.base": {
+   "src": "5000138-Bandit Variety.mod",
+   "town": 900232,
+   "ws": 900231
+  },
+  "49942-rebirth.mod|16855-gamedata.base": {
+   "src": "5000269-Bandit Variety.mod",
+   "town": 900234,
+   "ws": 900233
+  },
+  "49942-rebirth.mod|42022-rebirth.mod": {
+   "src": "5000273-Bandit Variety.mod",
+   "town": 900236,
+   "ws": 900235
+  },
+  "49942-rebirth.mod|49377-rebirth.mod": {
+   "src": "5000245-Bandit Variety.mod",
+   "town": 900238,
+   "ws": 900237
+  },
+  "49942-rebirth.mod|518-gamedata.base": {
+   "src": "1532950-__world reactions.mod",
+   "town": 900240,
+   "ws": 900239
+  },
+  "49942-rebirth.mod|defaultEmpireFactionSID": {
+   "src": "5000243-Bandit Variety.mod",
+   "town": 900242,
+   "ws": 900241
+  },
+  "5000140-Bandit Variety.mod|18007-rebirth.mod": {
+   "src": "5000382-Bandit Variety.mod",
+   "town": 900244,
+   "ws": 900243
+  },
+  "5000140-Bandit Variety.mod|48743-Dialogue.mod": {
+   "src": "5000281-Bandit Variety.mod",
+   "town": 900246,
+   "ws": 900245
+  },
+  "5000140-Bandit Variety.mod|48791-Dialogue.mod": {
+   "src": "5000283-Bandit Variety.mod",
+   "town": 900248,
+   "ws": 900247
+  },
+  "5000140-Bandit Variety.mod|48814-Dialogue.mod": {
+   "src": "5000278-Bandit Variety.mod",
+   "town": 900250,
+   "ws": 900249
+  },
+  "5007317-Rusty Raiders FACTION.mod|66292-rebirth.mod": {
+   "src": "5009298-Rusty Raiders FACTION.mod",
+   "town": 900252,
+   "ws": 900251
+  },
+  "5007539-Rusty Raiders FACTION.mod|5007316-Rusty Raiders FACTION.mod": {
+   "src": "5008770-Rusty Raiders FACTION.mod",
+   "town": 900254,
+   "ws": 900253
+  },
+  "5007567-Rusty Raiders FACTION.mod|5007316-Rusty Raiders FACTION.mod": {
+   "src": "5008930-Rusty Raiders FACTION.mod",
+   "town": 900256,
+   "ws": 900255
+  },
+  "50321-rebirth.mod|48743-Dialogue.mod": {
+   "src": "1533713-__world reactios swamp.mod",
+   "town": 900258,
+   "ws": 900257
+  },
+  "50321-rebirth.mod|48791-Dialogue.mod": {
+   "src": "1533711-__world reactios swamp.mod",
+   "town": 900260,
+   "ws": 900259
+  },
+  "50992-rebirth.mod|11624-Dialogue (10).mod": {
+   "src": "5003336-Bandit Variety.mod",
+   "town": 900262,
+   "ws": 900261
+  },
+  "50992-rebirth.mod|42257-rebirth.mod": {
+   "src": "5003334-Bandit Variety.mod",
+   "town": 900264,
+   "ws": 900263
+  },
+  "50992-rebirth.mod|51357-rebirth.mod": {
+   "src": "5003311-Bandit Variety.mod",
+   "town": 900266,
+   "ws": 900265
+  },
+  "5131015-Dark Hive.mod|18893-rebirth.mod": {
+   "src": "5132340-Dark Hive.mod",
+   "town": 900268,
+   "ws": 900267
+  },
+  "5131015-Dark Hive.mod|5131935-Dark Hive.mod": {
+   "src": "5132341-Dark Hive.mod",
+   "town": 900270,
+   "ws": 900269
+  },
+  "51381-rebirth.mod|41162-Dialogue.mod": {
+   "src": "1533722-__world reactios swamp.mod",
+   "town": 900272,
+   "ws": 900271
+  },
+  "51381-rebirth.mod|48760-Dialogue.mod": {
+   "src": "5004513-Bandit Variety.mod",
+   "town": 900274,
+   "ws": 900273
+  },
+  "51381-rebirth.mod|48814-Dialogue.mod": {
+   "src": "5004512-Bandit Variety.mod",
+   "town": 900276,
+   "ws": 900275
+  },
+  "51381-rebirth.mod|56595-Dialogue.mod": {
+   "src": "1533732-__world reactios swamp.mod",
+   "town": 900278,
+   "ws": 900277
+  },
+  "51396-rebirth.mod|1233-gamedata.base": {
+   "src": "5000430-Bandit Variety.mod",
+   "town": 900280,
+   "ws": 900279
+  },
+  "51402-rebirth.mod|1229-gamedata.base": {
+   "src": "1533704-__world reactions Slavers.mod",
+   "town": 900282,
+   "ws": 900281
+  },
+  "51482-rebirth.mod|48743-Dialogue.mod": {
+   "src": "5004498-Bandit Variety.mod",
+   "town": 900284,
+   "ws": 900283
+  },
+  "51482-rebirth.mod|48791-Dialogue.mod": {
+   "src": "5004502-Bandit Variety.mod",
+   "town": 900286,
+   "ws": 900285
+  },
+  "51482-rebirth.mod|51638-rebirth.mod": {
+   "src": "5004495-Bandit Variety.mod",
+   "town": 900288,
+   "ws": 900287
+  },
+  "51646-rebirth.mod|48743-Dialogue.mod": {
+   "src": "5004501-Bandit Variety.mod",
+   "town": 900290,
+   "ws": 900289
+  },
+  "51646-rebirth.mod|48791-Dialogue.mod": {
+   "src": "5004500-Bandit Variety.mod",
+   "town": 900292,
+   "ws": 900291
+  },
+  "51646-rebirth.mod|51652-rebirth.mod": {
+   "src": "5004494-Bandit Variety.mod",
+   "town": 900294,
+   "ws": 900293
+  },
+  "52-Holy Villages.mod|1084-gamedata.base": {
+   "src": "66-Holy Villages.mod",
+   "town": 900296,
+   "ws": 900295
+  },
+  "52-Holy Villages.mod|51646-Dialogue.mod": {
+   "src": "56-Holy Villages.mod",
+   "town": 900298,
+   "ws": 900297
+  },
+  "52-Holy Villages.mod|defaultEmpireFactionSID": {
+   "src": "67-Holy Villages.mod",
+   "town": 900300,
+   "ws": 900299
+  },
+  "53084-rebirth.mod|16855-gamedata.base": {
+   "src": "5000427-Bandit Variety.mod",
+   "town": 900302,
+   "ws": 900301
+  },
+  "53084-rebirth.mod|42022-rebirth.mod": {
+   "src": "5000428-Bandit Variety.mod",
+   "town": 900304,
+   "ws": 900303
+  },
+  "53084-rebirth.mod|defaultEmpireFactionSID": {
+   "src": "5000424-Bandit Variety.mod",
+   "town": 900306,
+   "ws": 900305
+  },
+  "54-Holy Villages.mod|42022-rebirth.mod": {
+   "src": "14-Holy Villages Patch.mod",
+   "town": 900308,
+   "ws": 900307
+  },
+  "54-Holy Villages.mod|49377-rebirth.mod": {
+   "src": "13-Holy Villages Patch.mod",
+   "town": 900310,
+   "ws": 900309
+  },
+  "54-Holy Villages.mod|518-gamedata.base": {
+   "src": "81-Holy Villages.mod",
+   "town": 900312,
+   "ws": 900311
+  },
+  "54-Holy Villages.mod|defaultEmpireFactionSID": {
+   "src": "12-Holy Villages Patch.mod",
+   "town": 900314,
+   "ws": 900313
+  },
+  "55-Holy Villages.mod|1084-gamedata.base": {
+   "src": "66-Holy Villages.mod",
+   "town": 900316,
+   "ws": 900315
+  },
+  "55-Holy Villages.mod|49377-rebirth.mod": {
+   "src": "87-Holy Villages.mod",
+   "town": 900318,
+   "ws": 900317
+  },
+  "55-Holy Villages.mod|51646-Dialogue.mod": {
+   "src": "88-Holy Villages.mod",
+   "town": 900320,
+   "ws": 900319
+  },
+  "55-Holy Villages.mod|defaultEmpireFactionSID": {
+   "src": "67-Holy Villages.mod",
+   "town": 900322,
+   "ws": 900321
+  },
+  "55396-rebirth.mod|51646-Dialogue.mod": {
+   "src": "1533592-__world reactions Slavers.mod",
+   "town": 900324,
+   "ws": 900323
+  },
+  "55649-rebirth.mod|1532482-__May 18 2.mod": {
+   "src": "1532481-__May 18 2.mod",
+   "town": 900326,
+   "ws": 900325
+  },
+  "55649-rebirth.mod|1532900-__world reactions NE.mod": {
+   "src": "1532899-__world reactions NE.mod",
+   "town": 900328,
+   "ws": 900327
+  },
+  "55651-rebirth.mod|51646-Dialogue.mod": {
+   "src": "1532914-__world reactions NE.mod",
+   "town": 900330,
+   "ws": 900329
+  },
+  "55651-rebirth.mod|518-gamedata.base": {
+   "src": "1532915-__world reactions NE.mod",
+   "town": 900332,
+   "ws": 900331
+  },
+  "55653-rebirth.mod|1083-gamedata.base": {
+   "src": "1532935-__world reactions NE.mod",
+   "town": 900334,
+   "ws": 900333
+  },
+  "55653-rebirth.mod|51646-Dialogue.mod": {
+   "src": "1533276-__world reactions NE.mod",
+   "town": 900336,
+   "ws": 900335
+  },
+  "55654-rebirth.mod|1083-gamedata.base": {
+   "src": "5000523-Bandit Variety.mod",
+   "town": 900338,
+   "ws": 900337
+  },
+  "55654-rebirth.mod|51646-Dialogue.mod": {
+   "src": "5000524-Bandit Variety.mod",
+   "town": 900340,
+   "ws": 900339
+  },
+  "55655-rebirth.mod|1083-gamedata.base": {
+   "src": "5003380-Bandit Variety.mod",
+   "town": 900342,
+   "ws": 900341
+  },
+  "55655-rebirth.mod|1088-gamedata.base": {
+   "src": "5003397-Bandit Variety.mod",
+   "town": 900344,
+   "ws": 900343
+  },
+  "55655-rebirth.mod|51646-Dialogue.mod": {
+   "src": "5003406-Bandit Variety.mod",
+   "town": 900346,
+   "ws": 900345
+  },
+  "55655-rebirth.mod|518-gamedata.base": {
+   "src": "5003401-Bandit Variety.mod",
+   "town": 900348,
+   "ws": 900347
+  },
+  "55657-rebirth.mod|11624-Dialogue (10).mod": {
+   "src": "1533113-__world reactions W.mod",
+   "town": 900350,
+   "ws": 900349
+  },
+  "55657-rebirth.mod|42022-rebirth.mod": {
+   "src": "5000234-Bandit Variety.mod",
+   "town": 900352,
+   "ws": 900351
+  },
+  "55657-rebirth.mod|5007316-Rusty Raiders FACTION.mod": {
+   "src": "5008924-Rusty Raiders FACTION.mod",
+   "town": 900354,
+   "ws": 900353
+  },
+  "55657-rebirth.mod|62805-rebirth.mod": {
+   "src": "5000238-Bandit Variety.mod",
+   "town": 900356,
+   "ws": 900355
+  },
+  "55657-rebirth.mod|defaultEmpireFactionSID": {
+   "src": "1532947-__world reactions.mod",
+   "town": 900358,
+   "ws": 900357
+  },
+  "55660-rebirth.mod|48743-Dialogue.mod": {
+   "src": "5004921-Bandit Variety.mod",
+   "town": 900360,
+   "ws": 900359
+  },
+  "55660-rebirth.mod|48760-Dialogue.mod": {
+   "src": "5004914-Bandit Variety.mod",
+   "town": 900362,
+   "ws": 900361
+  },
+  "55660-rebirth.mod|48814-Dialogue.mod": {
+   "src": "5004919-Bandit Variety.mod",
+   "town": 900364,
+   "ws": 900363
+  },
+  "55661-rebirth.mod|51646-Dialogue.mod": {
+   "src": "1532939-__world reactions NE.mod",
+   "town": 900366,
+   "ws": 900365
+  },
+  "55661-rebirth.mod|58229-Dialogue.mod": {
+   "src": "1532936-__world reactions NE.mod",
+   "town": 900368,
+   "ws": 900367
+  },
+  "55663-rebirth.mod|1084-gamedata.base": {
+   "src": "1534429-__Fixes.mod",
+   "town": 900370,
+   "ws": 900369
+  },
+  "55663-rebirth.mod|11624-Dialogue (10).mod": {
+   "src": "1532990-__world reactions W.mod",
+   "town": 900372,
+   "ws": 900371
+  },
+  "55663-rebirth.mod|1229-gamedata.base": {
+   "src": "1532993-__world reactions W.mod",
+   "town": 900374,
+   "ws": 900373
+  },
+  "55663-rebirth.mod|51357-rebirth.mod": {
+   "src": "1532994-__world reactions W.mod",
+   "town": 900376,
+   "ws": 900375
+  },
+  "55964-rebirth.mod|1084-gamedata.base": {
+   "src": "1534429-__Fixes.mod",
+   "town": 900378,
+   "ws": 900377
+  },
+  "55964-rebirth.mod|11624-Dialogue (10).mod": {
+   "src": "1532990-__world reactions W.mod",
+   "town": 900380,
+   "ws": 900379
+  },
+  "55964-rebirth.mod|1229-gamedata.base": {
+   "src": "1532993-__world reactions W.mod",
+   "town": 900382,
+   "ws": 900381
+  },
+  "55964-rebirth.mod|51357-rebirth.mod": {
+   "src": "1532994-__world reactions W.mod",
+   "town": 900384,
+   "ws": 900383
+  },
+  "56065-Newwworld.mod|1083-gamedata.base": {
+   "src": "5000493-Bandit Variety.mod",
+   "town": 900386,
+   "ws": 900385
+  },
+  "56065-Newwworld.mod|51646-Dialogue.mod": {
+   "src": "5000496-Bandit Variety.mod",
+   "town": 900388,
+   "ws": 900387
+  },
+  "56065-Newwworld.mod|518-gamedata.base": {
+   "src": "5000497-Bandit Variety.mod",
+   "town": 900390,
+   "ws": 900389
+  },
+  "56066-Newwworld.mod|1083-gamedata.base": {
+   "src": "5000485-Bandit Variety.mod",
+   "town": 900392,
+   "ws": 900391
+  },
+  "56066-Newwworld.mod|1532900-__world reactions NE.mod": {
+   "src": "5000486-Bandit Variety.mod",
+   "town": 900394,
+   "ws": 900393
+  },
+  "56066-Newwworld.mod|16855-gamedata.base": {
+   "src": "5000488-Bandit Variety.mod",
+   "town": 900396,
+   "ws": 900395
+  },
+  "56066-Newwworld.mod|51646-Dialogue.mod": {
+   "src": "5000487-Bandit Variety.mod",
+   "town": 900398,
+   "ws": 900397
+  },
+  "56086-rebirth.mod|1532900-__world reactions NE.mod": {
+   "src": "1533148-__world reactions NE.mod",
+   "town": 900400,
+   "ws": 900399
+  },
+  "56152-rebirth.mod|5007474-Lovely Gutter.mod": {
+   "src": "5007473-Lovely Gutter.mod",
+   "town": 900402,
+   "ws": 900401
+  },
+  "62767-rebirth.mod|18893-rebirth.mod": {
+   "src": "1531896-rebirth.mod",
+   "town": 900404,
+   "ws": 900403
+  },
+  "62789-rebirth.mod|96359-rebirth.mod": {
+   "src": "1533944-__SE world states.mod",
+   "town": 900406,
+   "ws": 900405
+  },
+  "62790-rebirth.mod|56777-Dialogue.mod": {
+   "src": "1533859-__SE world states.mod",
+   "town": 900408,
+   "ws": 900407
+  },
+  "63140-rebirth.mod|56777-Dialogue.mod": {
+   "src": "5009054-Kaizo.mod",
+   "town": 900410,
+   "ws": 900409
+  },
+  "63140-rebirth.mod|defaultEmpireFactionSID": {
+   "src": "5009064-Kaizo.mod",
+   "town": 900412,
+   "ws": 900411
+  },
+  "66515-Dialogue.mod|41162-Dialogue.mod": {
+   "src": "5004507-Bandit Variety.mod",
+   "town": 900414,
+   "ws": 900413
+  },
+  "66515-Dialogue.mod|48814-Dialogue.mod": {
+   "src": "1533720-__world reactios swamp.mod",
+   "town": 900416,
+   "ws": 900415
+  },
+  "66515-Dialogue.mod|51638-rebirth.mod": {
+   "src": "1533721-__world reactios swamp.mod",
+   "town": 900418,
+   "ws": 900417
+  },
+  "66517-Dialogue.mod|48743-Dialogue.mod": {
+   "src": "5004511-Bandit Variety.mod",
+   "town": 900420,
+   "ws": 900419
+  },
+  "66517-Dialogue.mod|48791-Dialogue.mod": {
+   "src": "5004508-Bandit Variety.mod",
+   "town": 900422,
+   "ws": 900421
+  },
+  "66517-Dialogue.mod|51638-rebirth.mod": {
+   "src": "5004509-Bandit Variety.mod",
+   "town": 900424,
+   "ws": 900423
+  },
+  "66543-rebirth.mod|56777-Dialogue.mod": {
+   "src": "1533863-__SE world states.mod",
+   "town": 900426,
+   "ws": 900425
+  },
+  "95755-__december17.mod|62806-rebirth.mod": {
+   "src": "1534011-__SE world states.mod",
+   "town": 900428,
+   "ws": 900427
+  },
+  "95755-__december17.mod|96156-rebirth.mod": {
+   "src": "1534013-__SE world states.mod",
+   "town": 900430,
+   "ws": 900429
+  },
+  "961-gamedata.base|1084-gamedata.base": {
+   "src": "5000884-Bandit Variety.mod",
+   "town": 900432,
+   "ws": 900431
+  },
+  "961-gamedata.base|51646-Dialogue.mod": {
+   "src": "5000881-Bandit Variety.mod",
+   "town": 900434,
+   "ws": 900433
+  },
+  "961-gamedata.base|97072-Dialogue.mod": {
+   "src": "5000883-Bandit Variety.mod",
+   "town": 900436,
+   "ws": 900435
+  },
+  "96148-Dialogue.mod|56777-Dialogue.mod": {
+   "src": "1533868-__SE world states.mod",
+   "town": 900438,
+   "ws": 900437
+  },
+  "96157-Dialogue.mod|62805-rebirth.mod": {
+   "src": "1533939-__SE world states.mod",
+   "town": 900440,
+   "ws": 900439
+  },
+  "962-gamedata.base|62805-rebirth.mod": {
+   "src": "1532854-__world reactions NE.mod",
+   "town": 900442,
+   "ws": 900441
+  },
+  "962-gamedata.base|97072-Dialogue.mod": {
+   "src": "94-Minor Faction Overhaul - Preacher Cult.mod",
+   "town": 900444,
+   "ws": 900443
+  },
+  "96219-rebirth.mod|1233-gamedata.base": {
+   "src": "5007304-Kaizo.mod",
+   "town": 900446,
+   "ws": 900445
+  },
+  "96293-Dialogue.mod|1084-gamedata.base": {
+   "src": "1533961-__SE world states.mod",
+   "town": 900448,
+   "ws": 900447
+  },
+  "96293-Dialogue.mod|18893-rebirth.mod": {
+   "src": "1531894-rebirth.mod",
+   "town": 900450,
+   "ws": 900449
+  },
+  "96498-Dialogue.mod|11624-Dialogue (10).mod": {
+   "src": "15-Exile Camp Expanded.mod",
+   "town": 900452,
+   "ws": 900451
+  },
+  "96498-Dialogue.mod|42257-rebirth.mod": {
+   "src": "18-Exile Camp Expanded.mod",
+   "town": 900454,
+   "ws": 900453
+  },
+  "96498-Dialogue.mod|51357-rebirth.mod": {
+   "src": "16-Exile Camp Expanded.mod",
+   "town": 900456,
+   "ws": 900455
+  },
+  "96499-Dialogue.mod|11624-Dialogue (10).mod": {
+   "src": "5000288-Bandit Variety.mod",
+   "town": 900458,
+   "ws": 900457
+  },
+  "96499-Dialogue.mod|42257-rebirth.mod": {
+   "src": "5000287-Bandit Variety.mod",
+   "town": 900460,
+   "ws": 900459
+  },
+  "96519-Dialogue.mod|62805-rebirth.mod": {
+   "src": "5007302-Kaizo.mod",
+   "town": 900462,
+   "ws": 900461
+  },
+  "97071-Dialogue.mod|1084-gamedata.base": {
+   "src": "1533963-__SE world states.mod",
+   "town": 900464,
+   "ws": 900463
+  },
+  "97071-Dialogue.mod|51646-Dialogue.mod": {
+   "src": "5000411-Bandit Variety.mod",
+   "town": 900466,
+   "ws": 900465
+  }
+ }
+}
