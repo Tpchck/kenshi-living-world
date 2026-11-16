@@ -1,9 +1,10 @@
 # STATUS — сводка проекта (2026-11-15). Читать первым.
 
-Kenshi 1.0.65 Steam + RE_Kenshi 0.3.5 + KenshiLua; плагин KMM_Native 2.4.0. mods.cfg: 663 мода (пишет только генератор). Нужна НОВАЯ ИГРА.
+Kenshi 1.0.65 Steam + RE_Kenshi 0.3.5 + KenshiLua; плагин KMM_Native 2.4.0. mods.cfg: 663 мода (пишет только генератор). Установка 16.11 06:01 — последняя «новая игра».
 История до 14.11: `docs/archive/STATUS_20261114.md`, решения: `docs/archive/DECISIONS_to_20261114.md`.
 
-ПАУЗА 2026-11-15: 4 поток (проверка, прогрессия, заметность, цельность) остановлены на полпути — исходники частично правлены, оригиналы в jobs/67d29d63/tmp/orig/{verify,prog,vis,coh}. НЕ собирать до продолжения и ревью.
+ХОТФИКС 2026-11-16 06:53: хищники выключены (краш в ZoneSmell), иконки >1024 px уменьшены; сейв совместим.
+УСТАНОВЛЕНО 2026-11-16 06:01 (снимок backup/releases/20261116_060147_pre_install, mods.cfg бэкап 20261116_060153): вся пачка 15–16.11, два ревью, verify_all OK, тесты tools/streams OK. НУЖНА НОВАЯ ИГРА — В ПОСЛЕДНИЙ РАЗ; дальше только save-compatible правки. Старт один: Castaway.
 21:26 установлено: один старт — Castaway (голый, 0 денег, навыки 1, голодный malnourished=true, Великая пустыня); Iron Wanderer выключен (fix.json test_start.enabled=false). Брейншторм: docs/brainstorm/B1–B4. Нужна новая игра.
 
 ## Как работаем
@@ -12,6 +13,7 @@ Kenshi 1.0.65 Steam + RE_Kenshi 0.3.5 + KenshiLua; плагин KMM_Native 2.4.0
 - Сборка и установка: `python -I -X utf8 tools/build/kmm_build.py --write all --install` (сам гонит verify_all: lua_lint, api_audit, 104 теста). Игра должна быть закрыта.
 - Чистка мусора: `python -I -X utf8 tools/cleanup_dev.py backup/archive/<имя>.zip` (эталоны *_pre_perf* сохраняются).
 - После игровой сессии: `python -I -X utf8 tools/session_report.py` → logs/session_last.txt.
+- Самопроверка (2026-11-16, не установлено, в игре не проверено): KMM_Probe.lua (KMM_Conductor) через ~20 с после появления персонажей и ещё раз через 5 мин проверяет вызовы движка (только чтение) → logs/probe.log `PROBE <имя> ok|fail|absent`; раздел «Самопроверка» в session_report; тест `_dev/test_probe.py`.
 
 ## Правда об игре
 - Сыграно: 2 сессии 14.11 (~40 мин + 3 мин). Подтверждено игрой: сборка грузится, плагин стартует, сейв модели пишется, say() слышен (rumors.log), пополнение торговцев.
