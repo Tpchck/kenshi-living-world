@@ -13,6 +13,8 @@
 --     TaskType приказа добавляется к рабочим задачам сессии (LEARN) — счёт не зависит от догадки о номере задачи;
 --   * выход: _resourceMiningLevel = base * max(floor, (R/R0)^k) * жила региона; base — ванильный уровень при первом контакте,
 --     жила региона = KMM_Conductor.region_ore (остаток мировых жил вокруг узла; NPC и игрок черпают её вместе);
+--     ORE4: рычаг подтверждён разбором exe (getter = чтение поля, operate умножает выработку на него); движок пересчитывает
+--     поле при загрузке/постройке — чужое значение поля становится новой base, затем наш множитель пишется снова (apply_level);
 --   * труд игрока × player_to_world списывается с ближайшей жилы мира порциями (KMM_Conductor.player_mined);
 --   * состояние узлов — в состоянии дирижёра S.ore_nodes (пишется в сейв вместе с миром и откатывается с ним);
 --     без дирижёра — файл logs/ore_nodes_<мир>.tsv (он же пишется всегда как запасной и для импорта);
@@ -342,14 +344,26 @@ local function regen(s, day)
   end
   s.last_day = day
 end
+-- ORE4 (2026-11-16, static analysis of kenshi_x64.exe Steam 1.0.65, docs/core/economy_player.md section 8): the getter is a plain
+-- read of this field and ProductionBuilding::operate scales every work tick by getProductionMult() = field * X, so the write
+-- changes real output (worker and powered drill alike). The engine recomputes the field from the terrain resource map in
+-- setupMiningResourceLevel (save load, construction): a value we did not write (s.lw = our last write, kept in the node) is
+-- the engine's own and becomes the node base; then our cut is applied again.
 local function apply_level(pb, s, reg)
-  if not cfg.write_level or not s.base or s.base <= 0 then return nil end
-  local target = s.base * coefficient(s, reg)
+  if not cfg.write_level then return nil end
   local cur = pb._resourceMiningLevel
+  if type(cur) == "number" and cur > 0 and (s.lw == nil or math.abs(cur - s.lw) > 1e-3) and math.abs(cur - (s.base or -1)) > 1e-4 then
+    s.base = cur
+    RT.dirty = true
+    RT.stats.rebase = (RT.stats.rebase or 0) + 1
+  end
+  if not s.base or s.base <= 0 then return nil end
+  local target = s.base * coefficient(s, reg)
   if type(cur) ~= "number" or math.abs(cur - target) > 1e-4 then
     pb._resourceMiningLevel = target
     RT.stats.writes = RT.stats.writes + 1
   end
+  if s.lw == nil or math.abs(s.lw - target) > 1e-4 then s.lw = target; RT.dirty = true end
   return target
 end
 -- Остаток залежи в названии узла (по итогам плейтеста 2026-11-13): «Iron [ore left 73%]», при выработанной жиле региона —
@@ -697,6 +711,14 @@ KMM_Ore.disabled = function() return DISABLED end
 KMM_Ore.stats = function() return RT.stats end
 KMM_Ore.nodes = function() return RT.nodes end
 KMM_Ore.learned = function() return LEARNED end
+-- ORE4: is this building template an ore node (for KMM_Town: NPC miners draw from their town's vein)? -> "iron" | "copper" | nil.
+-- Table lookup only (ore_templates + ore_config.templates), no engine calls.
+KMM_Ore.ore_kind = function(sid)
+  if type(sid) ~= "string" then return nil end
+  if not cfg then local ok = pcall(load_cfg); if not ok then return nil end end
+  local t = TPL[sid]
+  return (t and t.cls and cfg.classes[t.cls]) and (t.res or "iron") or nil
+end
 KMM_Ore.status = function()
   local d = {}
   for k in pairs(DISABLED) do d[#d + 1] = k end
