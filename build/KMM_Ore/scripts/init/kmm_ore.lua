@@ -680,3 +680,6 @@ if EV and EV.on then
     if gov then return gov.run("ore", g_tick, false) else return g_tick(false) end
   end))
 end
+
+-- PUBLISH (2026-11-16): KenshiLua runs each init script in its own sandbox; a plain global stays inside it.
+if KMM_Ore ~= nil then rawset(_G, "KMM_Ore", KMM_Ore) end
