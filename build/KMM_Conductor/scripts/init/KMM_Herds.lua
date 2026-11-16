@@ -299,8 +299,9 @@ H.materialize = function(day)
         local sid, n = H.pick_sq(sp, P.herd_size[1], P.herd_size[2])
         if sid and H.request(e, day, "herd", h, sp.fid, sid, n, x, z, "herd") then return end
       end
-      -- отставшие хищники
-      local ps = h.pred and D.species[h.pred]
+      -- отставшие хищники: 2026-11-16 off with KMM_Predators (playtest: predators are vanilla nests and patrols only;
+      -- a Symbiosis pack spawned 5471 from the player knocked the squad out 40 s later). P.pred_spawn = true brings it back.
+      local ps = P.pred_spawn == true and h.pred and D.species[h.pred]
       if ps then
         local px, pz = H.pos(h, day - P.pred_delay)
         if day - (st.cd_pred or -1e9) >= P.cooldown_days and T.near(px, pz, P.near_r) then

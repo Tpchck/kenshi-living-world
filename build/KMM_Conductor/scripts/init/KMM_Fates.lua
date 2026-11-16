@@ -544,7 +544,11 @@ function M.rename(h, lv)
   if not (ok and leader) then return false end
   local ok2 = pcall(function() leader:setName(h.n) end)
   pcall(function() lv.pl:getActivePlatoon():setName(h.n) end)
-  if ok2 then lv.named = true end
+  if ok2 then
+    lv.named = true
+    local okh, hd = pcall(function() return leader:getHandle() end)
+    if okh and hd then lv.hd = hd end   -- the hero himself: the engine may hand squad leadership to another member
+  end
   return ok2
 end
 function M.near(T, x, z, r)   -- Traces ленив: до его первого тика P = nil и near бросает ошибку - это не повод отключаться
@@ -600,14 +604,14 @@ function M.watch(C, F, W)
     else
       local ok, leader = pcall(function() return lv.pl:getSquadLeader() end)
       local dead = false
-      if ok and leader then
-        if not lv.named then M.rename(h, lv)
-        else
-          local okn, nm = pcall(function() return leader:getName() end)
-          if okn and nm and nm ~= h.n then dead = true end   -- лидером стал другой: герой выбыл
-        end
+      if ok and leader and not lv.named then M.rename(h, lv) end
+      if lv.named and lv.hd then
+        -- 2026-11-16: a new squad leader is not a death (Kelkra Oldmoon "died" 49 s after spawn, no fight): check the hero
+        local okd, d = pcall(function() return lv.hd:isValid() and lv.hd:getCharacter():isDead() end)
+        if okd and d == true then dead = true end
+      elseif ok and leader then
         local okd, d = pcall(function() return leader:isDead() end)
-        if okd and d then dead = true end
+        if okd and d == true then dead = true end
       end
       local okp, pd = pcall(function() return lv.pl.isDead end)
       if okp and pd == true then dead = true end

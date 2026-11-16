@@ -888,9 +888,15 @@ function KC.GL.own_step(fid, f)
   elseif k == "found" then
     if not x or f.wealth < (Gp.found_cost or 40) or (f.founded or 0) >= (Gp.found_max or 3) then return end
     local bs, bd
+    -- ORE (2026-11-16): a faction short of metal settles where the veins are still rich, not just at the nearest ruin
+    local ore_hungry = (f.metal_def or 0) > ((KC.P.loop or {}).mine_def or 0.3) and KC.REGION_ORE
     for _, st in ipairs(KC.CFG.sites or {}) do
       if not KC.S.founded[st.sid] then
         local d = math.sqrt((st.x - x) ^ 2 + (st.z - z) ^ 2)
+        if ore_hungry and d <= 90000 then
+          local okr, ro = pcall(KC.REGION_ORE, st.x, st.z)
+          d = d / math.max(0.15, (okr and tonumber(ro)) or 1)   -- rich vein = "closer"
+        end
         if d <= 60000 and (not bd or d < bd) then bs, bd = st, d end
       end
     end

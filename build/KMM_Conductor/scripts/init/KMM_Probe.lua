@@ -506,6 +506,7 @@ for _, name in ipairs(MODS) do
     local m = rawget(_G, name)
     if m == nil then return "absent", "not loaded (no global " .. name .. ")" end
     if type(m) ~= "table" then return "fail", "global " .. name .. " is " .. type(m) end
+    if rawget(m, "retired") == true then return "ok", "retired by design" end
     local off = off_flags(m)
     if #off > 0 then return "fail", "self-disabled: " .. table.concat(off, ",") end
     return "ok", "loaded, nothing disabled"
