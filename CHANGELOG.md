@@ -1,5 +1,14 @@
 # Changelog
 
+## 2026-11-16
+- Predators module retired after a crash in the engine's smell zones; predator packs trailing herds are off too. Predators are vanilla nests and patrols again.
+- Ore: veins deplete and regrow, factions short on metal look for new sites and take other factions' mines; tax collectors come for long mining on someone else's land.
+- Firearms by region: guns show up where the lore puts them, prices follow.
+- Inventory icons: oversized icons downscaled, icons moved by mod compilations relinked.
+- Runtime modules publish themselves into the global table, so the self-check sees all of them.
+- Build menu: a vanilla building keeps its own category when duplicates fold (plain campfire back under Camping).
+- Fates: a hero dies only when the hero dies, not when the engine hands squad leadership to someone else.
+
 ## 2026-11-15
 - Core-first course: every mechanic starts from an engine reference in `docs/core/` (people, AI squads, world, economy, data, call ledger).
 - Deeds bus: kills, captures and rescues from the engine's relation callback feed rivals, town memory and bounties.
