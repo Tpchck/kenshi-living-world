@@ -226,7 +226,7 @@ for d = 0, 365 * {YEARS} do
   if d > 0 and d % 365 == 0 then snap(d / 365); if M then stock_snap(d / 365) end end
 end
 local fh = io.open("C:/KenshiModMap/logs/sim_snap.json", "w")
-fh:write(JSON({{ rot = (M and M.rot_stats) and M.rot_stats(S.stock) or nil, snaps = SNAP, stock = STOCKSNAP, metal = METAL, tm = TM, wst = KMM_Conductor.phase_stats(), model = MP or "none", model_error = MERR or "", ws = KMM_Conductor.ws_stats(), story = S.story and {{ hist = S.story.hist, shift = S.story.shift, k = S.story.k, act = S.story.act, m = S.story.m }} or nil }})); fh:close()
+fh:write(JSON({{ rot = (M and M.rot_stats) and M.rot_stats(S.stock) or nil, snaps = SNAP, stock = STOCKSNAP, metal = METAL, tm = TM, wst = KMM_Conductor.phase_stats(), model = MP or "none", model_error = MERR or "", ws = KMM_Conductor.ws_stats(), story = S.story and {{ hist = S.story.hist, k = S.story.k, ck = S.story.ck, hk = S.story.hk, act = S.story.act, m = S.story.m, cycles = S.story.cycles, cur = S.story.cur }} or nil }})); fh:close()
 ''', "simulation")
 
 RAW = json.load(open(os.path.join(TMP, "sim_snap.json"), encoding="utf-8"))
@@ -384,6 +384,19 @@ if "--ws" in sys.argv:
 summary["story"] = RAW.get("story")
 if summary["story"]:
     summary["story"]["by_year"] = {sn["year"]: [sn.get("sact"), sn.get("sm")] for sn in snaps}
+    # обороты: hist режется на обороты по входу в стартовую фазу; годы входа в фазы и длина оборота (годы = день / 365)
+    _start = cfg["params"]["story"].get("start", "quiet")
+    _cyc = []
+    for _act, _day in summary["story"].get("hist") or []:
+        if _act == _start or not _cyc:
+            _cyc.append({"start_year": round(_day / 365, 2), "phases": []})
+        _cyc[-1]["phases"].append(f"{_act} {_day / 365:.2f}")
+    for _i, _c in enumerate(_cyc):
+        _nxt = _cyc[_i + 1]["start_year"] if _i + 1 < len(_cyc) else None
+        _c["len_years"] = round(_nxt - _c["start_year"], 2) if _nxt is not None else None   # None: оборот не закончен к концу прогона
+    summary["story"]["cycles_by_hist"] = _cyc
+    _cr = set(cfg["params"]["story"].get("cycle", {}).get("crises", []))
+    summary["story"]["crises_by_cycle"] = [[p.split()[0] for p in c["phases"] if p.split()[0] in _cr] for c in _cyc]
 SUFFIX = ("_raw" if "--rawpairs" in sys.argv else "") + ("_nogoals" if "--nogoals" in sys.argv else "") + ("_nostock" if MODEL is None else ("_stub" if MODEL == STOCK_STUB else ""))
 if "--ws" in sys.argv:
     SUFFIX += "_ws"
