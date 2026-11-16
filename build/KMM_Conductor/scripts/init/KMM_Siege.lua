@@ -20,7 +20,7 @@ M.cfg = M.cfg or {
   food_drain = 0.05, med_drain = 0.03, weapons_drain = 0.02,   -- доля нормы склада в сутки
   defender_mult = 1.2, hunger_bonus = 0.5, storm_ratio = 1.0,  -- штурм удаётся, если сила осады >= storm_ratio * сила защиты
   vis_radius = 70000, atk_squads = 2, def_squads = 1, squad_size = 5, storm_squads = 3,
-  progress_every = 2, native_alarm = true, alarm_pulse = 30, sdir = "C:/KenshiModMap/state/",
+  progress_every = 2, native_alarm = false, alarm_pulse = 30, sdir = "C:/KenshiModMap/state/",
   log = "C:/KenshiModMap/logs/siege.log",
   native = true,     -- осада через родную кампанию; false = только своя модель (бросок)
   camp_tries = 3,    -- попыток запуска на осаду (по дням, когда игрок рядом с городом)

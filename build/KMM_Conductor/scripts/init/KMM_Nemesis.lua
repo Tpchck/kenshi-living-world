@@ -612,11 +612,15 @@ function N.worth(C)
     end
   end)
   W.skill = nsk > 0 and sk / nsk or nil
+  pcall(function()   -- ORE4: работающий рудник игрока - тоже богатство (C.base_ore().cats, с затуханием): снимает «poor»/contempt
+    local O = C and C.base_ore and C.base_ore()
+    if O and tonumber(O.cats) and O.cats > 0 then W.ore = O.cats; W.gear = W.gear + O.cats end
+  end)
   W.title = C and N.title(C) or nil
   W.poor = W.money ~= nil and W.n >= 1 and W.money <= cfg.worth_money and W.gear <= cfg.worth_gear and W.bounty <= cfg.worth_bounty
            and W.n <= cfg.worth_squad and not W.title and (W.skill == nil or W.skill <= cfg.worth_skill)
-  W.txt = string.format("money=%s gear=%d%s bounty=%d n=%d skill=%s title=%s poor=%s", tostring(W.money), math.floor(W.gear),
-                        W.fb and ("(" .. W.fb .. ")") or "", math.floor(W.bounty), W.n,
+  W.txt = string.format("money=%s gear=%d%s%s bounty=%d n=%d skill=%s title=%s poor=%s", tostring(W.money), math.floor(W.gear),
+                        W.fb and ("(" .. W.fb .. ")") or "", W.ore and string.format(" ore=%d", math.floor(W.ore)) or "", math.floor(W.bounty), W.n,
                         W.skill and string.format("%.0f", W.skill) or "?", tostring(W.title or "-"), tostring(W.poor))
   if W.fb and N.worth_fb ~= W.fb then   -- маркер: цена вещей посчитана запасным путём (раз на способ за сессию)
     N.worth_fb = W.fb

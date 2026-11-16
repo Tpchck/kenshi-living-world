@@ -736,7 +736,8 @@ local function on_event(ev, px, pz)
   local cf = COLUMN_OF[ev.type] and ev[COLUMN_OF[ev.type]]
   if cf and TR.factions[cf] then
     local target = (ev.type == "base_raid") and "player" or ev.b
-    enqueue({ kind = (ev.type == "base_raid") and "base_raid" or "column", fid = cf, enemy = target, ev = ev.id, tx = ex, tz = ez, why = ev.type, day = ev.day })
+    enqueue({ kind = (ev.type == "base_raid") and "base_raid" or "column", fid = cf, enemy = target, ev = ev.id, tx = ex, tz = ez, why = ev.type, day = ev.day,
+              gx = (ev.type == "base_raid") and tonumber(ev.ox) or nil, gz = (ev.type == "base_raid") and tonumber(ev.oz) or nil })   -- ORE4: рейд за железом - к руднику
   end
   if ev.type == "mobilized" and ev.a and TR.factions[ev.a] and roads_on("couriers") then   -- ROADS: перед большой войной - гонцы между городами фракции
     local dup = false
@@ -1257,6 +1258,20 @@ function TGM.orig(rec, PS, tsid, sid, gd, m, t)
   rec.o[sid] = o
   return o
 end
+-- ORE4: сырая медь (Copper, 42158) в лавочные списки склада не входит, но цена её - цена руды: добавляется к категории metal
+TGM.ORE_ADD = {}
+function TGM.with_ore(items)
+  local c = TGM.ORE_ADD[items]
+  if c then return c end
+  c = {}
+  local seen = {}
+  for _, it in ipairs(items) do c[#c + 1] = it; seen[it[1]] = true end
+  for _, sid in ipairs(P.tgm_ore_items or { "1866-gamedata.base", "42158-gamedata.base" }) do
+    if not seen[sid] then c[#c + 1] = { sid, 4 }; seen[sid] = true end   -- 4 = itemType ITEM (kmm_stock_items.type)
+  end
+  TGM.ORE_ADD[items] = c
+  return c
+end
 function TGM.apply(tsid, pl, ch, fid)   -- true: цены этого города ведёт родной мап (общий множитель торговцу не нужен)
   if not TGM.can_write() then return false end
   local K = rawget(_G, "KMM_Stock")
@@ -1281,16 +1296,20 @@ function TGM.apply(tsid, pl, ch, fid)   -- true: цены этого город�
   local fac = 1
   do local okf, v = pcall(C.price_mult, owner); if okf and tonumber(v) then fac = v end end
   local lo, hi, ops, nw, done = P.tgm_min or 0.6, P.tgm_max or 1.8, P.tgm_ops or 240, 0, true
+  local mm = 1   -- ORE4: руда и слитки (категория metal) - по цене металла мира и нехватке владельца (C.metal_mult), до tgm_metal_max
+  do local okq, v = pcall(C.metal_mult, owner); if okq and tonumber(v) then mm = v end end
   local parts = {}
   for _, c in ipairs(K.CATS or {}) do
     local x = px.x[c]
     if x then
-      local want = math.max(lo, math.min(hi, x * fac))
+      local cm = (c == "metal") and mm or 1
+      local want = math.max(lo, math.min((c == "metal") and math.max(hi, P.tgm_metal_max or 2.5) or hi, x * fac * cm))
       local cur = rec.f[c]
       local nf = (snap or not cur) and want or (cur + (want - cur) * (P.tgm_smooth or 0.5))
       if math.abs(want - nf) < 0.02 then nf = want end
       if not cur or math.abs(nf - cur) >= 0.01 then
         local items = K.cat_items(tsid, c) or {}
+        if c == "metal" then items = TGM.with_ore(items) end
         if nw > 0 and nw + #items > ops then done = false; break end   -- бюджет прохода: остаток категорий — в следующий
         for _, it in ipairs(items) do
           local sid = it[1]
@@ -1369,7 +1388,9 @@ local function base_track()
   local money = own:getMoney() or 0
   local nchars = 0
   pcall(function() for _ in pairs(getPlayerInterface():getAllPlayerCharacters()) do nchars = nchars + 1 end end)
-  C.set_base(x, z, 40 + money / 200 + nchars * 4, 10 + nchars * 6)
+  local ov = 0   -- ORE4: работающий рудник делает аванпост богаче для бандитов (C.base_ore: recent/4 + 10 x автобуры, с затуханием)
+  pcall(function() local O = C.base_ore and C.base_ore(); if O and tonumber(O.value) then ov = O.value end end)
+  C.set_base(x, z, 40 + money / 200 + nchars * 4 + ov, 10 + nchars * 6)
 end
 
 ---------------------------------------------------------------------------------------------- первый час новой игры
@@ -2013,8 +2034,12 @@ local t_beat   -- S5: номер такта снимка
 -- не дождались за base_hold_days → абстрактный исход «пусто» (добыча рейдеров), реальная кража из контейнеров базы — плагин (NEEDS_REKENSHI REV2).
 local function base_gate(job, pcs_xz)
   local B = C.state().base
-  if not (B and B.known and B.x) then return "go" end
-  for _, p in ipairs(pcs_xz) do if dist(p[1], p[2], B.x, B.z) <= (P.base_near or 7000) then return "go" end end
+  local gx, gz = job.gx, job.gz   -- ORE4: рейд за железом ждёт игрока у рудника
+  if not gx then
+    if not (B and B.known and B.x) then return "go" end
+    gx, gz = B.x, B.z
+  end
+  for _, p in ipairs(pcs_xz) do if dist(p[1], p[2], gx, gz) <= (P.base_near or 7000) then return "go" end end
   if vday() - (job.day or vday()) > (P.base_hold_days or 10) then return "expired" end
   return "wait"
 end
@@ -2023,10 +2048,10 @@ local function scout_step(job, now)   -- "go" | "hold" | "spawned"
   if not roads_on("scouts") then return "go" end
   if job.rel_day then return (vday() >= job.rel_day) and "go" or "hold" end
   local B = C.state().base
-  local sid = (B and B.x) and tier_sid(job.fid, -9)
+  local sid = ((B and B.x) or job.gx) and tier_sid(job.fid, -9)
   if not sid then job.rel_day = vday(); return "go" end
   local pcs = pc_xz()
-  local bx, bz = B.x, B.z
+  local bx, bz = job.gx or B.x, job.gz or B.z
   local rmin = P.scout_r_min or 2500
   local sx, sz = pick_unseen(pcs, function() local a = math.random() * 2 * math.pi; local r = rmin + math.random() * 2000; return bx + r * math.cos(a), bz + r * math.sin(a) end)
   if not sx then

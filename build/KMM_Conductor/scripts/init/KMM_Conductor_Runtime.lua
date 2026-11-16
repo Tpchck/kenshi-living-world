@@ -297,13 +297,12 @@ function KC.story_tick_impl(day)
   KC.story_apply(c, st)   -- каждый день заново от базы: идемпотентно, переживает загрузку сейва
 end
 KC.STORY.tick = function(day)
-  if KC.STORY.off then return end
+  if KC.GL.h_live(KC.STORY, "off") then return end
   local ok, err = pcall(KC.story_tick_impl, day)
   if not ok then
-    KC.STORY.off = true
     pcall(KC.story_restore)
-    KC.sub_log("story disabled until restart: " .. tostring(err))
-  end
+    KC.GL.h_bad(KC.STORY, "off", "KMM_Conductor.story", err, "story", KC.sub_log)
+  else KC.GL.h_done(KC.STORY, "off") end
 end
 
 function KC.advance(day, staged)

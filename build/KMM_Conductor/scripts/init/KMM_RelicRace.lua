@@ -263,8 +263,9 @@ function M.visible_champ(c, R, day, fid, ch)
   if not shift then return end
   local rel = relic_by(ch.relic)
   if not rel then R.champ[fid] = nil; return end
+  local last0, sp0 = ch.last, ch.spawns
   ch.last = day; ch.spawns = ch.spawns + 1   -- считаем заявку, а не выдачу: очередь Traces асинхронна, дублей реликта не будет сверх лимита
-  tr.request({ tag = "relic_champ", fid = fid, shift = shift, n = 1, size = 3, from_x = hx, from_z = hz, to_fid = fid, to_x = hx, to_z = hz, target = "player",
+  local okr, acc = pcall(tr.request, { tag = "relic_champ", fid = fid, shift = shift, n = 1, size = 3, from_x = hx, from_z = hz, to_fid = fid, to_x = hx, to_z = hz, target = "player",
     on_spawn = function(pls)
       local pl = pls and pls[1]
       local leader = pl and select(2, pcall(function() return pl:getSquadLeader() end))
@@ -279,6 +280,7 @@ function M.visible_champ(c, R, day, fid, ch)
       else ch.fails = ch.fails + 1 end
       if ch.fails >= P.champ_fail_max then ch.untl = 0 end   -- выдать не получается: свернуть чемпиона
     end })
+  if not (okr and acc) then ch.last, ch.spawns = last0, sp0 end   -- бюджет/погода Traces отказали: заявка не ушла, попытка не тратится
 end
 
 ---------------------------------------------------------------------------------------------- X4 RUINLOOT

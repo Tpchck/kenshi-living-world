@@ -1276,12 +1276,18 @@ function KC.choose_action(fid)
   if B and B.known and pf and pf ~= fid and (B.value or 0) >= (PB.min_value or 30) and not f.relic and KC.DAY - (B.last_raid or -1000) > (PB.raid_cooldown_days or 15)
      and not KC.treaty_between(fid, pf) then
     local fx, fz = KC.FPOS(fid)
-    if fx and math.sqrt((fx - B.x) ^ 2 + (fz - B.z) ^ 2) <= KC.P.bus.radius * 1.5 then
+    local home = fx and math.sqrt((fx - B.x) ^ 2 + (fz - B.z) ^ 2) <= KC.P.bus.radius * 1.5
+    local okm, OM = pcall(KC.ore_motive, fid, f, fx, fz)   -- ORE4: голод по металлу + работающий рудник игрока рядом
+    if not okm then OM = nil end
+    if home or OM then
       local m, why = 0, nil
-      if (f.stress or 0) > (PB.need_stress or 1.2) or (f.hunger or 0) > 0.35 or f.wealth < 40 then m = m + 1; why = "need" end
-      if KC.rel(fid, pf) <= (PB.revenge_rel or -40) then m = m + 1.2; why = why or "revenge" end
-      if (amb == "enrichment" or amb == "expansion") and myp > (PB.greed_ratio or 1.4) * (KC.base_def() or 30) then m = m + 0.6 * math.min(2, B.value / 100); why = why or "greed" end
-      if KC.S.forge and KC.S.forge.until_day and KC.DAY < KC.S.forge.until_day and (amb == "enrichment" or amb == "expansion" or (f.know or 0) >= 1) then m = m + ((KC.P.know or {}).forge_raid or 0.8); why = why or "relic" end   -- игрок ковёт реликты: приманка
+      if home then
+        if (f.stress or 0) > (PB.need_stress or 1.2) or (f.hunger or 0) > 0.35 or f.wealth < 40 then m = m + 1; why = "need" end
+        if KC.rel(fid, pf) <= (PB.revenge_rel or -40) then m = m + 1.2; why = why or "revenge" end
+        if (amb == "enrichment" or amb == "expansion") and myp > (PB.greed_ratio or 1.4) * (KC.base_def() or 30) then m = m + 0.6 * math.min(2, B.value / 100); why = why or "greed" end
+        if KC.S.forge and KC.S.forge.until_day and KC.DAY < KC.S.forge.until_day and (amb == "enrichment" or amb == "expansion" or (f.know or 0) >= 1) then m = m + ((KC.P.know or {}).forge_raid or 0.8); why = why or "relic" end   -- игрок ковёт реликты: приманка
+      end
+      if OM then m = m + OM.w; if why == nil or why == "need" then why = "ore" end end   -- цель - рудник (Sync base_try, Traces base_gate)
       if m > 0 then consider("raid_base", (PB.raid_weight or 1.3) * m, why) end
     end
   end
@@ -1439,7 +1445,8 @@ function KC.act(fid, a, o)
     -- U2: рейд ведёт родная кампания движка (KC.L2.camp.base_try; событие base_campaign даёт привязка к CampaignInstance, исход - фаза в base_step);
     -- кампания невозможна (игрок далеко, нет FACTION_CAMPAIGN, лимиты, сбой) -> base_raid старым путём Traces. Одно событие на рейд.
     local nat = KC.L2.camp and KC.L2.camp.base_try and KC.L2.camp.base_try(fid, o)
-    if not nat then KC.emit({ type = "base_raid", a = fid, b = pf, why = o, text = KC.L2.camp and KC.L2.camp.base_text(fid, o) or (KC.name(fid) .. " are marching on the Nameless settlement.") }) end
+    local OB = (o == "ore") and KC.BASE_ORE() or nil   -- ORE4: рейд за железом идёт на рудник (точка для Traces base_gate)
+    if not nat then KC.emit({ type = "base_raid", a = fid, b = pf, why = o, ox = OB and OB.x, oz = OB and OB.z, text = KC.L2.camp and KC.L2.camp.base_text(fid, o) or (KC.name(fid) .. " are marching on the Nameless settlement.") }) end
   elseif a == "expedition" then
     local r, I = KC.S.ruins[o], KC.SITE[o]
     f.strength = f.strength * (1 - (0.03 + 0.07 * math.random()))

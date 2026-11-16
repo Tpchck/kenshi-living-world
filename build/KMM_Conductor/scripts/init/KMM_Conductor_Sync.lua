@@ -187,6 +187,7 @@ end
 function CA.blog(msg) CA.log("base " .. tostring(msg)) end
 function CA.today() return KC.game_day() or KC.DAY end
 function CA.base_text(fid, why)
+  if why == "ore" then return string.format("%s are marching on the Nameless diggings: they want the iron.", KC.name(fid)) end
   return string.format("%s are marching on the Nameless settlement (%s).", KC.name(fid),
     why == "need" and "they are desperate" or why == "revenge" and "for revenge" or "for its riches")
 end
@@ -208,8 +209,10 @@ function CA.base_try(fid, why)   -- true = кампания запущена (с
   local B, pf = KC.S.base, KC.CFG.player_faction
   if PB.native == false or G.enabled == false or CA.off_now() or CA.PROBE["triggerCampaign"] == false then return false, "native off" end
   if not (B and B.x and pf and KC.S.F[fid]) or KC.S.bcamp then return false, "busy or no base" end
+  local tx, tz = B.x, B.z
+  if why == "ore" then local OB = KC.BASE_ORE and KC.BASE_ORE(); if OB and OB.x and OB.z then tx, tz = OB.x, OB.z end end   -- ORE4: рейд за железом - к руднику
   local ok, res, rw = pcall(function()
-    if not CA.near_player(B.x, B.z, G.load_radius or 15000) then return false, "player far" end   -- незагруженная зона: поведение очереди не проверено
+    if not CA.near_player(tx, tz, G.load_radius or 15000) then return false, "player far" end   -- незагруженная зона: поведение очереди не проверено
     if not CA.limits_ok(fid) then return false, "campaign limits" end
     local D = CA.data()
     if not (D and D.factions[fid]) then return false, "no FACTION_CAMPAIGN" end
@@ -218,14 +221,14 @@ function CA.base_try(fid, why)   -- true = кампания запущена (с
     local gw = getGameWorld()
     local fo, po = gw.factionMgr:getFactionByStringID(fid), gw.factionMgr:getFactionByStringID(pf)
     if not (fo and fo.warMgr and po and po.warMgr) then return false, "no warMgr" end
-    local target = po.warMgr:getNearestTown({ x = B.x, y = 0, z = B.z })
-    local home = fo.warMgr:getNearestTown(CA.home_pos(fid, B.x, B.z))
+    local target = po.warMgr:getNearestTown({ x = tx, y = 0, z = tz })
+    local home = fo.warMgr:getNearestTown(CA.home_pos(fid, tx, tz))
     if not (target and home) then return false, "no target/home town" end
     local pre = {}
     for _, e in ipairs(CA.camps_of(fid)) do if e.id then pre[#pre + 1] = e.id end end
     if not CA.fire(fid, sid, target, home, "base") then return false, "triggerCampaign failed" end
     CA.note(fid)
-    local R = { fid = fid, sid = sid, why = why, day = CA.today(), st = "fired", pre = pre }
+    local R = { fid = fid, sid = sid, why = why, day = CA.today(), st = "fired", pre = pre, x = (tx ~= B.x or tz ~= B.z) and tx or nil, z = (tx ~= B.x or tz ~= B.z) and tz or nil }
     KC.S.bcamp = R
     KC.S.stats.base_campaigns = (KC.S.stats.base_campaigns or 0) + 1
     CA.blog(string.format("fired %s %s day %s (%s)", tostring(fid), tostring(sid), tostring(R.day), tostring(why)))
@@ -241,7 +244,7 @@ function CA.base_end(R, why, raid)   -- конец без исхода; raid = �
   KC.S.bcamp = nil
   if raid and R.st == "fired" and KC.S.F[R.fid] and KC.S.F[R.fid].alive then
     CA.blog("lost " .. tostring(R.fid) .. " (" .. tostring(why) .. ") -> Traces raid")
-    KC.emit({ type = "base_raid", a = R.fid, b = KC.CFG.player_faction, why = R.why, text = CA.base_text(R.fid, R.why) })
+    KC.emit({ type = "base_raid", a = R.fid, b = KC.CFG.player_faction, why = R.why, ox = R.x, oz = R.z, text = CA.base_text(R.fid, R.why) })
   else
     CA.blog("ended " .. tostring(R.fid) .. " (" .. tostring(why) .. "), no Traces raid")
   end
@@ -253,7 +256,8 @@ function CA.base_poll(R)   -- исход по фазе или nil (ждём)
     if CA.today() - R.day > (PB.bind_days or 2) then return "lost" end
     return nil
   end
-  local here = B and B.x and CA.near_player(B.x, B.z, PB.present_radius or 4000)
+  local hx, hz = R.x or (B and B.x), R.z or (B and B.z)   -- ORE4: рейд за железом - присутствие у рудника
+  local here = hx and CA.near_player(hx, hz, PB.present_radius or 4000)
   local cur
   for _, e in ipairs(list) do if e.id == R.cid then cur = e; break end end
   if cur then
@@ -281,6 +285,53 @@ function CA.base_step()
   KC.S.bcamp = nil
   CA.blog(string.format("outcome %s: %s (phase %s)", tostring(R.fid), how, tostring(CA.PHN[R.ph or -1] or R.ph)))
   if how == "repelled" or how == "sacked" or how == "unattended" then KC.base_result(how, R.fid, true) end
+end
+-- ORE4: налог владельца жилы - ванильный сборщик (TaxMan / Tribute из campaigns.json: имя с tax|tribute, без "(trigger)" и
+-- "evasion" - это ванильные продолжения цепочки, их движок запускает сам по исходу визита). Вызов из KC.ore_claim (World), когда
+-- отношение владельца к игроку <= ore.tax.rel. Цель - ближайшее к руднику поселение игрока (getNearestTown его FactionWarMgr, как
+-- base_try); только рядом с игроком; лимиты кампаний (limits_ok) и не чаще ore.tax.cooldown_days на фракцию (S.ore_tax, в сейве).
+-- Без своей кампании у владельца - ничего (остаются отношения). Маркеры: «campaign: triggerCampaign ok|FAIL tax <fid> <sid>», «campaign: tax ...».
+function CA.tax_pick(fid)
+  local D = CA.data()
+  local e = D and D.factions[fid]
+  if not e then return nil end
+  for _, k in ipairs({ "visit", "raid", "assault" }) do
+    local l = {}
+    for _, sid in ipairs(e[k] or {}) do
+      local c = D.campaigns[sid]
+      local nm = c and string.lower(tostring(c.name or "") .. " " .. tostring(c.display or "")) or ""
+      if c and (nm:find("tax", 1, true) or nm:find("tribute", 1, true)) and not nm:find("(trigger)", 1, true) and not nm:find("evasion", 1, true)
+         and (c.forces or 0) <= (CA.CP().max_forces or 30) then l[#l + 1] = sid end
+    end
+    table.sort(l)
+    if #l > 0 then return l[1] end
+  end
+end
+function CA.tax_try(fid, t, x, z)   -- true = сборщик отправлен; false, причина
+  local G, TX = CA.CP(), (KC.P.ore or {}).tax or {}
+  local pf = KC.CFG.player_faction
+  if TX.enabled == false or G.enabled == false or CA.off_now() or CA.PROBE["triggerCampaign"] == false then return false, "native off" end
+  if not (pf and fid and KC.S.F[fid] and KC.S.F[pf] and x and z) then return false, "no target" end
+  KC.S.ore_tax = type(KC.S.ore_tax) == "table" and KC.S.ore_tax or {}
+  if KC.DAY - (KC.S.ore_tax[fid] or -1e9) < (TX.cooldown_days or 60) then return false, "cooldown" end
+  local sid = CA.tax_pick(fid)
+  if not sid then return false, "no tax campaign" end
+  if not CA.near_player(x, z, G.load_radius or 15000) then CA.log("tax not sent: player far from the diggings (" .. tostring(fid) .. ")"); return false, "player far" end
+  if not CA.limits_ok(fid) then return false, "campaign limits" end
+  local gw = getGameWorld()
+  local fo, po = gw.factionMgr:getFactionByStringID(fid), gw.factionMgr:getFactionByStringID(pf)
+  if not (fo and fo.warMgr and po and po.warMgr) then return false, "no warMgr" end
+  local target = po.warMgr:getNearestTown({ x = x, y = 0, z = z })
+  local home = fo.warMgr:getNearestTown(CA.home_pos(fid, x, z))
+  if not (target and home) then CA.log("tax not sent: no player settlement near the diggings (" .. tostring(fid) .. ")"); return false, "no target/home town" end
+  if not CA.fire(fid, sid, target, home, "tax") then return false, "triggerCampaign failed" end
+  CA.note(fid)
+  KC.S.ore_tax[fid] = KC.DAY
+  KC.S.stats.ore_tax = (KC.S.stats.ore_tax or 0) + 1
+  CA.log(string.format("tax sent %s %s day %s for the diggings near %s", tostring(fid), tostring(sid), tostring(KC.DAY), tostring(t)))
+  KC.emit({ type = "ore_tax", a = fid, b = pf, town_sid = t, town_name = KC.TOWN_NAME[t] or t, native = true, campaign = sid,
+         text = string.format("%s sent their tax men to the Nameless diggings near %s.", KC.name(fid), KC.TOWN_NAME[t] or t) })
+  return true
 end
 -- ближайший к игроку город цели в радиусе загруженной зоны (raid) либо заданный (capture); возвращает sid, x, z
 function CA.pick_town(o, town)

@@ -609,8 +609,21 @@ function M.advance(C, S, now)
     M.log(string.format("scenario %s done: ok=%d fail=%d skip=%d", M.name, R.n.ok or 0, R.n.fail or 0, R.n.skip or 0))
   end
 end
+-- HEALTH: ошибка такта -> пауза реестра KMM_Gov (ключ KMM_Scenario.module) и повтор; без Gov - до перезапуска. M.off без ключа паузы
+-- (нет файла сценария: инертен) остаётся навсегда.
+local function h_gov() local g = rawget(_G, "KMM_Gov"); if type(g) == "table" and type(g.h_fail) == "function" then return g end end
+local HKEY = "KMM_Scenario.module"
+local function h_live()
+  if not M.off then return false end
+  if M.hpause then
+    local g = h_gov()
+    local ok, up = pcall(g and g.h_up or function() return true end, HKEY)
+    if (not ok) or up ~= false then M.off, M.hpause, M.hretry = false, nil, true; return false end
+  end
+  return true
+end
 function M.tick()
-  if M.off then return end
+  if h_live() then return end
   local now = os.clock()
   M.t0 = M.t0 or now
   if now - (M.last or -1e9) < M.P.step_s then return end
@@ -636,7 +649,16 @@ end
 local function guarded(fn)   -- ошибка такта выключает только этот модуль
   return function(...)
     local ok, err = pcall(fn, ...)
-    if not ok then M.off = true; M.log("disabled until restart: " .. tostring(err)) end
+    if not ok then
+      M.off, M.hpause, M.hretry = true, nil, nil
+      local g, p = h_gov(), nil
+      if g then local okf, r = pcall(g.h_fail, HKEY, err); if okf and type(r) == "number" then p = r end end
+      M.hpause = p and true or nil
+      M.log(p and ("failed, retry in " .. p .. " s: " .. tostring(err)) or ("disabled until restart: " .. tostring(err)))
+    elseif M.hretry then
+      M.hretry = nil
+      local g = h_gov(); if g then pcall(g.h_ok, HKEY) end
+    end
   end
 end
 function M.stats() return { n = M.nlog, name = M.name or nil } end

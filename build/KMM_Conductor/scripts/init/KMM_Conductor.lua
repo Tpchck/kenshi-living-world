@@ -251,6 +251,19 @@ KMM_Conductor = {   -- консоль KenshiLua (Ctrl+Shift+L) и офлайн-�
   tier_shift = function(fid) return KC.TIER_SHIFT(fid) end,
   player_mined = function(amount, x, z) if KC.S then KC.PLAYER_MINED(amount, x, z) end end,
   region_ore = function(x, z) return KC.S and KC.REGION_ORE(x, z) or 1 end,
+  -- ORE4: рудник игрока для читателей (Traces base_track, Nemesis worth): { recent, auto, x, z, value, cats } | nil
+  base_ore = function() return KC.S and KC.BASE_ORE() or nil end,
+  -- ORE4: шахтёры загруженного города (KMM_Town) черпают жилу города; -> сколько вынуто
+  town_mined = function(tsid, amount) if not KC.S then return 0 end; KC.DAY = math.max(KC.DAY, KC.S.last_day or KC.DAY); return KC.TOWN_MINED(tsid, amount) end,
+  -- ORE4: цена руды и слитков (TGM категории metal в Traces) относительно price_mult фракции: metal_price x (1 + def_w x metal_def),
+  -- пределы ore.price.min..max; делится на металлическую часть price_mult (0.85 + 0.15 x metal_price), чтобы не считать дважды
+  metal_mult = function(fid)
+    local Pp = (KC.P.ore or {}).price or {}
+    if not KC.S or Pp.enabled == false then return 1 end
+    local f, mp = KC.S.F[fid], KC.S.metal_price or 1
+    local om = KC.clamp(mp * (1 + (Pp.def_w or 0.5) * KC.clamp((f and f.metal_def) or 0, 0, 1)), Pp.min or 0.7, Pp.max or 2.5)
+    return om / (0.85 + 0.15 * mp)
+  end,
   fpos = function(fid) return KC.FPOS(fid) end,
   name = function(fid) return KC.name(fid) end,
   rel = function(a, b) return KC.S and KC.rel(a, b) or 0 end,

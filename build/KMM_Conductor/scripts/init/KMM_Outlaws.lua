@@ -102,7 +102,36 @@ function M.log(msg)
   if ok and f then f:write(os.date("%Y-%m-%d %H:%M:%S"), " ", tostring(msg), "\n"); f:close() end
   pcall(function() if KenshiLua and KenshiLua.log then KenshiLua.log(TAG .. tostring(msg)) end end)
 end
-function M.fail(where, err) M.off = true; M.log("disabled until restart in " .. where .. ": " .. tostring(err)) end
+-- HEALTH: отказы идут в реестр KMM_Gov (ключи KMM_Outlaws.module|deeds|b1|captives): пауза 60/300/1800 с и повтор вместо «до перезапуска»;
+-- навсегда - только крэш-сторож (crash). Без Gov - прежнее поведение. Флаги M.off/deed_off/b1_off/cap_off остаются на время паузы.
+M.HPK, M.HTR = {}, {}
+function M.hgov() local g = rawget(_G, "KMM_Gov"); if type(g) == "table" and type(g.h_fail) == "function" then return g end end
+function M.hdown(t, f, key, err)   -- t[f] = true; пауза реестра -> секунды, иначе nil
+  t[f] = true; M.HPK[key], M.HTR[key] = nil, nil
+  local g, p = M.hgov(), nil
+  if g then local ok, r = pcall(g.h_fail, key, err); if ok and type(r) == "number" then p = r end end
+  if p then M.HPK[key] = true end
+  return p
+end
+function M.hlive(t, f, key)   -- true = выключено сейчас; пауза истекла -> флаг снят, одна попытка
+  if not t[f] then return false end
+  if M.HPK[key] then
+    local g = M.hgov()
+    local ok, up = pcall(g and g.h_up or function() return true end, key)
+    if (not ok) or up ~= false then t[f] = nil; M.HPK[key] = nil; M.HTR[key] = true; return false end
+  end
+  return true
+end
+function M.hdone(key) if M.HTR[key] then M.HTR[key] = nil; local g = M.hgov(); if g then pcall(g.h_ok, key) end end end
+function M.hbad(t, f, key, what, err)
+  local p = M.hdown(t, f, key, err)
+  M.log(what .. (p and (" failed, retry in " .. p .. " s: ") or " disabled until restart: ") .. tostring(err))
+end
+function M.dn() return M.hlive(M, "off", "KMM_Outlaws.module") end
+function M.fail(where, err)
+  local p = M.hdown(M, "off", "KMM_Outlaws.module", err)
+  M.log(p and ("failed in " .. where .. ", retry in " .. p .. " s: " .. tostring(err)) or ("disabled until restart in " .. where .. ": " .. tostring(err)))
+end
 -- Конфиг: params.outlaws поверх M.DEF без копирования ключей на каждый вызов. Прокси на ту же таблицу params: чтение — params, иначе M.DEF;
 -- запись в прокси уходит в params. Правка params.outlaws.X видна сразу; новая таблица params — новый прокси.
 function M.cfg()
@@ -144,6 +173,7 @@ function M.probe_ok(x)
         local o = io.open(offp, "w"); if o then o:write("disabled: previous session crashed in ", x); o:close() end
         os.remove(lock)
         M.log("native method " .. x .. " DISABLED forever: previous session crashed during the call")
+        local g = M.hgov(); if g and type(g.h_off) == "function" then pcall(g.h_off, "KMM_Outlaws.native_" .. x, "previous session crashed in " .. x, "crash") end
       end
     end)
     M.PROBE[x] = st
@@ -522,9 +552,9 @@ function M.day_step(C, O, D, day)
       elseif o.st == "a" and not M.live["o" .. o.i] and math.random() < cfg.step_p then
         if not M.justice(C, O, D, cfg, o, day) then M.act(C, O, D, cfg, o, day) end
       end
-      if O.L["o" .. o.i] and o.st == "a" and not M.live["o" .. o.i] and not M.b1_off then   -- B1: скрылся — награда растёт
+      if O.L["o" .. o.i] and o.st == "a" and not M.live["o" .. o.i] and not M.hlive(M, "b1_off", "KMM_Outlaws.b1") then   -- B1: скрылся — награда растёт
         local okb, eb = pcall(M.b1_npc_day, C, O, D, cfg, o, day)
-        if not okb then M.b1_off = true; M.log("b1 disabled until restart (npc): " .. tostring(eb)) end
+        if not okb then M.hbad(M, "b1_off", "KMM_Outlaws.b1", "b1 (npc)", eb) else M.hdone("KMM_Outlaws.b1") end
       end
     end
   end
@@ -626,7 +656,7 @@ function M.deed_who(O, cfg, ev)   -- чьё дело: живой отряд ба
 end
 function M.dstat(k) M.stats[k] = (M.stats[k] or 0) + 1 end
 function M.on_deed(ev)
-  if M.off or M.deed_off or type(ev) ~= "table" then return end
+  if M.dn() or M.hlive(M, "deed_off", "KMM_Outlaws.deeds") or type(ev) ~= "table" then return end
   local cfg = M.cfg()
   local base = M.DEED_B[ev.kind]
   if cfg.deed_bounty == false or not base or ev.by_player or ev.to_player or not (ev.a and ev.b) or ev.a == ev.b then return end
@@ -680,7 +710,7 @@ end
 function M.on_deed_g(ev)   -- ошибка выключает только связку дел, не модуль
   if type(ev) == "table" and ev.by_player and ev.witnessed == false then M.dstat("deed_unwitnessed"); return end   -- Y1: дело игрока без свидетелей - мир о нём не знает
   local ok, err = pcall(M.on_deed, ev)
-  if not ok then M.deed_off = true; M.log("deed bounty disabled until restart: " .. tostring(err)) end
+  if not ok then M.hbad(M, "deed_off", "KMM_Outlaws.deeds", "deed bounty", err) else M.hdone("KMM_Outlaws.deeds") end
 end
 function M.hunt_goal(h, pls)   -- патрулю облавы — ванильная цель HUNT_BOUNTIES: цель он выбирает сам (findBounty, порог узнавания)
   if M.cfg().hunt_goal == false then return end
@@ -941,7 +971,7 @@ function M.vis(C, O, D, cfg, T)
                           end
                         end }
           local okq, acc = pcall(T.request, job)
-          if okq and acc then M.pend = { t = os.clock(), id = id } end
+          if okq and acc then M.pend = { t = os.clock(), id = id } else o.sp = hrs - cfg.cd_h + 1 end   -- отказ общего бюджета: встреча не сгорает, повтор через ~час
         end
         return
       end
@@ -1261,7 +1291,7 @@ function M.b1_weight(cfg, D, who, vf)   -- вес жертвы и почему
   return 1, "common"
 end
 function M.b1_on_crime(bm, fac, who, expiry, crime)   -- колбэк ядра: дешёвые проверки, только запись в очередь
-  if M.off or M.b1_off then return end
+  if M.dn() or M.hlive(M, "b1_off", "KMM_Outlaws.b1") then return end
   local cfg = M.C1 or M.DEF
   if cfg.b1 == false then return end
   local c = tonumber(crime) or -1
@@ -1303,9 +1333,9 @@ function M.b1_hook()
   M.b1_hooked = false
   if not (Events and Events.on) then return end
   local ok, err = pcall(Events.on, "BountyManager::notifyCrimeWitnessed", function(bm, fac, who, exp, cr)
-    if M.off or M.b1_off then return end
+    if M.dn() or M.hlive(M, "b1_off", "KMM_Outlaws.b1") then return end
     local okc, e = pcall(M.b1_on_crime, bm, fac, who, exp, cr)
-    if not okc then M.b1_off = true; M.log("b1 disabled until restart (callback): " .. tostring(e)) end
+    if not okc then M.hbad(M, "b1_off", "KMM_Outlaws.b1", "b1 (callback)", e) else M.hdone("KMM_Outlaws.b1") end
   end)
   M.b1_hooked = ok
   M.log(ok and "b1 hook notifyCrimeWitnessed registered" or ("b1 hook FAIL: " .. tostring(err)))
@@ -1529,7 +1559,7 @@ end
 
 -- тик ----------------------------------------------------------------------------------------------------------------------------
 function M.tick()
-  if M.off then return end
+  if M.dn() then return end
   local now = os.clock()
   local cfg0 = M.cfg()
   if cfg0.enabled == false or now - M.last < (cfg0.tick_s or 9) then return end
@@ -1560,15 +1590,15 @@ function M.tick()
     O.day = day
   end
   M.watch(C, O, D)
-  if not M.cap_off then   -- X1: ошибка выключает только перехват пленников, не модуль
+  if not M.hlive(M, "cap_off", "KMM_Outlaws.captives") then   -- X1: ошибка выключает только перехват пленников, не модуль
     local okc, ec = pcall(M.cap_step, C, O, D, cfg0)
-    if not okc then M.cap_off = true; M.log("captive watch disabled until restart: " .. tostring(ec)) end
+    if not okc then M.hbad(M, "cap_off", "KMM_Outlaws.captives", "captive watch", ec) else M.hdone("KMM_Outlaws.captives") end
   end
-  if cfg0.b1 ~= false and not M.b1_off then   -- B1: дела игрока -> цена по делу; раз в день — рост у скрывшихся
+  if cfg0.b1 ~= false and not M.hlive(M, "b1_off", "KMM_Outlaws.b1") then   -- B1: дела игрока -> цена по делу; раз в день — рост у скрывшихся
     M.C1 = cfg0
     if M.b1_hooked == nil then M.b1_hook() end
     local okb, eb = pcall(M.b1_step, C, O, D, cfg0, day)
-    if not okb then M.b1_off = true; M.log("b1 disabled until restart: " .. tostring(eb)) end
+    if not okb then M.hbad(M, "b1_off", "KMM_Outlaws.b1", "b1", eb) else M.hdone("KMM_Outlaws.b1") end
   end
   local T = rawget(_G, "KMM_Traces")
   if T and T.request and T.near then M.vis(C, O, D, cfg0, T); M.vis_hunt(C, O, D, cfg0, T) end
@@ -1581,7 +1611,7 @@ function M.guarded()
     if G and G.run then return G.run("outlaws", M.tick) end
     return M.tick()
   end)
-  if not ok then M.fail("tick", err) end
+  if not ok then M.fail("tick", err) else M.hdone("KMM_Outlaws.module") end
 end
 
 KMM_Outlaws = {
