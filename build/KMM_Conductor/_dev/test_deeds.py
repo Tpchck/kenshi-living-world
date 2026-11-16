@@ -175,7 +175,7 @@ C.cfg = cfg0
 check(D.off == true and DD.disabled().deeds == true, "tick error disables module")
 local lg = io.open("TMPDIR/deeds.log", "r"); local s = lg and lg:read("*a") or ""; if lg then lg:close() end
 check(s:find("affectRelations hook registered", 1, true) and s:find("witness: notifyCrimeWitnessed hook registered", 1, true) and s:find("first callback:", 1, true) and s:find("deed: killed", 1, true)
-      and s:find("disabled until restart", 1, true), "log markers")
+      and (s:find("disabled until restart", 1, true) or s:find("failed, retry in", 1, true)), "log markers")
 RESULT = #FAILS == 0 and ("OK " .. N .. " checks, deeds=" .. #GOT) or ("FAIL: " .. table.concat(FAILS, "; "))
 '''.replace("TMPDIR", TMP), "disable")
 r = gstr("RESULT")

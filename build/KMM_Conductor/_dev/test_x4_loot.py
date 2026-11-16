@@ -96,6 +96,7 @@ local function BLD(inv, opt)
   function b:hasFaction() return opt.fid ~= nil end
   function b:getFaction() return FAC(opt.fid) end
   function b:getInventory() return self.inv end
+  if opt.tt then function b:getTown() return { townType = opt.tt } end end
   return { getHandle = function() return { getBuilding = function() return b end, toString = function() return hs end } end }
 end
 local function fill(base)
@@ -263,6 +264,14 @@ RR.rt.champ.x = { leader = {} }
 C.reset(); tick()
 check(next(RR.rt.champ) == nil, "world change clears leader refs")
 check((DESTROYED or 0) == 0, "removeItemAutoDestroy never called")
+-- 8b. HEALTH 2026-11-15: правило владения по поселению ядра (Building:getTown().townType): руины — ничьи при любой фракции, город — чужой
+do
+  local RUIN_INV, TOWN_INV = INV({ ITEM("relic_r", 1, 700) }), INV({ ITEM("town_r", 1, 700) })
+  OBJS = { BLD(RUIN_INV, { fid = "town_f", tt = 4, h = "ruin_tt" }), BLD(TOWN_INV, { fid = "no_model_f", tt = 2, h = "town_tt" }) }
+  local out, nb = RR.ruin_items(C, site, 0, {})
+  local sids = {}; for _, e in ipairs(out or {}) do sids[e.sid] = true end
+  check(nb == 1 and sids.relic_r and not sids.town_r, "townType: TOWN_RUINS free even with a town faction, TOWN_TOWN owned even without model towns (boxes=" .. tostring(nb) .. ")")
+end
 -- 9. состояние мелкое и сериализуемо; протухшие записи чистятся
 local Rr = R()
 check(Rr and Rr.ruin, "ruin table in state")

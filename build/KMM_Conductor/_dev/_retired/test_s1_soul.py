@@ -87,10 +87,16 @@ ZONE_NIL = function(v) return true end
 for i = 1, 4 do Pr.sm.last = {}; kill(PX, PZ, 1, "fM" .. i) end
 check(Pr.sm.off == false and (Pr.sm.st.miss or 0) >= 4, "B: 4 промаха после успеха -> запах жив (miss=" .. tostring(Pr.sm.st.miss) .. ")")
 check(not lg():find("smell api unavailable", 1, true), "B: без «smell api unavailable»")
--- C. без единого успеха — три промаха выключают запах (как раньше), эхо при этом продолжает считать смерти
+-- C. HEALTH 2026-11-15: без единого успеха промахи зоны запах не выключают, пока API есть в движке (зона просто не загружена)
 Pr.sm.ok = 0; Pr.sm.fails = 0
 for i = 1, 3 do Pr.sm.last = {}; kill(PX, PZ, 1, "fN" .. i) end
-check(Pr.sm.off == true and lg():find("smell api unavailable (zoneMgr/zoneSmell): no zone map", 1, true), "C: API ни разу не сработал -> smell off + маркер")
+check(Pr.sm.off == false and not lg():find("smell api unavailable", 1, true), "C: промахи зоны без успеха -> запах жив (API есть)")
+-- C2. API нет в движке (у ZoneManager нет getZoneMap) -> навсегда, маркер smell api unavailable
+local gzm = getGameWorld
+getGameWorld = function() local g = gzm(); g.zoneMgr = { isZoneLoadedT = function() return false end }; return g end
+Pr.sm.last = {}; kill(PX, PZ, 1, "fN9")
+getGameWorld = gzm
+check(Pr.sm.off == true and lg():find("smell api unavailable (ZoneManager:getZoneMap missing", 1, true), "C2: нет API -> smell off навсегда + маркер")
 ZONE_NIL = function(v) return false end
 -- D. эхо: смерти у места SX (игрок в 3000), днём — ничего
 local e = Pr.slot()

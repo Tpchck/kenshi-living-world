@@ -215,7 +215,7 @@ local lg = io.open("TMPDIR/deeds.log", "r"); local s = lg and lg:read("*a") or "
 check(s:find("witness: notifyCrimeWitnessed hook registered", 1, true) and s:find("crime seen: 4 (murder) against " .. FB, 1, true)
       and s:find("witness: killed " .. PF .. ">" .. FB .. " seen src=crime crime=murder", 1, true)
       and s:find("unseen src=none", 1, true) and s:find("unknown src=nosignal", 1, true)
-      and s:find("hook notifyCrimeWitnessed disabled until restart", 1, true), "log markers")
+      and (s:find("hook notifyCrimeWitnessed disabled until restart", 1, true) or s:find("hook notifyCrimeWitnessed failed, retry in", 1, true)), "log markers")
 '''.replace("TMPDIR", TMP), "fallback")
 # цена: 300 NPC вокруг (снимок прогрет), меряется только сброс Deeds, никто не знает -> не больше wit_max вопросов, время сброса
 run(r'''

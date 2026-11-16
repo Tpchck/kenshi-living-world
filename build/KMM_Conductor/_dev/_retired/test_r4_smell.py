@@ -155,7 +155,7 @@ check(rd("TMPDIR/herds.log"):find("smell fallback spawn: .-no effect"), "мар�
 -- 10. API запаха сломан -> Predators выключает запах, Herds сразу фолбэк
 ZS_FAIL = true; ZS_RISE = 0.5
 for i = 1, 3 do Pr.sm.last = {}; C.emit({ type = "deed", kind = "killed", tone = "harm", a = "fA", b = "fX" .. i, n = 1, x = px, z = pz, text = "t" }) end
-check(Pr.sm.off == true and rd("TMPDIR/predators.log"):find("smell api unavailable", 1, true), "самоотключение запаха + маркер")
+check(Pr.sm.off == true and (rd("TMPDIR/predators.log"):find("smell disabled until restart", 1, true) or rd("TMPDIR/predators.log"):find("smell failed, retry in", 1, true)), "отказ addSmell: запах выключен (без Gov до перезапуска, с Gov пауза) + маркер")
 check(not Pr.disabled(), "модуль Predators жив")
 local treq, NREQ = T.request, 0; T.request = function(j) NREQ = NREQ + 1; return true end   -- лимиты Traces тут не проверяем
 day = prep(); local fb0 = H.stats().smell_fb

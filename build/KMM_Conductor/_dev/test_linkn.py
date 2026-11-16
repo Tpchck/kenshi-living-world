@@ -209,17 +209,20 @@ for _, t in ipairs({ t2 }) do own(t, X) end
 step(); step()
 check(NAT.st.wsA == nil, "после отказа плагина ничего не осталось включённым")
 
--- 11) реальная таблица: файл читается лениво, JSON не нужен; вариант с убитым лидером
+-- 11) реальная таблица (2026-11-16: только свои WS, один WS на пару город->владелец): файл читается лениво, вариант применяется без условий о лидерах
 reset_all(); with_native(true); P.ws.lut_path = LUT_PATH
 step()
 S = C.state()
 local f = assert(loadfile(LUT_PATH)); local LU = f()
-check(type(LU) == "table" and LU.v == 1, "kmm_ws_lut.lua читается как чистые данные")
+check(type(LU) == "table" and LU.v == 1 and LU.own == 1, "kmm_ws_lut.lua читается как чистые данные (own=1)")
+local allown = true
+for _, w in ipairs(LU.W) do local m = w:match("^%d+%-(KMM_[%w_]+)%.mod$"); if not m or m == "KMM_Merged" then allown = false end end
+check(allown, "реальная таблица: все WS свои (<n>-KMM_*.mod)")
 local pick, pv
 for t, list in pairs(LU.T) do
   if C.cfg().town_info[t] then
     for _, v in ipairs(list) do
-      if not v.r and not v.x and not v.a and v.d and #v.d == 2 and S.F[LU.F[v.o]] and S.F[LU.F[v.o]].alive and LU.F[v.o] ~= ORIG[t] then
+      if not v.r and not v.x and not v.d and #v.c == 2 and S.F[LU.F[v.o]] and S.F[LU.F[v.o]].alive and LU.F[v.o] ~= ORIG[t] then
         if not pick or t < pick then pick, pv = t, v end
       end
     end
@@ -227,15 +230,12 @@ for t, list in pairs(LU.T) do
 end
 check(pick ~= nil, "в реальной таблице есть вариант для проверки")
 if pick then
-  local fid, npc = LU.F[pv.o], LU.N[pv.d[1]]
+  local fid = LU.F[pv.o]
   own(pick, fid); step()
-  check(evn("ws_skip", pick, "risky_npc") == 1, "реальная таблица: лидер жив -> ws_skip risky_npc")
-  S.resolved[npc] = (pv.d[2] == "c") and "leader_captured" or "leader_killed"
-  C.emit({ type = "leader_killed", a = fid, b = ORIG[pick], town_sid = pick }); step()
-  check(evn("ws_applied", pick) == 1, "реальная таблица: лидер убит -> ws_applied")
-  local ok_all = true
-  for i = 1, #pv.c, 2 do if NAT.st[LU.W[pv.c[i]]] ~= (pv.c[i + 1] == 1) then ok_all = false end end
-  check(ok_all, "реальная таблица: все состояния варианта выставлены")
+  check(evn("ws_applied", pick) == 1, "реальная таблица: смена владельца -> ws_applied (без ложной смерти лидера)")
+  check(NAT.st[LU.W[pv.c[1]]] == true, "реальная таблица: выставлен свой WS варианта")
+  local n = 0; for _ in pairs(NAT.st) do n = n + 1 end
+  check(n == 1, "реальная таблица: выставлено ровно одно состояние")
   own(pick, ORIG[pick]); step()
   local left = 0; for _ in pairs(NAT.st) do left = left + 1 end
   check(left == 0, "реальная таблица: после возврата ничего не осталось включённым")
@@ -247,9 +247,12 @@ package.loaded["kmm_native"] = { ws_hook_active = function() return true end, ws
 reset_all(); KMM_Native = nil
 assert(loadstring(ADAPTER_SRC, "@adapter"))()
 check(KMM_Native and KMM_Native.available == true, "реальный адаптер: available=true")
-C.ws_inject(FIX); step()
+local OWNW = "900001-KMM_Elite.mod"
+C.ws_inject({ v = 1, F = { X }, W = { OWNW, "wsA" }, N = {}, T = { [t1] = { { o = 1, c = { 1, 1 } } }, [t6] = { { o = 1, c = { 2, 1 } } } } }); step()
 own(t1, X); step()
-check(evn("ws_applied", t1) == 1 and NAT.st.wsA == true and ncount("mset:wsA") == 1, "реальный адаптер: вариант применён через ws_set")
+check(evn("ws_applied", t1) == 1 and NAT.st[OWNW] == true and ncount("mset:" .. OWNW) == 1, "реальный адаптер: свой WS применён через ws_set")
+own(t6, X); step()
+check(ncount("mset:wsA") == 0 and NAT.st.wsA == nil and C.ws_applied()[t6] == nil, "реальный адаптер: чужой sid не доходит до плагина (белый список)")
 
 local rf = io.open("TMPDIR/result.txt", "w"); rf:write(N .. " " .. #FAILS .. "|" .. table.concat(FAILS, "|")); rf:close()
 '''.replace("TMPDIR", TMP), "test")
